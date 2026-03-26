@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { api } from '@/lib/api'
+import { useMutation } from '@tanstack/react-query'
+import { createActivity } from '@/api/activities'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,26 +16,20 @@ export function ActivityNewPage() {
   const [startedAt, setStartedAt] = useState('')
   const [endedAt, setEndedAt] = useState('')
   const [note, setNote] = useState('')
-  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      await api.post('/activities', {
-        type,
-        startedAt: new Date(startedAt).toISOString(),
-        endedAt: endedAt ? new Date(endedAt).toISOString() : null,
-        note: note || null,
-      })
+  const mutation = useMutation({
+    mutationFn: () => createActivity({
+      type,
+      startedAt: new Date(startedAt).toISOString(),
+      endedAt: endedAt ? new Date(endedAt).toISOString() : undefined,
+      note: note || undefined,
+    }),
+    onSuccess: () => {
       toast.success('アクティビティを作成しました')
       navigate('/')
-    } catch {
-      toast.error('作成に失敗しました')
-    } finally {
-      setLoading(false)
-    }
-  }
+    },
+    onError: () => toast.error('作成に失敗しました'),
+  })
 
   return (
     <div className="mx-auto max-w-lg">
@@ -43,7 +38,7 @@ export function ActivityNewPage() {
           <CardTitle>新規アクティビティ</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); mutation.mutate() }} className="space-y-4">
             <div className="space-y-2">
               <Label>タイプ</Label>
               <Select value={type} onValueChange={setType} required>
@@ -70,8 +65,8 @@ export function ActivityNewPage() {
               <Label htmlFor="note">メモ（任意）</Label>
               <Textarea id="note" value={note} onChange={e => setNote(e.target.value)} />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? '作成中...' : '作成'}
+            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+              {mutation.isPending ? '作成中...' : '作成'}
             </Button>
           </form>
         </CardContent>

@@ -1,44 +1,43 @@
 import { eq } from 'drizzle-orm'
-import { db } from '../_lib/db.ts'
-import { activities } from '../../db/schema.ts'
-import { withAuth } from '../_lib/auth.ts'
+import { db } from '@api/_lib/db.ts'
+import { activities } from '@db/schema.ts'
+import { withAuth } from '@api/_lib/auth.ts'
+import { parseBody } from '@api/_lib/parse.ts'
+import { NotFoundError, ForbiddenError } from '@api/_lib/errors.ts'
+import { UpdateActivityParametersSchema } from '@db/validation.ts'
 
-export const GET = withAuth(async (req, user) => {
+async function findActivity(req: Request) {
   const id = new URL(req.url).pathname.split('/').pop()!
   const activity = await db.select().from(activities).where(eq(activities.id, id)).then(r => r[0])
-  if (!activity) return Response.json({ error: 'Not found' }, { status: 404 })
-  if (user.role !== 'admin' && activity.userId !== user.id) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  if (!activity) throw new NotFoundError()
+  return activity
+}
+
+export const GET = withAuth(async (req, user) => {
+  const activity = await findActivity(req)
+  if (user.role !== 'admin' && activity.userId !== user.id) throw new ForbiddenError()
   return Response.json(activity)
 })
 
 export const PATCH = withAuth(async (req, user) => {
-  const id = new URL(req.url).pathname.split('/').pop()!
-  const activity = await db.select().from(activities).where(eq(activities.id, id)).then(r => r[0])
-  if (!activity) return Response.json({ error: 'Not found' }, { status: 404 })
-  if (user.role !== 'admin' && activity.userId !== user.id) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  const activity = await findActivity(req)
+  if (user.role !== 'admin' && activity.userId !== user.id) throw new ForbiddenError()
 
-  const body = await req.json() as { type?: string; startedAt?: string; endedAt?: string | null; note?: string }
+  const parsed = await parseBody(req, UpdateActivityParametersSchema)
+
   const updates: Record<string, unknown> = { updatedAt: new Date() }
-  if (body.type !== undefined) updates.type = body.type
-  if (body.startedAt !== undefined) updates.startedAt = new Date(body.startedAt)
-  if (body.endedAt !== undefined) updates.endedAt = body.endedAt ? new Date(body.endedAt) : null
-  if (body.note !== undefined) updates.note = body.note
+  if (parsed.type !== undefined) updates.type = parsed.type
+  if (parsed.startedAt !== undefined) updates.startedAt = new Date(parsed.startedAt)
+  if (parsed.endedAt !== undefined) updates.endedAt = parsed.endedAt ? new Date(parsed.endedAt) : null
+  if (parsed.note !== undefined) updates.note = parsed.note
 
-  const [updated] = await db.update(activities).set(updates).where(eq(activities.id, id)).returning()
+  const [updated] = await db.update(activities).set(updates).where(eq(activities.id, activity.id)).returning()
   return Response.json(updated)
 })
 
 export const DELETE = withAuth(async (req, user) => {
-  const id = new URL(req.url).pathname.split('/').pop()!
-  const activity = await db.select().from(activities).where(eq(activities.id, id)).then(r => r[0])
-  if (!activity) return Response.json({ error: 'Not found' }, { status: 404 })
-  if (user.role !== 'admin' && activity.userId !== user.id) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 })
-  }
-  await db.delete(activities).where(eq(activities.id, id))
+  const activity = await findActivity(req)
+  if (user.role !== 'admin' && activity.userId !== user.id) throw new ForbiddenError()
+  await db.delete(activities).where(eq(activities.id, activity.id))
   return new Response(null, { status: 204 })
 })

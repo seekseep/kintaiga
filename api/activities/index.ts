@@ -1,7 +1,9 @@
 import { eq, and, type SQL } from 'drizzle-orm'
-import { db } from '../_lib/db.ts'
-import { activities } from '../../db/schema.ts'
-import { withAuth } from '../_lib/auth.ts'
+import { db } from '@api/_lib/db.ts'
+import { activities } from '@db/schema.ts'
+import { withAuth } from '@api/_lib/auth.ts'
+import { parseBody } from '@api/_lib/parse.ts'
+import { CreateActivityParametersSchema } from '@db/validation.ts'
 
 export const GET = withAuth(async (req, user) => {
   const url = new URL(req.url)
@@ -19,14 +21,13 @@ export const GET = withAuth(async (req, user) => {
 })
 
 export const POST = withAuth(async (req, user) => {
-  const { type, startedAt, endedAt, note } = await req.json() as { type?: string; startedAt?: string; endedAt?: string; note?: string }
-  if (!type || !startedAt) return Response.json({ error: 'type and startedAt are required' }, { status: 400 })
+  const parsed = await parseBody(req, CreateActivityParametersSchema)
   const [created] = await db.insert(activities).values({
     userId: user.id,
-    type,
-    startedAt: new Date(startedAt),
-    endedAt: endedAt ? new Date(endedAt) : null,
-    note,
+    type: parsed.type,
+    startedAt: new Date(parsed.startedAt),
+    endedAt: parsed.endedAt ? new Date(parsed.endedAt) : null,
+    note: parsed.note,
   }).returning()
   return Response.json(created, { status: 201 })
 })

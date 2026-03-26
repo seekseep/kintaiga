@@ -1,16 +1,11 @@
 import { createContext, useEffect, useState, useCallback } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { api, ApiError } from '@/lib/api'
+import { getMe } from '@/api/me'
+import { ApiError } from '@/lib/api'
+import type { User } from '@/api/users'
 
-export type User = {
-  id: string
-  name: string
-  role: 'admin' | 'general'
-  iconUrl: string | null
-  createdAt: string
-  updatedAt: string
-}
+export type { User }
 
 export type AuthContextValue = {
   session: Session | null
@@ -31,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUser = useCallback(async () => {
     try {
-      const u = await api.get<User>('/me')
+      const u = await getMe()
       setUser(u)
       setNeedsInitialization(false)
     } catch (e) {

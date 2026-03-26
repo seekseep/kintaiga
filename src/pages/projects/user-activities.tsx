@@ -1,42 +1,32 @@
-import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
-import { api } from '@/lib/api'
-import type { User } from '@/contexts/auth-context'
+import { useQuery } from '@tanstack/react-query'
+import { getProject } from '@/api/projects'
+import { getUser } from '@/api/users'
+import { getActivities } from '@/api/activities'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
 
-type Activity = {
-  id: string
-  type: string
-  startedAt: string
-  endedAt: string | null
-  note: string | null
-}
-
-type Project = { id: string; name: string }
-
 export function ProjectUserActivitiesPage() {
   const { projectId, userId } = useParams()
-  const [project, setProject] = useState<Project | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  const [activities, setActivities] = useState<Activity[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    Promise.all([
-      api.get<Project>(`/projects/${projectId}`),
-      api.get<User>(`/users/${userId}`),
-      api.get<Activity[]>(`/activities?userId=${userId}`),
-    ]).then(([proj, usr, acts]) => {
-      setProject(proj)
-      setUser(usr)
-      setActivities(acts)
-    }).finally(() => setLoading(false))
-  }, [projectId, userId])
+  const { data: project } = useQuery({
+    queryKey: ['projects', projectId],
+    queryFn: () => getProject(projectId!),
+  })
 
-  if (loading) return <Skeleton className="h-64" />
+  const { data: user } = useQuery({
+    queryKey: ['users', userId],
+    queryFn: () => getUser(userId!),
+  })
+
+  const { data: activities = [], isLoading } = useQuery({
+    queryKey: ['activities', { userId }],
+    queryFn: () => getActivities(userId),
+  })
+
+  if (isLoading) return <Skeleton className="h-64" />
 
   return (
     <div className="space-y-4">

@@ -1,18 +1,16 @@
 import { eq } from 'drizzle-orm'
-import { db } from '../_lib/db.ts'
-import { users } from '../../db/schema.ts'
-import { supabase } from '../_lib/supabase.ts'
-import { withAuth } from '../_lib/auth.ts'
+import { db } from '@api/_lib/db.ts'
+import { users } from '@db/schema.ts'
+import { supabase } from '@api/_lib/supabase.ts'
+import { withAuth } from '@api/_lib/auth.ts'
+import { parseBody } from '@api/_lib/parse.ts'
+import { InternalError } from '@api/_lib/errors.ts'
+import { UpdateIconParametersSchema } from '@db/validation.ts'
 
 export const POST = withAuth(async (req, user) => {
-  const { icon } = await req.json() as { icon?: string }
-  if (!icon || typeof icon !== 'string') {
-    return Response.json({ error: 'icon (base64 data URL) is required' }, { status: 400 })
-  }
+  const parsed = await parseBody(req, UpdateIconParametersSchema)
 
-  const match = icon.match(/^data:image\/(\w+);base64,(.+)$/)
-  if (!match) return Response.json({ error: 'Invalid data URL format' }, { status: 400 })
-
+  const match = parsed.icon.match(/^data:image\/(\w+);base64,(.+)$/)!
   const ext = match[1]
   const buffer = Buffer.from(match[2], 'base64')
   const path = `${user.id}/icon.${ext}`
@@ -24,9 +22,7 @@ export const POST = withAuth(async (req, user) => {
       upsert: true,
     })
 
-  if (uploadError) {
-    return Response.json({ error: uploadError.message }, { status: 500 })
-  }
+  if (uploadError) throw new InternalError(uploadError.message)
 
   const { data: { publicUrl } } = supabase.storage.from('icons').getPublicUrl(path)
 

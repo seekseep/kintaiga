@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "nicolo-ribaudo.vsc-oxc"
+  ],
+  "unwantedRecommendations": [
+    "dbaeumer.vscode-eslint"
+  ]
+}

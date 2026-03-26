@@ -1,24 +1,16 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { api } from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
+import { getProjects } from '@/api/projects'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus } from 'lucide-react'
 
-type Project = {
-  id: string
-  name: string
-  description: string | null
-}
-
 export function ProjectListPage() {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<Project[]>('/projects').then(setProjects).finally(() => setLoading(false))
-  }, [])
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ['projects'],
+    queryFn: getProjects,
+  })
 
   return (
     <div className="space-y-4">
@@ -28,7 +20,7 @@ export function ProjectListPage() {
           <Link to="/projects/new"><Plus className="mr-2 h-4 w-4" />新規プロジェクト</Link>
         </Button>
       </div>
-      {loading ? (
+      {isLoading ? (
         <Skeleton className="h-64" />
       ) : (
         <Table>

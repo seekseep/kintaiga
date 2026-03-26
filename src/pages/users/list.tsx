@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { api } from '@/lib/api'
-import type { User } from '@/contexts/auth-context'
+import { useQuery } from '@tanstack/react-query'
+import { getUsers } from '@/api/users'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -10,12 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Plus } from 'lucide-react'
 
 export function UserListPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<User[]>('/users').then(setUsers).finally(() => setLoading(false))
-  }, [])
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['users'],
+    queryFn: getUsers,
+  })
 
   return (
     <div className="space-y-4">
@@ -25,7 +22,7 @@ export function UserListPage() {
           <Link to="/users/new"><Plus className="mr-2 h-4 w-4" />新規ユーザー</Link>
         </Button>
       </div>
-      {loading ? (
+      {isLoading ? (
         <Skeleton className="h-64" />
       ) : (
         <Table>

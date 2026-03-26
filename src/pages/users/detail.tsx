@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { api } from '@/lib/api'
-import type { User } from '@/contexts/auth-context'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getUser, updateUser, deleteUser } from '@/api/users'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,45 +16,42 @@ import { Skeleton } from '@/components/ui/skeleton'
 export function UserDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
   const [role, setRole] = useState<'admin' | 'general'>('general')
 
-  useEffect(() => {
-    api.get<User>(`/users/${id}`)
-      .then(u => {
-        setUser(u)
-        setName(u.name)
-        setRole(u.role)
-      })
-      .finally(() => setLoading(false))
-  }, [id])
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['users', id],
+    queryFn: () => getUser(id!),
+    select: (data) => {
+      if (!editing && name === '' && role === 'general') {
+        setName(data.name)
+        setRole(data.role)
+      }
+      return data
+    },
+  })
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      const updated = await api.patch<User>(`/users/${id}`, { name, role })
-      setUser(updated)
+  const saveMutation = useMutation({
+    mutationFn: () => updateUser(id!, { name, role }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', id] })
       setEditing(false)
       toast.success('更新しました')
-    } catch {
-      toast.error('更新に失敗しました')
-    } finally {
-      setSaving(false)
-    }
-  }
+    },
+    onError: () => toast.error('更新に失敗しました'),
+  })
 
-  const handleDelete = async () => {
-    await api.delete(`/users/${id}`)
-    toast.success('削除しました')
-    navigate('/users')
-  }
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteUser(id!),
+    onSuccess: () => {
+      toast.success('削除しました')
+      navigate('/users')
+    },
+  })
 
-  if (loading) return <Skeleton className="mx-auto h-64 max-w-lg" />
+  if (isLoading) return <Skeleton className="mx-auto h-64 max-w-lg" />
   if (!user) return <p className="text-center text-muted-foreground">ユーザーが見つかりません</p>
 
   return (
@@ -87,7 +84,7 @@ export function UserDetailPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>削除</AlertDialogAction>
+                    <AlertDialogAction onClick={() => deleteMutation.mutate()}>削除</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -95,7 +92,7 @@ export function UserDetailPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate() }} className="space-y-4">
             <div className="space-y-2">
               <Label>名前</Label>
               <Input value={name} onChange={e => setName(e.target.value)} disabled={!editing} />
@@ -114,7 +111,7 @@ export function UserDetailPage() {
             </div>
             {editing && (
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1" disabled={saving}>{saving ? '保存中...' : '保存'}</Button>
+                <Button type="submit" className="flex-1" disabled={saveMutation.isPending}>{saveMutation.isPending ? '保存中...' : '保存'}</Button>
                 <Button type="button" variant="outline" onClick={() => setEditing(false)}>キャンセル</Button>
               </div>
             )}

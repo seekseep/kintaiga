@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { api } from '@/lib/api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getActivity, updateActivity, deleteActivity } from '@/api/activities'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,14 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Skeleton } from '@/components/ui/skeleton'
-
-type Activity = {
-  id: string
-  type: string
-  startedAt: string
-  endedAt: string | null
-  note: string | null
-}
 
 function toLocalDatetime(iso: string) {
   const d = new Date(iso)
@@ -29,54 +22,51 @@ function toLocalDatetime(iso: string) {
 export function ActivityDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [activity, setActivity] = useState<Activity | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const [type, setType] = useState('')
   const [startedAt, setStartedAt] = useState('')
   const [endedAt, setEndedAt] = useState('')
   const [note, setNote] = useState('')
 
-  useEffect(() => {
-    api.get<Activity>(`/activities/${id}`)
-      .then(a => {
-        setActivity(a)
-        setType(a.type)
-        setStartedAt(toLocalDatetime(a.startedAt))
-        setEndedAt(a.endedAt ? toLocalDatetime(a.endedAt) : '')
-        setNote(a.note ?? '')
-      })
-      .finally(() => setLoading(false))
-  }, [id])
+  const { data: activity, isLoading } = useQuery({
+    queryKey: ['activities', id],
+    queryFn: () => getActivity(id!),
+    select: (data) => {
+      if (!editing && type === '') {
+        setType(data.type)
+        setStartedAt(toLocalDatetime(data.startedAt))
+        setEndedAt(data.endedAt ? toLocalDatetime(data.endedAt) : '')
+        setNote(data.note ?? '')
+      }
+      return data
+    },
+  })
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      const updated = await api.patch<Activity>(`/activities/${id}`, {
-        type,
-        startedAt: new Date(startedAt).toISOString(),
-        endedAt: endedAt ? new Date(endedAt).toISOString() : null,
-        note: note || null,
-      })
-      setActivity(updated)
+  const saveMutation = useMutation({
+    mutationFn: () => updateActivity(id!, {
+      type,
+      startedAt: new Date(startedAt).toISOString(),
+      endedAt: endedAt ? new Date(endedAt).toISOString() : null,
+      note: note || undefined,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activities', id] })
       setEditing(false)
       toast.success('更新しました')
-    } catch {
-      toast.error('更新に失敗しました')
-    } finally {
-      setSaving(false)
-    }
-  }
+    },
+    onError: () => toast.error('更新に失敗しました'),
+  })
 
-  const handleDelete = async () => {
-    await api.delete(`/activities/${id}`)
-    toast.success('削除しました')
-    navigate('/')
-  }
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteActivity(id!),
+    onSuccess: () => {
+      toast.success('削除しました')
+      navigate('/')
+    },
+  })
 
-  if (loading) return <Skeleton className="mx-auto h-64 max-w-lg" />
+  if (isLoading) return <Skeleton className="mx-auto h-64 max-w-lg" />
   if (!activity) return <p className="text-center text-muted-foreground">アクティビティが見つかりません</p>
 
   return (
@@ -98,7 +88,7 @@ export function ActivityDetailPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>削除</AlertDialogAction>
+                    <AlertDialogAction onClick={() => deleteMutation.mutate()}>削除</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -106,7 +96,7 @@ export function ActivityDetailPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate() }} className="space-y-4">
             <div className="space-y-2">
               <Label>タイプ</Label>
               <Select value={type} onValueChange={setType} disabled={!editing}>
@@ -135,8 +125,8 @@ export function ActivityDetailPage() {
             </div>
             {editing && (
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1" disabled={saving}>
-                  {saving ? '保存中...' : '保存'}
+                <Button type="submit" className="flex-1" disabled={saveMutation.isPending}>
+                  {saveMutation.isPending ? '保存中...' : '保存'}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setEditing(false)}>キャンセル</Button>
               </div>

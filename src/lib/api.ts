@@ -1,6 +1,7 @@
+import axios, { AxiosError } from 'axios'
 import { supabase } from './supabase'
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number
   constructor(status: number, message: string) {
     super(message)
@@ -8,32 +9,40 @@ class ApiError extends Error {
   }
 }
 
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+export const api = axios.create({
+  baseURL: '/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// リクエストインターセプター: JWTトークンを付与
+api.interceptors.request.use(async (config) => {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) throw new ApiError(401, 'Not authenticated')
+  config.headers.Authorization = `Bearer ${session.access_token}`
+  return config
+})
 
-  const res = await fetch(`/api${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
-      ...options?.headers,
-    },
-  })
+// レスポンスインターセプター: 401時にトークンリフレッシュしてリトライ
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config
+    if (!originalRequest) return Promise.reject(error)
 
-  if (res.status === 204) return undefined as T
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new ApiError(res.status, body.error ?? 'Unknown error')
-  }
-  return res.json()
-}
+    if (error.response?.status === 401) {
+      const { data: { session }, error: refreshError } = await supabase.auth.refreshSession()
+      if (refreshError || !session) {
+        return Promise.reject(new ApiError(401, 'Session expired'))
+      }
+      originalRequest.headers.Authorization = `Bearer ${session.access_token}`
+      return api(originalRequest)
+    }
 
-export const api = {
-  get: <T>(path: string) => apiFetch<T>(path),
-  post: <T>(path: string, body: unknown) => apiFetch<T>(path, { method: 'POST', body: JSON.stringify(body) }),
-  patch: <T>(path: string, body: unknown) => apiFetch<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: (path: string) => apiFetch<void>(path, { method: 'DELETE' }),
-}
-
-export { ApiError }
+    const status = error.response?.status ?? 500
+    const data = error.response?.data as Record<string, unknown> | undefined
+    const message = (data?.error as string) ?? error.message ?? 'Unknown error'
+    return Promise.reject(new ApiError(status, message))
+  },
+)

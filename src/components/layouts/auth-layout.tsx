@@ -22,7 +22,7 @@ export function AuthLayout() {
     <div className="flex min-h-svh items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">KinTimeCard</CardTitle>
+          <CardTitle className="text-2xl">kintaiga</CardTitle>
         </CardHeader>
         <CardContent>
           <Outlet />

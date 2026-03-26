@@ -1,16 +1,16 @@
-import { db } from '../_lib/db.ts'
-import { users } from '../../db/schema.ts'
-import { withAuth } from '../_lib/auth.ts'
+import { db } from '@api/_lib/db.ts'
+import { users } from '@db/schema.ts'
+import { withAuth } from '@api/_lib/auth.ts'
+import { parseBody } from '@api/_lib/parse.ts'
+import { CreateUserParametersSchema } from '@db/validation.ts'
 
 export const GET = withAuth(async (_req, _user) => {
   const result = await db.select().from(users)
   return Response.json(result)
 })
 
-export const POST = withAuth(async (req, user) => {
-  if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 })
-  const { id, name, role } = await req.json() as { id?: string; name?: string; role?: 'admin' | 'general' }
-  if (!id || !name) return Response.json({ error: 'id and name are required' }, { status: 400 })
-  const [created] = await db.insert(users).values({ id, name, role: role ?? 'general' }).returning()
+export const POST = withAuth(async (req) => {
+  const parsed = await parseBody(req, CreateUserParametersSchema)
+  const [created] = await db.insert(users).values(parsed).returning()
   return Response.json(created, { status: 201 })
-})
+}, { roles: ['admin'] })

@@ -1,5 +1,5 @@
 {
-  "name": "kintimecard",
+  "name": "kintaiga",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,8 +8,6 @@
     "build": "wireit",
     "typecheck": "wireit",
     "lint": "wireit",
-    "lint:oxlint": "wireit",
-    "lint:eslint": "wireit",
     "preview": "vite preview",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -17,37 +15,50 @@
   },
   "wireit": {
     "dev": {
-      "command": "vite",
+      "command": "vercel dev",
       "service": true
     },
     "build": {
       "command": "vite build",
-      "dependencies": ["typecheck"],
-      "files": ["src/**", "index.html", "vite.config.ts", "tsconfig*.json"],
-      "output": ["dist/**"]
+      "dependencies": [
+        "typecheck"
+      ],
+      "files": [
+        "src/**",
+        "index.html",
+        "vite.config.ts",
+        "tsconfig*.json"
+      ],
+      "output": [
+        "dist/**"
+      ]
     },
     "typecheck": {
       "command": "tsc -b",
-      "files": ["src/**/*.ts", "src/**/*.tsx", "tsconfig*.json"],
+      "files": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "tsconfig*.json"
+      ],
       "output": []
     },
     "lint": {
-      "dependencies": ["lint:oxlint", "lint:eslint"]
-    },
-    "lint:oxlint": {
       "command": "oxlint",
-      "files": ["src/**/*.ts", "src/**/*.tsx", "api/**/*.ts", "db/**/*.ts"],
-      "output": []
-    },
-    "lint:eslint": {
-      "command": "eslint .",
-      "files": ["src/**/*.ts", "src/**/*.tsx", "eslint.config.js"],
+      "files": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "api/**/*.ts",
+        "db/**/*.ts"
+      ],
       "output": []
     }
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
     "@supabase/supabase-js": "^2.100.0",
+    "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-table": "^8.21.3",
+    "axios": "^1.13.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -68,7 +79,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
@@ -77,14 +87,10 @@
     "@vitejs/plugin-react": "^6.0.1",
     "dotenv": "^17.3.1",
     "drizzle-kit": "^0.31.10",
-    "eslint": "^9.39.4",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "globals": "^17.4.0",
     "oxlint": "^1.57.0",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.57.0",
+    "vercel": "^50.37.0",
     "vite": "^8.0.1",
     "wireit": "^0.14.12"
   }

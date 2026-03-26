@@ -1,29 +1,17 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { api } from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
+import { getActivities } from '@/api/activities'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus } from 'lucide-react'
 
-type Activity = {
-  id: string
-  type: string
-  startedAt: string
-  endedAt: string | null
-  note: string | null
-}
-
 export function DashboardPage() {
-  const [activities, setActivities] = useState<Activity[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get<Activity[]>('/activities')
-      .then(setActivities)
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: activities = [], isLoading } = useQuery({
+    queryKey: ['activities'],
+    queryFn: () => getActivities(),
+  })
 
   return (
     <div className="space-y-4">
@@ -37,7 +25,7 @@ export function DashboardPage() {
         </Button>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
         </div>

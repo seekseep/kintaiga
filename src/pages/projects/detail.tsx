@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router'
-import { api } from '@/lib/api'
-import type { User } from '@/contexts/auth-context'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getProject, updateProject, deleteProject } from '@/api/projects'
+import { getAssignments } from '@/api/assignments'
+import { getUsers } from '@/api/users'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,54 +16,57 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 
-type Project = { id: string; name: string; description: string | null }
-type Assignment = { id: string; projectId: string; userId: string }
-
 export function ProjectDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [project, setProject] = useState<Project | null>(null)
-  const [assignedUsers, setAssignedUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
 
-  useEffect(() => {
-    Promise.all([
-      api.get<Project>(`/projects/${id}`),
-      api.get<Assignment[]>(`/assignments?projectId=${id}`),
-      api.get<User[]>('/users'),
-    ]).then(([proj, assignments, users]) => {
-      setProject(proj)
-      setName(proj.name)
-      setDescription(proj.description ?? '')
-      const assignedIds = new Set(assignments.map(a => a.userId))
-      setAssignedUsers(users.filter(u => assignedIds.has(u.id)))
-    }).finally(() => setLoading(false))
-  }, [id])
+  const { data: project, isLoading: loadingProject } = useQuery({
+    queryKey: ['projects', id],
+    queryFn: () => getProject(id!),
+    select: (data) => {
+      if (!editing && name === '' && description === '') {
+        setName(data.name)
+        setDescription(data.description ?? '')
+      }
+      return data
+    },
+  })
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      const updated = await api.patch<Project>(`/projects/${id}`, { name, description: description || null })
-      setProject(updated)
+  const { data: assignedUsers = [], isLoading: loadingUsers } = useQuery({
+    queryKey: ['projects', id, 'assignedUsers'],
+    queryFn: async () => {
+      const [assignments, users] = await Promise.all([
+        getAssignments({ projectId: id }),
+        getUsers(),
+      ])
+      const assignedIds = new Set(assignments.map(a => a.userId))
+      return users.filter(u => assignedIds.has(u.id))
+    },
+  })
+
+  const saveMutation = useMutation({
+    mutationFn: () => updateProject(id!, { name, description: description || undefined }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', id] })
       setEditing(false)
       toast.success('更新しました')
-    } catch {
-      toast.error('更新に失敗しました')
-    } finally {
-      setSaving(false)
-    }
-  }
+    },
+    onError: () => toast.error('更新に失敗しました'),
+  })
 
-  const handleDelete = async () => {
-    await api.delete(`/projects/${id}`)
-    toast.success('削除しました')
-    navigate('/projects')
-  }
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteProject(id!),
+    onSuccess: () => {
+      toast.success('削除しました')
+      navigate('/projects')
+    },
+  })
+
+  const loading = loadingProject || loadingUsers
 
   if (loading) return <Skeleton className="h-64" />
   if (!project) return <p className="text-center text-muted-foreground">プロジェクトが見つかりません</p>
@@ -85,7 +90,7 @@ export function ProjectDetailPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>削除</AlertDialogAction>
+                    <AlertDialogAction onClick={() => deleteMutation.mutate()}>削除</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -93,7 +98,7 @@ export function ProjectDetailPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate() }} className="space-y-4">
             <div className="space-y-2">
               <Label>名前</Label>
               <Input value={name} onChange={e => setName(e.target.value)} disabled={!editing} />
@@ -104,7 +109,7 @@ export function ProjectDetailPage() {
             </div>
             {editing && (
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1" disabled={saving}>{saving ? '保存中...' : '保存'}</Button>
+                <Button type="submit" className="flex-1" disabled={saveMutation.isPending}>{saveMutation.isPending ? '保存中...' : '保存'}</Button>
                 <Button type="button" variant="outline" onClick={() => setEditing(false)}>キャンセル</Button>
               </div>
             )}

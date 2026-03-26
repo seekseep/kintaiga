@@ -1,7 +1,8 @@
 import { jwtVerify, createRemoteJWKSet } from 'jose'
 import { eq } from 'drizzle-orm'
-import { db } from './db.ts'
-import { users } from '../../db/schema.ts'
+import { db } from '@api/_lib/db.ts'
+import { users } from '@db/schema.ts'
+import { handleError, UnauthorizedError, ForbiddenError } from '@api/_lib/errors.ts'
 
 const jwks = createRemoteJWKSet(
   new URL(`${process.env.SUPABASE_URL!}/auth/v1/.well-known/jwks.json`)
@@ -42,27 +43,31 @@ export function withAuth(handler: AuthHandlerAllowUnregistered, options: AuthOpt
 export function withAuth(handler: AuthHandler, options?: AuthOptions): (req: Request) => Promise<Response>
 export function withAuth(handler: AuthHandler | AuthHandlerAllowUnregistered, options?: AuthOptions) {
   return async (req: Request) => {
-    let sub: string
     try {
-      sub = await verifyToken(req)
-    } catch {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+      let sub: string
+      try {
+        sub = await verifyToken(req)
+      } catch {
+        throw new UnauthorizedError()
+      }
+
+      const user = await db.select().from(users).where(eq(users.id, sub)).then(r => r[0] ?? null)
+
+      if (!user && !options?.allowUnregistered) {
+        throw new UnauthorizedError('User not found')
+      }
+
+      if (user && options?.roles && !options.roles.includes(user.role)) {
+        throw new ForbiddenError()
+      }
+
+      if (options?.allowUnregistered) {
+        return await (handler as AuthHandlerAllowUnregistered)(req, user, sub)
+      }
+
+      return await (handler as AuthHandler)(req, user!)
+    } catch (err) {
+      return handleError(err)
     }
-
-    const user = await db.select().from(users).where(eq(users.id, sub)).then(r => r[0] ?? null)
-
-    if (!user && !options?.allowUnregistered) {
-      return Response.json({ error: 'User not found' }, { status: 401 })
-    }
-
-    if (user && options?.roles && !options.roles.includes(user.role)) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    if (options?.allowUnregistered) {
-      return (handler as AuthHandlerAllowUnregistered)(req, user, sub)
-    }
-
-    return (handler as AuthHandler)(req, user!)
   }
 }

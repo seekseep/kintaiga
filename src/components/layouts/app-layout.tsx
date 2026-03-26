@@ -48,7 +48,7 @@ export function AppLayout() {
       <Sidebar>
         <SidebarHeader className="p-4">
           <Link to="/" className="text-lg font-semibold">
-            KinTimeCard
+            kintaiga
           </Link>
         </SidebarHeader>
         <SidebarContent>

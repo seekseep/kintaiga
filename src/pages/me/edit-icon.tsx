@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router'
+import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
-import { api } from '@/lib/api'
+import { uploadMyIcon } from '@/api/me'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,7 +14,6 @@ export function EditIconPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(user?.iconUrl ?? null)
   const [dataUrl, setDataUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -27,21 +27,15 @@ export function EditIconPage() {
     reader.readAsDataURL(file)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!dataUrl) return
-    setLoading(true)
-    try {
-      await api.post('/me/icon', { icon: dataUrl })
+  const mutation = useMutation({
+    mutationFn: () => uploadMyIcon({ icon: dataUrl! }),
+    onSuccess: async () => {
       await refreshUser()
       toast.success('アイコンを変更しました')
       navigate('/me')
-    } catch {
-      toast.error('変更に失敗しました')
-    } finally {
-      setLoading(false)
-    }
-  }
+    },
+    onError: () => toast.error('変更に失敗しました'),
+  })
 
   return (
     <div className="mx-auto max-w-lg">
@@ -50,7 +44,7 @@ export function EditIconPage() {
           <CardTitle>アイコンの変更</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); mutation.mutate() }} className="space-y-4">
             <div className="flex justify-center">
               <Avatar className="h-24 w-24">
                 <AvatarImage src={preview ?? undefined} />
@@ -61,8 +55,8 @@ export function EditIconPage() {
             <Button type="button" variant="outline" className="w-full" onClick={() => fileRef.current?.click()}>
               画像を選択
             </Button>
-            <Button type="submit" className="w-full" disabled={loading || !dataUrl}>
-              {loading ? 'アップロード中...' : 'アップロード'}
+            <Button type="submit" className="w-full" disabled={mutation.isPending || !dataUrl}>
+              {mutation.isPending ? 'アップロード中...' : 'アップロード'}
             </Button>
           </form>
         </CardContent>
