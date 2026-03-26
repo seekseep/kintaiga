@@ -1,4 +1,8 @@
-import { Navigate, Outlet, Link, useLocation } from 'react-router'
+'use client'
+
+import { useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -23,9 +27,22 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Clock, LayoutDashboard, Users, FolderOpen, User, LogOut } from 'lucide-react'
 
-export function AppLayout() {
+export function AppLayout({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading, needsInitialization, signOut } = useAuth()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (!isLoading && !session) {
+      router.replace('/login')
+    }
+  }, [isLoading, session, router])
+
+  useEffect(() => {
+    if (!isLoading && needsInitialization && pathname !== '/me/initialize') {
+      router.replace('/me/initialize')
+    }
+  }, [isLoading, needsInitialization, pathname, router])
 
   if (isLoading) {
     return (
@@ -36,34 +53,30 @@ export function AppLayout() {
   }
 
   if (!session) {
-    return <Navigate to="/login" replace />
-  }
-
-  if (needsInitialization && location.pathname !== '/me/initialize') {
-    return <Navigate to="/me/initialize" replace />
+    return null
   }
 
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="p-4">
-          <Link to="/" className="text-lg font-semibold">
+          <Link href="/" className="text-lg font-semibold">
             kintaiga
           </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={location.pathname === '/'}>
-                <Link to="/">
+              <SidebarMenuButton asChild isActive={pathname === '/'}>
+                <Link href="/">
                   <LayoutDashboard />
                   <span>ダッシュボード</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={location.pathname.startsWith('/activities')}>
-                <Link to="/activities/new">
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/activities')}>
+                <Link href="/activities/new">
                   <Clock />
                   <span>アクティビティ</span>
                 </Link>
@@ -72,16 +85,16 @@ export function AppLayout() {
             {user?.role === 'admin' && (
               <>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname.startsWith('/users')}>
-                    <Link to="/users">
+                  <SidebarMenuButton asChild isActive={pathname.startsWith('/users')}>
+                    <Link href="/users">
                       <Users />
                       <span>ユーザー</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname.startsWith('/projects')}>
-                    <Link to="/projects">
+                  <SidebarMenuButton asChild isActive={pathname.startsWith('/projects')}>
+                    <Link href="/projects">
                       <FolderOpen />
                       <span>プロジェクト</span>
                     </Link>
@@ -105,7 +118,7 @@ export function AppLayout() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-48">
                 <DropdownMenuItem asChild>
-                  <Link to="/me">
+                  <Link href="/me">
                     <User />
                     マイページ
                   </Link>
@@ -125,7 +138,7 @@ export function AppLayout() {
           <Separator orientation="vertical" className="h-6" />
         </header>
         <main className="flex-1 p-4">
-          <Outlet />
+          {children}
         </main>
       </SidebarInset>
     </SidebarProvider>

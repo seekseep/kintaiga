@@ -1,10 +1,20 @@
-import { Navigate, Outlet } from 'react-router'
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export function AuthLayout() {
+export function AuthLayout({ children }: { children: React.ReactNode }) {
   const { session, isLoading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading && session) {
+      router.replace('/')
+    }
+  }, [isLoading, session, router])
 
   if (isLoading) {
     return (
@@ -15,7 +25,7 @@ export function AuthLayout() {
   }
 
   if (session) {
-    return <Navigate to="/" replace />
+    return null
   }
 
   return (
@@ -25,7 +35,7 @@ export function AuthLayout() {
           <CardTitle className="text-2xl">kintaiga</CardTitle>
         </CardHeader>
         <CardContent>
-          <Outlet />
+          {children}
         </CardContent>
       </Card>
     </div>

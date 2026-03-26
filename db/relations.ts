@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm'
-import { projects, users, assignments, activities } from './schema.ts'
+import { projects, users, assignments, activities } from './schema'
 
 export const projectsRelations = relations(projects, ({ many }) => ({
   assignments: many(assignments),
