@@ -1,45 +1,38 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
+import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
+import { LoginParametersSchema } from '@db/validation'
+import { zodValidate } from '@/lib/form/zod-adapter'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { FormInput } from '@/components/form'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setError(error.message)
-    setLoading(false)
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">メールアドレス</Label>
-        <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">パスワード</Label>
-        <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-      </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'ログイン中...' : 'ログイン'}
-      </Button>
-      <div className="flex justify-between text-sm">
-        <Link href="/signup" className="text-muted-foreground hover:underline">アカウント作成</Link>
-        <Link href="/reset-password" className="text-muted-foreground hover:underline">パスワードを忘れた</Link>
-      </div>
-    </form>
+    <Formik
+      initialValues={{ email: '', password: '' }}
+      validate={zodValidate(LoginParametersSchema)}
+      onSubmit={async (values, { setStatus }) => {
+        setStatus(undefined)
+        const { error } = await supabase.auth.signInWithPassword(values)
+        if (error) setStatus(error.message)
+      }}
+    >
+      {({ handleSubmit, isSubmitting, status }) => (
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
+          <FormInput name="email" label="メールアドレス" type="email" />
+          <FormInput name="password" label="パスワード" type="password" />
+          {status && <p className="text-sm text-destructive">{status}</p>}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? '🐯 ログイン中...' : 'ログイン'}
+          </Button>
+          <div className="flex justify-between text-sm">
+            <Link href="/signup" className="text-muted-foreground hover:underline">アカウント作成</Link>
+            <Link href="/reset-password" className="text-muted-foreground hover:underline">パスワードを忘れた</Link>
+          </div>
+        </form>
+      )}
+    </Formik>
   )
 }

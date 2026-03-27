@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vercel env:*)",
+      "Bash(npx drizzle-kit:*)",
+      "Bash(npx tsx -e \":*)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id]/)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id]/users -type f)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id]/users -type f -name \"*.tsx\")",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id]/users/)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id]/users/[userId]/)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id]/ -type f -name \"*.tsx\" -o -name \"*.ts\" -o -name \"*.json\")",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id]/ -type f)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id] -type f)",
+      "Bash(npx shadcn@latest add tabs --yes)",
+      "Bash(npx tsc:*)",
+      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/settings/)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga -type f -name *.json -path */src/components/ui/*)",
+      "Bash(cat \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(app\\)/projects/[id]/users/[userId]/activities/page.tsx\")",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/lib -name *.ts -type f)"
+    ],
+    "additionalDirectories": [
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/projects/[id]"
+    ]
+  }
+}

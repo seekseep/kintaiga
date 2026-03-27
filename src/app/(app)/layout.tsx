@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
-import { Skeleton } from '@/components/ui/skeleton'
+
 import {
   Sidebar,
   SidebarContent,
@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { Clock, LayoutDashboard, Users, FolderOpen, User, LogOut } from 'lucide-react'
+import { FolderOpen, Clock, Users, User, LogOut, Settings } from 'lucide-react'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading, needsInitialization, signOut } = useAuth()
@@ -39,15 +39,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [isLoading, session, router])
 
   useEffect(() => {
-    if (!isLoading && needsInitialization && pathname !== '/me/initialize') {
-      router.replace('/me/initialize')
+    if (!isLoading && needsInitialization) {
+      router.replace('/initialize')
     }
   }, [isLoading, needsInitialization, pathname, router])
 
   if (isLoading) {
     return (
       <div className="flex min-h-svh items-center justify-center">
-        <Skeleton className="h-32 w-32 rounded-lg" />
+        <div className="animate-pulse text-8xl">🐯</div>
       </div>
     )
   }
@@ -56,29 +56,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return null
   }
 
+  if (!user) {
+    return (
+      <div className="flex min-h-svh items-center justify-center">
+        <div className="animate-pulse text-8xl">🐯</div>
+      </div>
+    )
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="p-4">
           <Link href="/" className="text-lg font-semibold">
-            kintaiga
+            🐯 キンタイガ
           </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === '/'}>
+              <SidebarMenuButton asChild isActive={pathname === '/' || pathname.startsWith('/projects/')}>
                 <Link href="/">
-                  <LayoutDashboard />
-                  <span>ダッシュボード</span>
+                  <FolderOpen />
+                  <span>プロジェクト</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/activities')}>
-                <Link href="/activities/new">
+              <SidebarMenuButton asChild isActive={pathname === '/activities'}>
+                <Link href="/activities">
                   <Clock />
-                  <span>アクティビティ</span>
+                  <span>稼働</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -93,10 +101,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith('/projects')}>
-                    <Link href="/projects">
-                      <FolderOpen />
-                      <span>プロジェクト</span>
+                  <SidebarMenuButton asChild isActive={pathname.startsWith('/configuration')}>
+                    <Link href="/configuration">
+                      <Settings />
+                      <span>設定</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

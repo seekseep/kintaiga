@@ -8,6 +8,34 @@
       "when": 1774521275189,
       "tag": "0000_hot_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774529700506,
+      "tag": "0001_wandering_stephen_strange",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774531186045,
+      "tag": "0002_strange_master_chief",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774539536586,
+      "tag": "0003_careful_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1774542693818,
+      "tag": "0004_nice_arachne",
+      "breakpoints": true
     }
   ]
 }

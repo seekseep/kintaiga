@@ -78,7 +78,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuButton asChild isActive={pathname.startsWith('/activities')}>
                 <Link href="/activities/new">
                   <Clock />
-                  <span>アクティビティ</span>
+                  <span>稼働</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

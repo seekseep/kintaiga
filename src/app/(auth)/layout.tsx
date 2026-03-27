@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+
 import { useEffect } from 'react'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -19,7 +19,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   if (isLoading) {
     return (
       <div className="flex min-h-svh items-center justify-center">
-        <Skeleton className="h-64 w-96" />
+        <div className="animate-pulse text-8xl">🐯</div>
       </div>
     )
   }
@@ -32,7 +32,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="flex min-h-svh items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">kintaiga</CardTitle>
+          <CardTitle className="text-2xl">🐯 キンタイガ</CardTitle>
         </CardHeader>
         <CardContent>
           {children}

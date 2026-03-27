@@ -1,23 +1,24 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
+import { Formik } from 'formik'
 import { useAuth } from '@/hooks/use-auth'
 import { updateMe } from '@/api/me'
+import { UpdateProfileParametersSchema } from '@db/validation'
+import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { FormInput } from '@/components/form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function EditNamePage() {
   const router = useRouter()
   const { user, refreshUser } = useAuth()
-  const [name, setName] = useState(user?.name ?? '')
 
   const mutation = useMutation({
-    mutationFn: () => updateMe({ name }),
+    mutationFn: (values: { name: string }) => updateMe(values),
     onSuccess: async () => {
       await refreshUser()
       toast.success('名前を変更しました')
@@ -27,21 +28,37 @@ export default function EditNamePage() {
   })
 
   return (
-    <div className="mx-auto max-w-lg">
+    <div className="mx-auto max-w-lg space-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/me">マイページ</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>名前編集</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <Card>
         <CardHeader>
           <CardTitle>名前の変更</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); mutation.mutate() }} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">名前</Label>
-              <Input id="name" value={name} onChange={e => setName(e.target.value)} required />
-            </div>
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
-              {mutation.isPending ? '変更中...' : '変更する'}
-            </Button>
-          </form>
+          <Formik
+            initialValues={{ name: user?.name ?? '' }}
+            validate={zodValidate(UpdateProfileParametersSchema)}
+            onSubmit={(values) => mutation.mutate(values)}
+          >
+            {({ handleSubmit }) => (
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
+                <FormInput name="name" label="名前" />
+                <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                  {mutation.isPending ? '変更中...' : '変更する'}
+                </Button>
+              </form>
+            )}
+          </Formik>
         </CardContent>
       </Card>
     </div>

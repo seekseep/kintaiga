@@ -1,52 +1,68 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
+import { Formik } from 'formik'
 import { createProject } from '@/api/projects'
+import { CreateProjectParametersSchema } from '@db/validation'
+import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { FormInput, FormTextarea } from '@/components/form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { AdminGuard } from '@/components/layouts/admin-guard'
 
 export default function ProjectNewPage() {
   const router = useRouter()
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
 
   const mutation = useMutation({
-    mutationFn: () => createProject({ name, description: description || undefined }),
-    onSuccess: () => {
+    mutationFn: (values: { name: string; description?: string | null }) =>
+      createProject({ name: values.name, description: values.description || undefined }),
+    onSuccess: (project) => {
       toast.success('プロジェクトを作成しました')
-      router.push('/projects')
+      router.push(`/projects/${project.id}`)
     },
     onError: () => toast.error('作成に失敗しました'),
   })
 
   return (
-    <div className="mx-auto max-w-lg">
+    <AdminGuard>
+    <div className="mx-auto max-w-lg space-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">プロジェクト</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>新規作成</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <Card>
         <CardHeader>
           <CardTitle>新規プロジェクト</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); mutation.mutate() }} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">名前</Label>
-              <Input id="name" value={name} onChange={e => setName(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">説明（任意）</Label>
-              <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} />
-            </div>
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
-              {mutation.isPending ? '作成中...' : '作成'}
-            </Button>
-          </form>
+          <Formik
+            initialValues={{ name: '', description: '' }}
+            validate={zodValidate(CreateProjectParametersSchema)}
+            onSubmit={(values) => mutation.mutate(values)}
+          >
+            {({ handleSubmit }) => (
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
+                <FormInput name="name" label="名前" />
+                <FormTextarea name="description" label="説明（任意）" />
+                <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                  {mutation.isPending ? '作成中...' : '作成'}
+                </Button>
+              </form>
+            )}
+          </Formik>
         </CardContent>
       </Card>
     </div>
+    </AdminGuard>
   )
 }

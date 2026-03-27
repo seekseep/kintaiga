@@ -1,4 +1,5 @@
 import { api } from '@/lib/api'
+import type { PaginatedResponse, PaginationParams } from './types'
 
 export type User = {
   id: string
@@ -10,7 +11,8 @@ export type User = {
 }
 
 export type CreateUserBody = {
-  id: string
+  email: string
+  password: string
   name: string
   role?: 'admin' | 'general'
 }
@@ -20,8 +22,11 @@ export type UpdateUserBody = {
   role?: 'admin' | 'general'
 }
 
-export function getUsers() {
-  return api.get<User[]>('/users').then(r => r.data)
+export function getUsers(params?: PaginationParams) {
+  const query: Record<string, string> = {}
+  if (params?.limit != null) query.limit = String(params.limit)
+  if (params?.offset != null) query.offset = String(params.offset)
+  return api.get<PaginatedResponse<User>>('/users', { params: query }).then(r => r.data)
 }
 
 export function getUser(id: string) {

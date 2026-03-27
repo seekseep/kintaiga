@@ -2,212 +2,159 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getProject, updateProject, deleteProject } from '@/api/projects'
-import { getAssignments, createAssignment, deleteAssignment } from '@/api/assignments'
+import { useAuth } from '@/hooks/use-auth'
+import { getProject } from '@/api/projects'
+import { getAssignments, updateAssignment } from '@/api/assignments'
 import { getUsers } from '@/api/users'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AddMemberDialog } from '@/components/add-member-dialog'
+import { ActivityControl } from '@/components/activity-control'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Plus, MoreVertical } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const router = useRouter()
+  const { user: currentUser } = useAuth()
+  const isAdmin = currentUser?.role === 'admin'
   const queryClient = useQueryClient()
-  const [editing, setEditing] = useState(false)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [selectedUserId, setSelectedUserId] = useState('')
 
-  const { data: project, isLoading: loadingProject } = useQuery({
+  const [showAddMember, setShowAddMember] = useState(false)
+
+  const { data: project } = useQuery({
     queryKey: ['projects', id],
     queryFn: () => getProject(id),
-    select: (data) => {
-      if (!editing && name === '' && description === '') {
-        setName(data.name)
-        setDescription(data.description ?? '')
-      }
-      return data
-    },
   })
 
-  const { data: allUsers = [], isLoading: loadingAllUsers } = useQuery({
+  const { data: assignmentsData, isLoading: loadingAssignments } = useQuery({
+    queryKey: ['projects', id, 'assignments'],
+    queryFn: () => getAssignments({ projectId: id, active: true }),
+  })
+
+  const { data: allUsersData, isLoading: loadingUsers } = useQuery({
     queryKey: ['users'],
     queryFn: () => getUsers(),
   })
 
-  const { data: assignments = [], isLoading: loadingAssignments } = useQuery({
-    queryKey: ['projects', id, 'assignments'],
-    queryFn: () => getAssignments({ projectId: id }),
+  const endAssignmentMutation = useMutation({
+    mutationFn: (assignmentId: string) => updateAssignment(assignmentId, {
+      endedAt: new Date().toISOString(),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', id, 'assignments'] })
+      toast.success('メンバーを終了しました')
+    },
+    onError: () => toast.error('終了に失敗しました'),
   })
+
+  const assignments = assignmentsData?.items ?? []
+  const allUsers = allUsersData?.items ?? []
 
   const assignedUserIds = new Set(assignments.map(a => a.userId))
-  const assignedUsers = allUsers.filter(u => assignedUserIds.has(u.id))
+  const assignedUsers = allUsers
+    .filter(u => assignedUserIds.has(u.id))
+    .sort((a, b) => {
+      if (a.id === currentUser?.id) return -1
+      if (b.id === currentUser?.id) return 1
+      return 0
+    })
   const unassignedUsers = allUsers.filter(u => !assignedUserIds.has(u.id))
 
-  const assignMutation = useMutation({
-    mutationFn: (userId: string) => createAssignment({ projectId: id, userId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects', id, 'assignments'] })
-      setSelectedUserId('')
-      toast.success('ユーザーをアサインしました')
-    },
-    onError: () => toast.error('アサインに失敗しました'),
-  })
+  // assignment を userId で引く
+  const assignmentByUser = new Map(assignments.map(a => [a.userId, a]))
 
-  const unassignMutation = useMutation({
-    mutationFn: (assignmentId: string) => deleteAssignment(assignmentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects', id, 'assignments'] })
-      toast.success('アサインを解除しました')
-    },
-    onError: () => toast.error('アサイン解除に失敗しました'),
-  })
-
-  const saveMutation = useMutation({
-    mutationFn: () => updateProject(id, { name, description: description || undefined }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects', id] })
-      setEditing(false)
-      toast.success('更新しました')
-    },
-    onError: () => toast.error('更新に失敗しました'),
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteProject(id),
-    onSuccess: () => {
-      toast.success('削除しました')
-      router.push('/projects')
-    },
-  })
-
-  const loading = loadingProject || loadingAllUsers || loadingAssignments
+  const loading = loadingAssignments || loadingUsers
 
   if (loading) return <Skeleton className="h-64" />
-  if (!project) return <p className="text-center text-muted-foreground">プロジェクトが見つかりません</p>
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>{project.name}</CardTitle>
-            <div className="flex gap-2">
-              {!editing && <Button variant="outline" onClick={() => setEditing(true)}>編集</Button>}
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive">削除</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>本当に削除しますか？</AlertDialogTitle>
-                    <AlertDialogDescription>プロジェクトとアサインメントが削除されます。</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteMutation.mutate()}>削除</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate() }} className="space-y-4">
-            <div className="space-y-2">
-              <Label>名前</Label>
-              <Input value={name} onChange={e => setName(e.target.value)} disabled={!editing} />
-            </div>
-            <div className="space-y-2">
-              <Label>説明</Label>
-              <Textarea value={description} onChange={e => setDescription(e.target.value)} disabled={!editing} />
-            </div>
-            {editing && (
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1" disabled={saveMutation.isPending}>{saveMutation.isPending ? '保存中...' : '保存'}</Button>
-                <Button type="button" variant="outline" onClick={() => setEditing(false)}>キャンセル</Button>
-              </div>
-            )}
-          </form>
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      <div>
-        <h2 className="mb-4 text-xl font-semibold">アサイン済みユーザー</h2>
-        {unassignedUsers.length > 0 && (
-          <div className="mb-4 flex items-center gap-2">
-            <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-              <SelectTrigger className="w-64">
-                <SelectValue placeholder="ユーザーを選択" />
-              </SelectTrigger>
-              <SelectContent>
-                {unassignedUsers.map(u => (
-                  <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              onClick={() => assignMutation.mutate(selectedUserId)}
-              disabled={!selectedUserId || assignMutation.isPending}
-            >
+      {/* メンバー一覧 */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-sm text-muted-foreground">メンバー</h2>
+          {isAdmin && (
+            <Button variant="outline" size="sm" onClick={() => setShowAddMember(true)}>
+              <Plus className="mr-1 h-4 w-4" />
               追加
             </Button>
-          </div>
-        )}
+          )}
+        </div>
         {assignedUsers.length === 0 ? (
-          <p className="text-muted-foreground">ユーザーがアサインされていません</p>
+          <Card>
+            <CardContent className="py-6 text-center text-muted-foreground">
+              メンバーがいません
+            </CardContent>
+          </Card>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ユーザー</TableHead>
-                <TableHead className="w-24" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {assignedUsers.map(u => {
-                const assignment = assignments.find(a => a.userId === u.id)
-                return (
-                  <TableRow key={u.id}>
-                    <TableCell>
-                      <Link href={`/projects/${id}/user/${u.id}`} className="flex items-center gap-3 hover:underline">
+          <div className="grid gap-2">
+            {assignedUsers.map(u => {
+              const assignment = assignmentByUser.get(u.id)
+              return (
+                <Link key={u.id} href={`/projects/${id}/users/${u.id}/activities`}>
+                <Card className="transition-colors hover:bg-muted/50">
+                  <CardHeader className="py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={u.iconUrl ?? undefined} />
                           <AvatarFallback>{u.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        {u.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => assignment && unassignMutation.mutate(assignment.id)}
-                        disabled={unassignMutation.isPending}
-                      >
-                        解除
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                        <CardTitle className="text-sm font-medium">{u.name}</CardTitle>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {project && (
+                          <ActivityControl
+                            userId={u.id}
+                            projectId={id}
+                            projectName={project.name}
+                          />
+                        )}
+                        {isAdmin && assignment && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => {
+                                  if (confirm(`${u.name} をメンバーから外しますか？`)) {
+                                    endAssignmentMutation.mutate(assignment.id)
+                                  }
+                                }}
+                              >
+                                プロジェクトから削除
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+                </Link>
+              )
+            })}
+          </div>
         )}
-      </div>
+      </section>
+
+      {isAdmin && (
+        <AddMemberDialog
+          projectId={id}
+          unassignedUsers={unassignedUsers}
+          open={showAddMember}
+          onOpenChange={setShowAddMember}
+        />
+      )}
     </div>
   )
 }

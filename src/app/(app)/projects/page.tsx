@@ -6,16 +6,28 @@ import { getProjects } from '@/api/projects'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
 import { Plus } from 'lucide-react'
+import { AdminGuard } from '@/components/layouts/admin-guard'
 
 export default function ProjectListPage() {
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projectsData, isLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: getProjects,
+    queryFn: () => getProjects(),
   })
 
+  const projects = projectsData?.items ?? []
+
   return (
+    <AdminGuard>
     <div className="space-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbPage>プロジェクト</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">プロジェクト</h1>
         <Button asChild>
@@ -45,5 +57,6 @@ export default function ProjectListPage() {
         </Table>
       )}
     </div>
+    </AdminGuard>
   )
 }

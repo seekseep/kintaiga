@@ -3,6 +3,7 @@ import { projects, users, assignments, activities } from './schema'
 
 export const projectsRelations = relations(projects, ({ many }) => ({
   assignments: many(assignments),
+  activities: many(activities),
 }))
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -25,5 +26,9 @@ export const activitiesRelations = relations(activities, ({ one }) => ({
   user: one(users, {
     fields: [activities.userId],
     references: [users.id],
+  }),
+  project: one(projects, {
+    fields: [activities.projectId],
+    references: [projects.id],
   }),
 }))

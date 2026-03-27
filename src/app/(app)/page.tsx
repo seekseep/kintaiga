@@ -1,65 +1,128 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { getActivities } from '@/api/activities'
+import { getMyProjects } from '@/api/me'
+import { getProjects } from '@/api/projects'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { CreateProjectDialog } from '@/components/create-project-dialog'
+import { ActivityControl } from '@/components/activity-control'
+import { useAuth } from '@/hooks/use-auth'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
 import { Plus } from 'lucide-react'
 
-export default function DashboardPage() {
-  const { data: activities = [], isLoading } = useQuery({
-    queryKey: ['activities'],
-    queryFn: () => getActivities(),
+type ProjectFilter = 'joined' | 'all'
+
+export default function ProjectsPage() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
+  const [filter, setFilter] = useState<ProjectFilter>('joined')
+  const [createProjectOpen, setCreateProjectOpen] = useState(false)
+
+  const { data: myProjectsData, isLoading: loadingProjects } = useQuery({
+    queryKey: ['me', 'projects'],
+    queryFn: () => getMyProjects(),
   })
+
+  const { data: allProjectsData, isLoading: loadingAllProjects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => getProjects(),
+    enabled: isAdmin && filter === 'all',
+  })
+
+  const myProjects = myProjectsData?.items ?? []
+  const allProjects = allProjectsData?.items ?? []
+
+  const isLoading = loadingProjects || (isAdmin && filter === 'all' && loadingAllProjects)
+
+  const projects = isAdmin && filter === 'all' ? allProjects : myProjects
+
+  // 自分が所属しているプロジェクトのID集合
+  const myProjectIds = new Set(myProjects.map(p => p.id))
 
   return (
     <div className="space-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbPage>プロジェクト</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-lg">ダッシュボード</h1>
-        <Button asChild>
-          <Link href="/activities/new">
-            <Plus className="mr-2 h-4 w-4" />
-            新規アクティビティ
-          </Link>
-        </Button>
+        <h1 className="font-bold text-lg">プロジェクト</h1>
+        {isAdmin && (
+          <Button size="sm" onClick={() => setCreateProjectOpen(true)}>
+            <Plus className="mr-1 h-3 w-3" />
+            追加
+          </Button>
+        )}
       </div>
+
+      {isAdmin && (
+        <div className="flex gap-2">
+          <Button
+            variant={filter === 'joined' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('joined')}
+          >
+            参加している
+          </Button>
+          <Button
+            variant={filter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFilter('all')}
+          >
+            すべて
+          </Button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
         </div>
-      ) : activities.length === 0 ? (
+      ) : projects.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            アクティビティがありません
+          <CardContent className="py-6 text-center text-muted-foreground">
+            {filter === 'all' ? 'プロジェクトはありません' : '所属しているプロジェクトはありません'}
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
-          {activities.map(activity => (
-            <Link key={activity.id} href={`/activities/${activity.id}`}>
-              <Card className="transition-colors hover:bg-muted/50">
-                <CardHeader className="pb-2">
+          {projects.map(project => {
+            const isMember = myProjectIds.has(project.id)
+            return (
+              <Card key={project.id}>
+                <CardHeader>
                   <div className="flex items-center justify-between">
-                    <Badge variant="secondary">{activity.type}</Badge>
-                    <CardTitle className="text-sm font-normal text-muted-foreground">
-                      {new Date(activity.startedAt).toLocaleString('ja-JP')}
-                    </CardTitle>
+                    <Link href={`/projects/${project.id}`} className="hover:underline">
+                      <CardTitle className="text-base">{project.name}</CardTitle>
+                    </Link>
+                    {isMember && user ? (
+                      <ActivityControl
+                        userId={user.id}
+                        projectId={project.id}
+                        projectName={project.name}
+                      />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">参加していません</span>
+                    )}
                   </div>
                 </CardHeader>
-                {activity.note && (
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground">{activity.note}</p>
-                  </CardContent>
-                )}
               </Card>
-            </Link>
-          ))}
+            )
+          })}
         </div>
       )}
+
+      <CreateProjectDialog
+        open={createProjectOpen}
+        onOpenChange={setCreateProjectOpen}
+      />
     </div>
   )
 }
