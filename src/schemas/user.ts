@@ -31,5 +31,4 @@ export const CreateUserParametersSchema = z.object({
 })
 export const UpdateUserParametersSchema = z.object({
   name: z.string().min(1).optional(),
-  role: RoleSchema.optional(),
 })

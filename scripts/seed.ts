@@ -81,11 +81,12 @@ async function deleteExistingSeedAuthUsers() {
   }
 }
 
-async function createAuthUser(email: string, password: string) {
+async function createAuthUser(email: string, password: string, role: 'admin' | 'general') {
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
+    app_metadata: { role },
   })
   if (error) throw new Error(`Failed to create auth user ${email}: ${error.message}`)
   console.log(`  Created auth user: ${email} (${data.user.id})`)
@@ -104,7 +105,7 @@ async function main() {
   console.log('\n2. Creating Supabase Auth users...')
   const userIds: string[] = []
   for (const u of SEED_USERS) {
-    const id = await createAuthUser(u.email, u.password)
+    const id = await createAuthUser(u.email, u.password, u.role)
     userIds.push(id)
   }
 

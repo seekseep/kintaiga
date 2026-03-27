@@ -2,12 +2,13 @@ import 'dotenv/config'
 import { program } from 'commander'
 import { select } from '@inquirer/prompts'
 import { drizzle } from 'drizzle-orm/postgres-js'
-import { eq, or } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
-import { users, roleEnum } from '../db/schema'
 import { createClient } from '@supabase/supabase-js'
+import { users } from '../db/schema'
 
-const roles = roleEnum.enumValues
+const ROLES = ['admin', 'general'] as const
+type Role = typeof ROLES[number]
 
 const client = postgres(process.env.DATABASE_URL!, { prepare: false })
 const db = drizzle(client)
@@ -24,61 +25,42 @@ async function getAuthUsers() {
 }
 
 async function resolveUser(identifier?: string) {
+  const authUsers = await getAuthUsers()
+
   if (identifier) {
-    // Try to find by email (via Supabase Auth) or by ID
-    const authUsers = await getAuthUsers()
-    const authUser = authUsers.find((u) => u.email === identifier)
-    const userId = authUser?.id ?? identifier
-
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, userId))
-
+    const user = authUsers.find((u) => u.email === identifier || u.id === identifier)
     if (!user) {
       console.error(`User not found: ${identifier}`)
       process.exit(1)
     }
-
-    const email = authUser?.email ?? authUsers.find((u) => u.id === user.id)?.email
-    return { ...user, email }
+    return user
   }
 
-  // Interactive: list all users
-  const allUsers = await db.select().from(users)
-  const authUsers = await getAuthUsers()
-
-  if (allUsers.length === 0) {
+  if (authUsers.length === 0) {
     console.error('No users found')
     process.exit(1)
   }
 
-  const choices = allUsers.map((u) => {
-    const email = authUsers.find((a) => a.id === u.id)?.email ?? 'unknown'
-    return {
-      name: `${u.name} (${email}) [${u.role}]`,
-      value: { ...u, email },
-    }
-  })
+  const choices = authUsers.map((u) => ({
+    name: `${u.email} [${(u.app_metadata?.role as string) ?? 'no role'}]`,
+    value: u,
+  }))
 
-  return await select({
-    message: 'Select a user:',
-    choices,
-  })
+  return await select({ message: 'Select a user:', choices })
 }
 
 async function resolveRole(role?: string, currentRole?: string) {
   if (role) {
-    if (!roles.includes(role as typeof roles[number])) {
-      console.error(`Invalid role: ${role}. Valid roles: ${roles.join(', ')}`)
+    if (!ROLES.includes(role as Role)) {
+      console.error(`Invalid role: ${role}. Valid roles: ${ROLES.join(', ')}`)
       process.exit(1)
     }
-    return role as typeof roles[number]
+    return role as Role
   }
 
   return await select({
     message: 'Select new role:',
-    choices: roles.map((r) => ({
+    choices: ROLES.map((r) => ({
       name: r === currentRole ? `${r} (current)` : r,
       value: r,
     })),
@@ -87,25 +69,29 @@ async function resolveRole(role?: string, currentRole?: string) {
 
 program
   .option('-u, --user <emailOrId>', 'User email or ID')
-  .option('-r, --role <role>', `New role (${roles.join(', ')})`)
+  .option('-r, --role <role>', `New role (${ROLES.join(', ')})`)
   .action(async (options) => {
     try {
       const user = await resolveUser(options.user)
-      console.log(`\nSelected user: ${user.name} (${user.email}) [current role: ${user.role}]`)
+      const currentRole = (user.app_metadata?.role as string) ?? 'none'
+      console.log(`\nSelected user: ${user.email} [current role: ${currentRole}]`)
 
-      const newRole = await resolveRole(options.role, user.role)
+      const newRole = await resolveRole(options.role, currentRole)
 
-      if (newRole === user.role) {
+      if (newRole === currentRole) {
         console.log('Role is already set. No changes made.')
         process.exit(0)
       }
 
-      await db
-        .update(users)
-        .set({ role: newRole, updatedAt: new Date() })
-        .where(eq(users.id, user.id))
+      // app_metadata を更新（信頼源）
+      await supabase.auth.admin.updateUserById(user.id, {
+        app_metadata: { role: newRole },
+      })
 
-      console.log(`Updated role: ${user.role} -> ${newRole}`)
+      // DB キャッシュも更新
+      await db.update(users).set({ role: newRole, updatedAt: new Date() }).where(eq(users.id, user.id))
+
+      console.log(`Updated role: ${currentRole} -> ${newRole}`)
     } catch (error) {
       console.error('Error:', error)
       process.exit(1)
