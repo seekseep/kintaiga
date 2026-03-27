@@ -1,18 +1,19 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useImperativeHandle, forwardRef } from 'react'
 import { useActivities } from '@/hooks/api/activities'
 import { useProjectConfig } from '@/hooks/api/projects'
 import { ElapsedTime } from '@/components/elapsed-time'
-import { formatMinutes } from '@/domain/time'
-import { filterActivitiesByMonth, calculateTotalMinutes } from '@/domain/aggregation'
+import { formatMinutes, formatHours } from '@/domain/time'
+import { filterActivitiesByMonth, calculateTotalMinutes, getMonthRange } from '@/domain/aggregation'
 import { canControlActivity } from '@/domain/authorization'
 import { useAssignments } from '@/hooks/api/assignments'
 import { StartActivityDialog } from '@/components/start-activity-dialog'
 import { EndActivityDialog } from '@/components/end-activity-dialog'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
-import { Square, Play, RefreshCw } from 'lucide-react'
+import { Square, Play } from 'lucide-react'
+import { format } from 'date-fns'
 
 type Props = {
   userId: string
@@ -20,9 +21,14 @@ type Props = {
   projectName: string
 }
 
-export function ActivityControl({ userId, projectId, projectName }: Props) {
+export type ActivityControlHandle = {
+  refetch: () => void
+  isFetching: boolean
+}
+
+export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function ActivityControl({ userId, projectId, projectName }, ref) {
   const { user: currentUser } = useAuth()
-  const canControl = currentUser ? canControlActivity(currentUser.role, currentUser.id, userId) : false
+  const canControl = currentUser ? canControlActivity({ user: currentUser }, { userId }) : false
 
   const [startOpen, setStartOpen] = useState(false)
   const [endOpen, setEndOpen] = useState(false)
@@ -39,6 +45,11 @@ export function ActivityControl({ userId, projectId, projectName }: Props) {
 
   const isFetchingActivities = isFetchingOngoing || isFetchingAll
   const refetchActivities = () => { refetchOngoing(); refetchAll() }
+
+  useImperativeHandle(ref, () => ({
+    refetch: refetchActivities,
+    isFetching: isFetchingActivities,
+  }), [isFetchingActivities])
 
   const ongoingActivity = ongoingData?.items[0] ?? null
   const allActivities = allData?.items ?? []
@@ -65,32 +76,55 @@ export function ActivityControl({ userId, projectId, projectName }: Props) {
     return () => clearInterval(id)
   }, [ongoingActivity])
 
-  const periodLabel = config?.aggregationUnit === 'monthly'
-    ? `${new Date().getMonth() + 1}月`
+  const now = new Date()
+  const isMonthly = config?.aggregationUnit === 'monthly'
+  const periodDateLabel = isMonthly
+    ? (() => {
+        const { start, end } = getMonthRange(now)
+        return `${format(start, 'yyyy/MM/dd')} → ${format(end, 'yyyy/MM/dd')}`
+      })()
     : '全期間'
+
+  const totalHours = formatHours(totalMinutes)
+  const targetHours = targetMinutes != null ? formatHours(targetMinutes) : null
+  const isOver = targetMinutes != null && totalMinutes > targetMinutes
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span>
-          {periodLabel} {formatMinutes(totalMinutes)}
-          {' / '}
-          {targetMinutes != null ? formatMinutes(targetMinutes) : '--'}
-        </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); refetchActivities() }}
-          disabled={isFetchingActivities}
-        >
-          <RefreshCw className={`h-3 w-3 ${isFetchingActivities ? 'animate-spin' : ''}`} />
-        </Button>
+      {/* 集計期間 */}
+      <div className="text-xs text-muted-foreground">
+        {periodDateLabel}
       </div>
 
+      {/* ゲージ + 時間 */}
       <div className="flex items-center gap-2">
+        {targetMinutes != null && targetMinutes > 0 && (
+          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${isOver ? 'bg-destructive' : 'bg-primary'}`}
+              style={{ width: `${Math.min((totalMinutes / targetMinutes) * 100, 100)}%` }}
+            />
+          </div>
+        )}
+        <div className="flex items-baseline gap-0.5 shrink-0">
+          <span className={`text-sm font-semibold tabular-nums ${isOver ? 'text-destructive' : ''}`}>
+            {totalHours}
+          </span>
+          <span className="text-sm text-muted-foreground">/</span>
+          <span className="text-sm tabular-nums">{targetHours ?? '--'}</span>
+          <span className="text-xs text-muted-foreground">時間</span>
+        </div>
+      </div>
+
+      {/* 進行中の稼働 + 操作ボタン */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {ongoingActivity && (
+            <span>{format(new Date(ongoingActivity.startedAt), 'HH:mm')} ~ 現在</span>
+          )}
+        </div>
         {ongoingActivity && (
-          <span className="text-sm text-foreground font-medium">
+          <span className="text-sm font-medium tabular-nums">
             <ElapsedTime startedAt={ongoingActivity.startedAt} endedAt={null} />
           </span>
         )}
@@ -147,4 +181,4 @@ export function ActivityControl({ userId, projectId, projectName }: Props) {
       )}
     </div>
   )
-}
+})

@@ -17,9 +17,3 @@ export const UpdatePasswordParametersSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: z.string().min(8),
 })
-
-export type RegisterMeBody = z.infer<typeof CreateProfileParametersSchema>
-export type UpdateMeBody = z.infer<typeof UpdateProfileParametersSchema>
-export type UploadIconBody = z.infer<typeof UpdateIconParametersSchema>
-export type UpdateEmailBody = z.infer<typeof UpdateEmailParametersSchema>
-export type UpdatePasswordBody = z.infer<typeof UpdatePasswordParametersSchema>

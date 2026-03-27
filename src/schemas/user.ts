@@ -33,6 +33,3 @@ export const UpdateUserParametersSchema = z.object({
   name: z.string().min(1).optional(),
   role: RoleSchema.optional(),
 })
-
-export type CreateUserBody = z.infer<typeof CreateUserParametersSchema>
-export type UpdateUserBody = z.infer<typeof UpdateUserParametersSchema>

@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { users } from '@db/schema'
-import { InternalError, NotFoundError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
 import type { DbOrTx, Executor } from '../../types'
 
 const GetUserParametersSchema = z.object({
@@ -17,7 +17,7 @@ export async function getUser(
   input: GetUserInput,
 ) {
   const result = GetUserParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies

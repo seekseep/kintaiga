@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 import { users } from '@db/schema'
-import { InternalError, ConflictError } from '@/lib/api-server/errors'
+import { ValidationError, ConflictError } from '@/lib/api-server/errors'
 import type { DbOrTx, Executor } from '../../types'
 
 const CreateProfileParametersSchema = z.object({
@@ -17,7 +17,7 @@ export async function createProfile(
   input: CreateProfileInput,
 ) {
   const result = CreateProfileParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   if (executor) throw new ConflictError('Already registered')

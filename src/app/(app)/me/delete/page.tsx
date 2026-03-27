@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useWithdrawMe } from '@/hooks/api/me'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,7 +39,7 @@ export default function DeleteAccountPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/me">マイページ</BreadcrumbLink>
+            <BreadcrumbLink asChild><Link href="/me">マイページ</Link></BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

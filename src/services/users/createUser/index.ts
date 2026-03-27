@@ -1,6 +1,7 @@
 import { z } from 'zod/v4'
 import { users } from '@db/schema'
-import { InternalError, ConflictError } from '@/lib/api-server/errors'
+import { InternalError, ValidationError, ConflictError, ForbiddenError } from '@/lib/api-server/errors'
+import { isAdminUser } from '@/domain/authorization'
 import { RoleSchema } from '@/schemas/_helpers'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DbOrTx, Executor } from '../../types'
@@ -17,11 +18,12 @@ export type CreateUserParameters = z.output<typeof CreateUserParametersSchema>
 
 export async function createUser(
   dependencies: { db: DbOrTx; supabase: SupabaseClient },
-  _executor: Executor,
+  executor: Executor,
   input: CreateUserInput,
 ) {
   const result = CreateUserParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
+  if (!isAdminUser(executor)) throw new ForbiddenError()
   const parameters = result.data
 
   const { db, supabase } = dependencies
@@ -29,6 +31,7 @@ export async function createUser(
     email: parameters.email,
     password: parameters.password,
     email_confirm: true,
+    app_metadata: { role: parameters.role },
   })
 
   if (error) {

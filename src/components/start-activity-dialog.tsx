@@ -1,6 +1,6 @@
 'use client'
 
-import { Formik } from 'formik'
+import { Formik, useFormikContext } from 'formik'
 import { useCreateActivity } from '@/hooks/api/activities'
 import { useProjectConfig } from '@/hooks/api/projects'
 import { toast } from 'sonner'
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { roundDate } from '@/domain/time'
 import { toLocalDatetimeString } from '@/domain/date-utils'
+import type { Assignment } from '@/schemas'
 
 type Props = {
   projectId: string
@@ -22,9 +23,31 @@ type Props = {
   userId?: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  assignments?: Assignment[]
 }
 
-export function StartActivityDialog({ projectId, projectName, userId, open, onOpenChange }: Props) {
+function isWithinAssignments(dateStr: string, assignments: Assignment[]): boolean {
+  if (assignments.length === 0) return true
+  const date = new Date(dateStr)
+  return assignments.some(a => {
+    const start = new Date(a.startedAt)
+    const end = a.endedAt ? new Date(a.endedAt) : null
+    return date >= start && (end === null || date <= end)
+  })
+}
+
+function AssignmentWarning({ assignments }: { assignments: Assignment[] }) {
+  const { values } = useFormikContext<{ startedAt: string }>()
+  if (!values.startedAt || assignments.length === 0) return null
+  if (isWithinAssignments(values.startedAt, assignments)) return null
+  return (
+    <p className="text-sm text-destructive">
+      この日時は配属期間外です
+    </p>
+  )
+}
+
+export function StartActivityDialog({ projectId, projectName, userId, open, onOpenChange, assignments = [] }: Props) {
   const { data: config } = useProjectConfig(projectId)
 
   function getRoundedNow() {
@@ -72,6 +95,7 @@ export function StartActivityDialog({ projectId, projectName, userId, open, onOp
             </DialogHeader>
             <div className="space-y-4 py-2">
               <FormDateTimePicker name="startedAt" label="開始日時" minuteStep={config?.roundingInterval} />
+              {assignments.length > 0 && <AssignmentWarning assignments={assignments} />}
               <FormTextarea name="note" label="メモ（任意）" />
             </div>
             <DialogFooter>

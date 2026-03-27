@@ -6,8 +6,8 @@ import {
   uploadMyIcon,
   withdrawMe,
   type RegisterMeBody,
-  type UpdateMeBody,
-  type UploadIconBody,
+  type UpdateProfileInput,
+  type UpdateIconInput,
 } from '@/api/me'
 import { meKeys } from '@/lib/query-keys'
 
@@ -34,7 +34,7 @@ export function useRegisterMe() {
 export function useUpdateMe() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: UpdateMeBody) => updateMe(body),
+    mutationFn: (body: UpdateProfileInput) => updateMe(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: meKeys.all })
     },
@@ -44,7 +44,7 @@ export function useUpdateMe() {
 export function useUploadMyIcon() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: UploadIconBody) => uploadMyIcon(body),
+    mutationFn: (body: UpdateIconInput) => uploadMyIcon(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: meKeys.all })
     },

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { getConfiguration } from './'
-import { createAdminUser, createMockDb } from '../../testing/helpers'
+import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const existingConfig = {
@@ -15,7 +15,13 @@ const existingConfig = {
 describe('getConfiguration', () => {
   it('設定が存在する場合はそのまま返す', async () => {
     const db = createMockDb({ selectResult: [existingConfig] })
-    const result = await getConfiguration({ db: db as unknown as DbOrTx }, { type: 'user', user: createAdminUser() })
+    const result = await getConfiguration({ db: db as unknown as DbOrTx }, createAdminExecutor())
+    expect(result).toMatchObject({ roundingInterval: 15 })
+  })
+
+  it('一般ユーザーでも設定を取得できる', async () => {
+    const db = createMockDb({ selectResult: [existingConfig] })
+    const result = await getConfiguration({ db: db as unknown as DbOrTx }, createGeneralExecutor())
     expect(result).toMatchObject({ roundingInterval: 15 })
   })
 
@@ -36,7 +42,7 @@ describe('getConfiguration', () => {
       select: () => selectChain,
       insert: () => insertChain,
     }
-    const result = await getConfiguration({ db: db as unknown as DbOrTx }, { type: 'user', user: createAdminUser() })
+    const result = await getConfiguration({ db: db as unknown as DbOrTx }, createAdminExecutor())
     expect(result).toMatchObject({ id: 'new-config' })
   })
 })

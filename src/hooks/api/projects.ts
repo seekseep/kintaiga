@@ -7,7 +7,7 @@ import {
   createProject,
   updateProject,
   deleteProject,
-  type CreateProjectBody,
+  type CreateProjectInput,
   type UpdateProjectBody,
   type GetUserProjectStatementsParams,
 } from '@/api/projects'
@@ -60,7 +60,7 @@ export function useProjectMembers(id: string, options?: { enabled?: boolean }) {
 export function useCreateProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateProjectBody) => createProject(body),
+    mutationFn: (body: CreateProjectInput) => createProject(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.statements() })
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() })

@@ -12,10 +12,11 @@ describe('resolveProjectConfig', () => {
     roundingInterval: 15,
     roundingDirection: 'ceil' as const,
     aggregationUnit: 'monthly' as const,
+    aggregationPeriod: 1,
   }
 
   it('プロジェクト設定が全て null ならグローバル設定を返す', () => {
-    const project = { roundingInterval: null, roundingDirection: null, aggregationUnit: null }
+    const project = { roundingInterval: null, roundingDirection: null, aggregationUnit: null, aggregationPeriod: null }
     expect(resolveProjectConfig(globalConfig, project)).toEqual(globalConfig)
   })
 
@@ -24,16 +25,18 @@ describe('resolveProjectConfig', () => {
       roundingInterval: 30,
       roundingDirection: 'floor' as const,
       aggregationUnit: 'none' as const,
+      aggregationPeriod: 2,
     }
     expect(resolveProjectConfig(globalConfig, project)).toEqual(project)
   })
 
   it('部分的にオーバーライドできる', () => {
-    const project = { roundingInterval: 5, roundingDirection: null, aggregationUnit: null }
+    const project = { roundingInterval: 5, roundingDirection: null, aggregationUnit: null, aggregationPeriod: null }
     expect(resolveProjectConfig(globalConfig, project)).toEqual({
       roundingInterval: 5,
       roundingDirection: 'ceil',
       aggregationUnit: 'monthly',
+      aggregationPeriod: 1,
     })
   })
 })

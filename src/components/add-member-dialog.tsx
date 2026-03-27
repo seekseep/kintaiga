@@ -42,7 +42,7 @@ export function AddMemberDialog({ projectId, unassignedUsers, open, onOpenChange
       initialValues={{ userId: '' }}
       validate={zodValidate(schema)}
       onSubmit={(values, { resetForm }) => {
-        mutation.mutate({ projectId, userId: values.userId }, {
+        mutation.mutate({ projectId, userId: values.userId, startedAt: new Date().toISOString() }, {
           onSuccess: () => {
             toast.success('メンバーを追加しました')
             onOpenChange(false)

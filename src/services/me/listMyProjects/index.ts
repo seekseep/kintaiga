@@ -1,12 +1,13 @@
 import { z } from 'zod/v4'
-import { eq, count } from 'drizzle-orm'
+import { eq, count as countFn } from 'drizzle-orm'
 import { assignments, projects } from '@db/schema'
-import { InternalError } from '@/lib/api-server/errors'
+import { ValidationError } from '@/lib/api-server/errors'
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import type { DbOrTx, Executor } from '../../types'
 
 const ListMyProjectsParametersSchema = z.object({
-  limit: z.number(),
-  offset: z.number(),
+  limit: z.number().optional().default(DEFAULT_LIMIT),
+  offset: z.number().optional().default(DEFAULT_OFFSET),
 })
 
 export type ListMyProjectsInput = z.input<typeof ListMyProjectsParametersSchema>
@@ -18,13 +19,11 @@ export async function listMyProjects(
   input: ListMyProjectsInput,
 ) {
   const result = ListMyProjectsParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies
-  const { user } = executor
-
-  const [items, [{ total }]] = await Promise.all([
+  const [items, [{ count }]] = await Promise.all([
     db
       .select({
         id: projects.id,
@@ -35,14 +34,14 @@ export async function listMyProjects(
       })
       .from(assignments)
       .innerJoin(projects, eq(assignments.projectId, projects.id))
-      .where(eq(assignments.userId, user.id))
+      .where(eq(assignments.userId, executor.id))
       .limit(parameters.limit)
       .offset(parameters.offset),
     db
-      .select({ total: count() })
+      .select({ count: countFn() })
       .from(assignments)
-      .where(eq(assignments.userId, user.id)),
+      .where(eq(assignments.userId, executor.id)),
   ])
 
-  return { items, total }
+  return { items, count, limit: parameters.limit, offset: parameters.offset }
 }

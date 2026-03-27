@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { users } from '@db/schema'
-import { InternalError } from '@/lib/api-server/errors'
+import { InternalError, ValidationError } from '@/lib/api-server/errors'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DbOrTx, Executor } from '../../types'
 
@@ -18,15 +18,14 @@ export async function updateIcon(
   input: UpdateIconInput,
 ) {
   const result = UpdateIconParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db, supabase } = dependencies
-  const { user } = executor
   const match = parameters.icon.match(/^data:image\/(\w+);base64,(.+)$/)!
   const ext = match[1]
   const buffer = Buffer.from(match[2], 'base64')
-  const path = `${user.id}/icon.${ext}`
+  const path = `${executor.id}/icon.${ext}`
 
   const { error: uploadError } = await supabase.storage
     .from('icons')
@@ -41,7 +40,7 @@ export async function updateIcon(
 
   const [updated] = await db.update(users)
     .set({ iconUrl: publicUrl, updatedAt: new Date() })
-    .where(eq(users.id, user.id))
+    .where(eq(users.id, executor.id))
     .returning()
 
   return updated

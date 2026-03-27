@@ -33,8 +33,8 @@ export type ProjectActivity = z.infer<typeof ProjectActivitySchema>
 
 // Request body schemas
 export const CreateActivityParametersSchema = z.object({
-  projectId: z.string().uuid(),
-  userId: z.string().uuid().optional(),
+  projectId: z.uuid(),
+  userId: z.uuid().optional(),
   startedAt: z.string().optional(),
   note: z.string().nullable().optional(),
 })
@@ -43,6 +43,3 @@ export const UpdateActivityParametersSchema = z.object({
   endedAt: z.string().nullable().optional(),
   note: z.string().nullable().optional(),
 })
-
-export type CreateActivityBody = z.infer<typeof CreateActivityParametersSchema>
-export type UpdateActivityBody = z.infer<typeof UpdateActivityParametersSchema>

@@ -5,7 +5,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  type CreateUserBody,
+  type CreateUserInput,
   type UpdateUserBody,
 } from '@/api/users'
 import type { PaginationParams } from '@/api/types'
@@ -30,7 +30,7 @@ export function useUser(id: string, options?: { enabled?: boolean }) {
 export function useCreateUser() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateUserBody) => createUser(body),
+    mutationFn: (body: CreateUserInput) => createUser(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })
     },

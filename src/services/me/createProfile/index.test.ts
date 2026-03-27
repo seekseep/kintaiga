@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { ConflictError } from '@/lib/api-server/errors'
+import { ConflictError, ValidationError } from '@/lib/api-server/errors'
 import { createProfile } from './'
-import { createGeneralUser, createMockDb } from '../../testing/helpers'
+import { createGeneralExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 describe('createProfile', () => {
@@ -15,7 +15,14 @@ describe('createProfile', () => {
   it('既に登録済みの場合は ConflictError', async () => {
     const db = createMockDb()
     await expect(
-      createProfile({ db: db as unknown as DbOrTx }, { type: 'user', user: createGeneralUser() }, { sub: 'sub-id', name: 'Duplicate' })
+      createProfile({ db: db as unknown as DbOrTx }, createGeneralExecutor(), { sub: 'sub-id', name: 'Duplicate' })
     ).rejects.toThrow(ConflictError)
+  })
+
+  it('不正なパラメータは ValidationError', async () => {
+    const db = createMockDb()
+    await expect(
+      createProfile({ db: db as unknown as DbOrTx }, null, { sub: 123 } as unknown as { sub: string; name: string })
+    ).rejects.toThrow(ValidationError)
   })
 })

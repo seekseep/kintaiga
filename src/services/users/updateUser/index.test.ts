@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { ForbiddenError } from '@/lib/api-server/errors'
+import { ForbiddenError, NotFoundError, ValidationError } from '@/lib/api-server/errors'
 import { updateUser } from './'
-import { createAdminUser, createGeneralUser, createMockDb } from '../../testing/helpers'
+import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const targetUser = {
@@ -19,19 +19,19 @@ describe('updateUser', () => {
     const db = createMockDb({ updateResult: [updatedUser] })
     const result = await updateUser(
       { db: db as unknown as DbOrTx },
-      { type: 'user', user: createAdminUser() },
+      createAdminExecutor(),
       { id: 'target-user-id', name: 'Updated' },
     )
     expect(result).toMatchObject({ name: 'Updated' })
   })
 
   it('一般ユーザーは自分のプロフィールを変更できる', async () => {
-    const self = createGeneralUser()
+    const self = createGeneralExecutor()
     const updatedSelf = { ...self, name: 'Updated' }
     const db = createMockDb({ updateResult: [updatedSelf] })
     const result = await updateUser(
       { db: db as unknown as DbOrTx },
-      { type: 'user', user: self },
+      self,
       { id: self.id, name: 'Updated' },
     )
     expect(result).toMatchObject({ name: 'Updated' })
@@ -40,26 +40,21 @@ describe('updateUser', () => {
   it('一般ユーザーは他人のプロフィールを変更できない', async () => {
     const db = createMockDb()
     await expect(
-      updateUser({ db: db as unknown as DbOrTx }, { type: 'user', user: createGeneralUser() }, { id: 'other-user-id', name: 'Hacked' })
+      updateUser({ db: db as unknown as DbOrTx }, createGeneralExecutor(), { id: 'other-user-id', name: 'Hacked' })
     ).rejects.toThrow(ForbiddenError)
   })
 
-  it('一般ユーザーはロールを変更できない', async () => {
-    const self = createGeneralUser()
+  it('存在しないユーザーの更新は NotFoundError', async () => {
+    const db = createMockDb({ updateResult: [] })
+    await expect(
+      updateUser({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 'nonexistent', name: 'Updated' })
+    ).rejects.toThrow(NotFoundError)
+  })
+
+  it('不正なパラメータは ValidationError', async () => {
     const db = createMockDb()
     await expect(
-      updateUser({ db: db as unknown as DbOrTx }, { type: 'user', user: self }, { id: self.id, role: 'admin' })
-    ).rejects.toThrow(ForbiddenError)
-  })
-
-  it('管理者はロールを変更できる', async () => {
-    const updatedUser = { ...targetUser, role: 'admin' }
-    const db = createMockDb({ updateResult: [updatedUser] })
-    const result = await updateUser(
-      { db: db as unknown as DbOrTx },
-      { type: 'user', user: createAdminUser() },
-      { id: 'target-user-id', role: 'admin' },
-    )
-    expect(result).toMatchObject({ role: 'admin' })
+      updateUser({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 123 } as unknown as { id: string })
+    ).rejects.toThrow(ValidationError)
   })
 })

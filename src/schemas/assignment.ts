@@ -25,15 +25,13 @@ export type Assignment = z.infer<typeof AssignmentSchema>
 
 // Request body schemas
 export const CreateAssignmentParametersSchema = z.object({
-  projectId: z.string().uuid(),
-  userId: z.string().uuid(),
-  startedAt: z.string().optional(),
+  projectId: z.uuid(),
+  userId: z.uuid(),
+  startedAt: z.iso.datetime({ local: true }).optional(),
   targetMinutes: z.number().int().min(0).optional(),
 })
 export const UpdateAssignmentParametersSchema = z.object({
-  endedAt: z.string().nullable().optional(),
+  startedAt: z.iso.datetime({ local: true }).optional(),
+  endedAt: z.iso.datetime({ local: true }).nullable().optional(),
   targetMinutes: z.number().int().min(0).nullable().optional(),
 })
-
-export type CreateAssignmentBody = z.infer<typeof CreateAssignmentParametersSchema>
-export type UpdateAssignmentBody = z.infer<typeof UpdateAssignmentParametersSchema>

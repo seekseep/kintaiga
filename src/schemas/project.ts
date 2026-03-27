@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 import { RoundingDirectionSchema, AggregationUnitSchema } from './_helpers'
-import { ROUNDING_INTERVALS } from '@/domain/config'
+import { ROUNDING_INTERVALS } from '@/domain/configuration'
 
 export const ProjectRecordSchema = z.object({
   id: z.string(),
@@ -9,6 +9,7 @@ export const ProjectRecordSchema = z.object({
   roundingInterval: z.number().nullable(),
   roundingDirection: RoundingDirectionSchema.nullable(),
   aggregationUnit: AggregationUnitSchema.nullable(),
+  aggregationPeriod: z.number().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
@@ -20,6 +21,7 @@ export const ProjectSchema = z.object({
   roundingInterval: z.number().nullable(),
   roundingDirection: RoundingDirectionSchema.nullable(),
   aggregationUnit: AggregationUnitSchema.nullable(),
+  aggregationPeriod: z.number().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 })
@@ -47,7 +49,5 @@ export const UpdateProjectParametersSchema = z.object({
   roundingInterval: z.number().refine(v => (ROUNDING_INTERVALS as readonly number[]).includes(v)).nullable().optional(),
   roundingDirection: RoundingDirectionSchema.nullable().optional(),
   aggregationUnit: AggregationUnitSchema.nullable().optional(),
+  aggregationPeriod: z.number().int().min(1).nullable().optional(),
 })
-
-export type CreateProjectBody = z.infer<typeof CreateProjectParametersSchema>
-export type UpdateProjectBody = z.infer<typeof UpdateProjectParametersSchema>

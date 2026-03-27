@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getConfiguration,
   updateConfiguration,
-  type UpdateConfigurationBody,
+  type UpdateConfigurationInput,
 } from '@/api/configurations'
 import { configurationKeys, projectKeys } from '@/lib/query-keys'
 
@@ -19,7 +19,7 @@ export function useConfiguration(options?: { enabled?: boolean }) {
 export function useUpdateConfiguration() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: UpdateConfigurationBody) => updateConfiguration(body),
+    mutationFn: (body: UpdateConfigurationInput) => updateConfiguration(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: configurationKeys.all })
       queryClient.invalidateQueries({ queryKey: projectKeys.all })

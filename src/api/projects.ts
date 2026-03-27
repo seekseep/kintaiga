@@ -1,8 +1,13 @@
 import { api } from '@/lib/api'
-import type { PaginatedResponse, Project, ProjectConfig, ProjectMember, UserProjectStatement, CreateProjectBody, UpdateProjectBody } from '@/schemas'
+import type { PaginatedResponse, Project, ProjectConfig, ProjectMember, UserProjectStatement } from '@/schemas'
 import type { ListUserProjectStatementsInput } from '@/services/projects/listProjects'
+import type { CreateProjectInput } from '@/services/projects/createProject'
+import type { UpdateProjectInput } from '@/services/projects/updateProject'
 
-export type { Project, ProjectConfig, ProjectMember, UserProjectStatement, CreateProjectBody, UpdateProjectBody } from '@/schemas'
+export type { Project, ProjectConfig, ProjectMember, UserProjectStatement } from '@/schemas'
+export type { CreateProjectInput } from '@/services/projects/createProject'
+export type { UpdateProjectInput } from '@/services/projects/updateProject'
+export type UpdateProjectBody = Omit<UpdateProjectInput, 'id'>
 
 export type GetUserProjectStatementsParams = Partial<ListUserProjectStatementsInput>
 
@@ -20,7 +25,7 @@ export async function getProject(id: string) {
   return r.data
 }
 
-export async function createProject(body: CreateProjectBody) {
+export async function createProject(body: CreateProjectInput) {
   const r = await api.post<Project>('/projects', body)
   return r.data
 }

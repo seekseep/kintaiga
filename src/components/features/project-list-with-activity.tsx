@@ -1,14 +1,63 @@
 'use client'
 
+import { useRef, useCallback, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
-import { ActivityControl } from '@/components/activity-control'
+import { Button } from '@/components/ui/button'
+import { ActivityControl, type ActivityControlHandle } from '@/components/activity-control'
+import { RefreshCw } from 'lucide-react'
 import type { UserProjectStatement } from '@/schemas'
 
 type Props = {
   statements: UserProjectStatement[]
   currentUserId: string
   emptyMessage: string
+}
+
+function ProjectCard({ statement, currentUserId }: { statement: UserProjectStatement; currentUserId: string }) {
+  const activityRef = useRef<ActivityControlHandle>(null)
+  const [isFetching, setIsFetching] = useState(false)
+
+  const handleRefetch = useCallback(() => {
+    activityRef.current?.refetch()
+    setIsFetching(true)
+    setTimeout(() => setIsFetching(false), 1000)
+  }, [])
+
+  return (
+    <Card>
+      <CardContent className="pt-4 pb-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <Link href={`/projects/${statement.id}`} className="hover:underline">
+            <CardTitle className="text-base">{statement.name}</CardTitle>
+          </Link>
+          {statement.membershipStatus === 'joined' && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRefetch() }}
+              disabled={isFetching}
+            >
+              <RefreshCw className={`h-3 w-3 ${isFetching ? 'animate-spin' : ''}`} />
+            </Button>
+          )}
+        </div>
+        {statement.membershipStatus === 'joined' ? (
+          <ActivityControl
+            ref={activityRef}
+            userId={currentUserId}
+            projectId={statement.id}
+            projectName={statement.name}
+          />
+        ) : statement.membershipStatus === 'suspended' ? (
+          <span className="text-sm text-muted-foreground">休止中</span>
+        ) : (
+          <span className="text-sm text-muted-foreground">未参加</span>
+        )}
+      </CardContent>
+    </Card>
+  )
 }
 
 export function ProjectListWithActivity({ statements, currentUserId, emptyMessage }: Props) {
@@ -23,26 +72,9 @@ export function ProjectListWithActivity({ statements, currentUserId, emptyMessag
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))' }}>
       {statements.map(statement => (
-        <Card key={statement.id}>
-          <CardContent className="pt-4 pb-3 space-y-2">
-            <Link href={`/projects/${statement.id}`} className="hover:underline">
-              <CardTitle className="text-base">{statement.name}</CardTitle>
-            </Link>
-            {statement.membershipStatus === 'joined' ? (
-              <ActivityControl
-                userId={currentUserId}
-                projectId={statement.id}
-                projectName={statement.name}
-              />
-            ) : statement.membershipStatus === 'suspended' ? (
-              <span className="text-sm text-muted-foreground">休止中</span>
-            ) : (
-              <span className="text-sm text-muted-foreground">未参加</span>
-            )}
-          </CardContent>
-        </Card>
+        <ProjectCard key={statement.id} statement={statement} currentUserId={currentUserId} />
       ))}
     </div>
   )

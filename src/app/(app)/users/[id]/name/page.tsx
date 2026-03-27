@@ -1,61 +1,60 @@
 'use client'
 
-import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { Formik } from 'formik'
-import { useProject, useUpdateProject } from '@/hooks/api/projects'
+import { useUser, useUpdateUser } from '@/hooks/api/users'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
-import { FormTextarea } from '@/components/form'
+import { FormInput } from '@/components/form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { z } from 'zod/v4'
 
-const schema = z.object({ description: z.string().nullable().optional() })
+const schema = z.object({ name: z.string().min(1) })
 
-export default function EditProjectDescriptionPage() {
-  const router = useRouter()
+export default function EditUserNamePage() {
   const { id } = useParams<{ id: string }>()
+  const router = useRouter()
+  const { data: user, isLoading } = useUser(id)
+  const mutation = useUpdateUser()
 
-  const { data: project, isLoading } = useProject(id)
-
-  const mutation = useUpdateProject()
-
-  if (isLoading) return <Skeleton className="h-64" />
+  if (isLoading) return <Skeleton className="mx-auto h-64 max-w-lg" />
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/">プロジェクト</BreadcrumbLink>
+            <BreadcrumbLink asChild><Link href="/users">ユーザー</Link></BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href={`/projects/${id}`}>{project?.name}</BreadcrumbLink>
+            <BreadcrumbLink asChild><Link href={`/users/${id}`}>{user?.name}</Link></BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>説明編集</BreadcrumbPage>
+            <BreadcrumbPage>名前編集</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <Card>
         <CardHeader>
-          <CardTitle>説明の変更</CardTitle>
+          <CardTitle>名前の変更</CardTitle>
         </CardHeader>
         <CardContent>
           <Formik
             enableReinitialize
-            initialValues={{ description: project?.description ?? '' }}
+            initialValues={{ name: user?.name ?? '' }}
             validate={zodValidate(schema)}
             onSubmit={(values) => mutation.mutate(
-              { id, body: { description: values.description || undefined } },
+              { id, body: values },
               {
                 onSuccess: () => {
-                  toast.success('説明を変更しました')
-                  router.push(`/projects/${id}`)
+                  toast.success('名前を変更しました')
+                  router.push(`/users/${id}`)
                 },
                 onError: () => toast.error('変更に失敗しました'),
               }
@@ -63,7 +62,7 @@ export default function EditProjectDescriptionPage() {
           >
             {({ handleSubmit }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
-                <FormTextarea name="description" label="説明" rows={4} />
+                <FormInput name="name" label="名前" />
                 <Button type="submit" className="w-full" disabled={mutation.isPending}>
                   {mutation.isPending ? '変更中...' : '変更する'}
                 </Button>

@@ -53,17 +53,19 @@ function ConfigurationForm({ config }: { config: Configuration }) {
                 roundingInterval: String(config.roundingInterval),
                 roundingDirection: config.roundingDirection,
                 aggregationUnit: config.aggregationUnit,
+                aggregationPeriod: String(config.aggregationPeriod),
               }}
               onSubmit={(values) => mutation.mutate({
                 roundingInterval: Number(values.roundingInterval),
                 roundingDirection: values.roundingDirection as 'ceil' | 'floor',
-                aggregationUnit: values.aggregationUnit as 'monthly' | 'none',
+                aggregationUnit: values.aggregationUnit as 'weekly' | 'monthly' | 'none',
+                aggregationPeriod: Number(values.aggregationPeriod),
               }, {
                 onSuccess: () => toast.success('設定を更新しました'),
                 onError: () => toast.error('更新に失敗しました'),
               })}
             >
-              {({ handleSubmit }) => (
+              {({ handleSubmit, values }) => (
                 <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
                   <FormSelect
                     name="roundingInterval"
@@ -85,10 +87,22 @@ function ConfigurationForm({ config }: { config: Configuration }) {
                     label="集計単位"
                     placeholder="選択してください"
                     options={[
-                      { value: 'monthly', label: '1ヶ月' },
+                      { value: 'weekly', label: '週' },
+                      { value: 'monthly', label: '月' },
                       { value: 'none', label: 'なし' },
                     ]}
                   />
+                  {values.aggregationUnit !== 'none' && (
+                    <FormSelect
+                      name="aggregationPeriod"
+                      label="集計期間"
+                      placeholder="選択してください"
+                      options={Array.from({ length: 12 }, (_, i) => ({
+                        value: String(i + 1),
+                        label: `${i + 1}${values.aggregationUnit === 'weekly' ? '週' : 'ヶ月'}`,
+                      }))}
+                    />
+                  )}
                   <Button type="submit" className="w-full" disabled={mutation.isPending}>
                     {mutation.isPending ? '保存中...' : '保存'}
                   </Button>

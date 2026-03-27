@@ -1,7 +1,8 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { users, activities, assignments, deletedUsers, deletedActivities, deletedAssignments } from '@db/schema'
-import { InternalError, NotFoundError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { canModifyUser } from '@/domain/authorization'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Executor } from '../../types'
 
@@ -19,11 +20,13 @@ export async function archiveAndDeleteUser(
   input: ArchiveAndDeleteUserInput,
 ) {
   const result = ArchiveAndDeleteUserParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
+  if (!canModifyUser(executor.role, executor.id, parameters.targetId)) throw new ForbiddenError()
+
   const { db, supabase } = dependencies
-  const deletedBy = executor.user.id
+  const deletedBy = executor.id
 
   await db.transaction(async (tx) => {
     const targetRows = await tx.select().from(users).where(eq(users.id, parameters.targetId))

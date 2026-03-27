@@ -1,15 +1,15 @@
 import { z } from 'zod/v4'
 import { eq, and } from 'drizzle-orm'
 import { activities, assignments } from '@db/schema'
-import { InternalError, ForbiddenError, BadRequestError } from '@/lib/api-server/errors'
-import { isAdmin } from '@/domain/authorization'
-import { isValidDateString } from '@/domain/activity-rules'
+import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
+import { isAdminUser } from '@/domain/authorization'
 import type { DbOrTx, Executor } from '../../types'
 
 const CreateActivityParametersSchema = z.object({
   projectId: z.string(),
   userId: z.string().optional(),
-  startedAt: z.string().optional(),
+  startedAt: z.iso.datetime({ local: true }).default(() => new Date().toISOString()),
+  endedAt: z.iso.datetime({ local: true }).nullable().default(null),
   note: z.string().nullable().optional(),
 })
 
@@ -22,12 +22,11 @@ export async function createActivity(
   input: CreateActivityInput,
 ) {
   const result = CreateActivityParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies
-  const { user } = executor
-  const targetUserId = (isAdmin(user.role) && parameters.userId) ? parameters.userId : user.id
+  const targetUserId = (isAdminUser(executor) && parameters.userId) ? parameters.userId : executor.id
 
   const assignmentRows = await db.select().from(assignments)
     .where(and(
@@ -40,16 +39,12 @@ export async function createActivity(
     throw new ForbiddenError('User is not assigned to this project')
   }
 
-  const startedAt = parameters.startedAt ? new Date(parameters.startedAt) : new Date()
-
-  if (parameters.startedAt && !isValidDateString(parameters.startedAt)) {
-    throw new BadRequestError('Invalid startedAt')
-  }
-
+  const endedAt = parameters.endedAt ? new Date(parameters.endedAt) : null
   const [created] = await db.insert(activities).values({
     userId: targetUserId,
     projectId: parameters.projectId,
-    startedAt,
+    startedAt: new Date(parameters.startedAt),
+    endedAt: endedAt,
     note: parameters.note,
   }).returning()
 

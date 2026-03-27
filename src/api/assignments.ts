@@ -1,8 +1,13 @@
 import { api } from '@/lib/api'
-import type { PaginatedResponse, Assignment, CreateAssignmentBody, UpdateAssignmentBody } from '@/schemas'
+import type { PaginatedResponse, Assignment } from '@/schemas'
 import type { ListAssignmentsInput } from '@/services/assignments/listAssignments'
+import type { CreateAssignmentInput } from '@/services/assignments/createAssignment'
+import type { UpdateAssignmentInput } from '@/services/assignments/updateAssignment'
 
-export type { Assignment, CreateAssignmentBody, UpdateAssignmentBody } from '@/schemas'
+export type { Assignment } from '@/schemas'
+export type { CreateAssignmentInput } from '@/services/assignments/createAssignment'
+export type { UpdateAssignmentInput } from '@/services/assignments/updateAssignment'
+export type UpdateAssignmentBody = Omit<UpdateAssignmentInput, 'id'>
 
 export type GetAssignmentsParams = Partial<Omit<ListAssignmentsInput, 'active'>> & {
   active?: boolean
@@ -24,7 +29,7 @@ export async function getAssignment(id: string) {
   return r.data
 }
 
-export async function createAssignment(body: CreateAssignmentBody) {
+export async function createAssignment(body: CreateAssignmentInput) {
   const r = await api.post<Assignment>('/assignments', body)
   return r.data
 }

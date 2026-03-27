@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 type Props = {
   value: string | null
@@ -14,7 +15,7 @@ type Props = {
 export function InlineTextEditor({
   value,
   onSave,
-  placeholder = '-',
+  placeholder = 'なし',
 }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -84,11 +85,13 @@ export function InlineTextEditor({
   }
 
   return (
-    <div
-      className="min-w-32 cursor-pointer hover:underline text-muted-foreground"
-      onClick={handleClick}
-    >
-      {value || placeholder}
+    <div className="min-w-32" onClick={handleClick}>
+      <Button
+        variant="outline"
+        className="w-full justify-start text-left font-normal h-9 px-4"
+      >
+        <span className={value ? undefined : 'text-muted-foreground'}>{value || placeholder}</span>
+      </Button>
     </div>
   )
 }

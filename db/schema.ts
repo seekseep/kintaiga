@@ -2,13 +2,14 @@ import { pgTable, uuid, varchar, text, timestamp, index, pgEnum, integer } from 
 
 export const roleEnum = pgEnum('role', ['admin', 'general'])
 export const roundingDirectionEnum = pgEnum('rounding_direction', ['ceil', 'floor'])
-export const aggregationUnitEnum = pgEnum('aggregation_unit', ['monthly', 'none'])
+export const aggregationUnitEnum = pgEnum('aggregation_unit', ['weekly', 'monthly', 'none'])
 
 export const configurations = pgTable('configurations', {
   id: uuid('id').defaultRandom().primaryKey(),
   roundingInterval: integer('rounding_interval').notNull().default(15),
   roundingDirection: roundingDirectionEnum('rounding_direction').notNull().default('ceil'),
   aggregationUnit: aggregationUnitEnum('aggregation_unit').notNull().default('monthly'),
+  aggregationPeriod: integer('aggregation_period').notNull().default(1),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
@@ -20,6 +21,7 @@ export const projects = pgTable('projects', {
   roundingInterval: integer('rounding_interval'),
   roundingDirection: roundingDirectionEnum('rounding_direction'),
   aggregationUnit: aggregationUnitEnum('aggregation_unit'),
+  aggregationPeriod: integer('aggregation_period'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

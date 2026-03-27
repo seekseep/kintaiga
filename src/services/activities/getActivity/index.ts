@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { activities, projects } from '@db/schema'
-import { InternalError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
 import { canControlActivity } from '@/domain/authorization'
 import type { DbOrTx, Executor } from '../../types'
 
@@ -18,12 +18,11 @@ export async function getActivity(
   input: GetActivityInput,
 ) {
   const result = GetActivityParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies
-  const { user } = executor
-  const activityRows = await db
+  const [activity] = await db
     .select({
       id: activities.id,
       userId: activities.userId,
@@ -38,9 +37,9 @@ export async function getActivity(
     .from(activities)
     .leftJoin(projects, eq(activities.projectId, projects.id))
     .where(eq(activities.id, parameters.id))
-  const activity = activityRows[0]
-
   if (!activity) throw new NotFoundError()
-  if (!canControlActivity(user.role, user.id, activity.userId)) throw new ForbiddenError()
+
+    if (!canControlActivity(executor, activity)) throw new ForbiddenError()
+
   return activity
 }

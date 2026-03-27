@@ -1,8 +1,13 @@
 import { api } from '@/lib/api'
-import type { PaginatedResponse, User, CreateUserBody, UpdateUserBody } from '@/schemas'
+import type { PaginatedResponse, User } from '@/schemas'
 import type { ListUsersInput } from '@/services/users/listUsers'
+import type { CreateUserInput } from '@/services/users/createUser'
+import type { UpdateUserInput } from '@/services/users/updateUser'
 
-export type { User, CreateUserBody, UpdateUserBody } from '@/schemas'
+export type { User } from '@/schemas'
+export type { CreateUserInput } from '@/services/users/createUser'
+export type { UpdateUserInput } from '@/services/users/updateUser'
+export type UpdateUserBody = Omit<UpdateUserInput, 'id'>
 
 export async function getUsers(params?: Partial<ListUsersInput>) {
   const query: Record<string, string> = {}
@@ -17,7 +22,7 @@ export async function getUser(id: string) {
   return r.data
 }
 
-export async function createUser(body: CreateUserBody) {
+export async function createUser(body: CreateUserInput) {
   const r = await api.post<User>('/users', body)
   return r.data
 }

@@ -5,7 +5,7 @@ import {
   createActivity,
   updateActivity,
   deleteActivity,
-  type CreateActivityBody,
+  type CreateActivityInput,
   type UpdateActivityBody,
 } from '@/api/activities'
 import { activityKeys, type ActivityFilters } from '@/lib/query-keys'
@@ -37,7 +37,7 @@ export function useActivity(id: string, options?: { enabled?: boolean }) {
 export function useCreateActivity() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateActivityBody) => createActivity(body),
+    mutationFn: (body: CreateActivityInput) => createActivity(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.lists() })
     },

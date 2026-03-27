@@ -4,7 +4,7 @@ import {
   createAssignment,
   updateAssignment,
   deleteAssignment,
-  type CreateAssignmentBody,
+  type CreateAssignmentInput,
   type UpdateAssignmentBody,
   type GetAssignmentsParams,
 } from '@/api/assignments'
@@ -22,7 +22,7 @@ export function useAssignments(params?: GetAssignmentsParams, options?: { enable
 export function useCreateAssignment() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateAssignmentBody) => createAssignment(body),
+    mutationFn: (body: CreateAssignmentInput) => createAssignment(body),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: assignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(projectId) })

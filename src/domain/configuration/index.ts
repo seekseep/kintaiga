@@ -7,18 +7,21 @@ export type ProjectConfig = {
   roundingInterval: number
   roundingDirection: RoundingDirection
   aggregationUnit: AggregationUnit
+  aggregationPeriod: number
 }
 
 type GlobalConfig = {
   roundingInterval: number
   roundingDirection: RoundingDirection
   aggregationUnit: AggregationUnit
+  aggregationPeriod: number
 }
 
 type ProjectOverrides = {
   roundingInterval: number | null
   roundingDirection: RoundingDirection | null
   aggregationUnit: AggregationUnit | null
+  aggregationPeriod: number | null
 }
 
 /**
@@ -29,5 +32,6 @@ export function resolveProjectConfig(global: GlobalConfig, project: ProjectOverr
     roundingInterval: project.roundingInterval ?? global.roundingInterval,
     roundingDirection: project.roundingDirection ?? global.roundingDirection,
     aggregationUnit: project.aggregationUnit ?? global.aggregationUnit,
+    aggregationPeriod: project.aggregationPeriod ?? global.aggregationPeriod,
   }
 }

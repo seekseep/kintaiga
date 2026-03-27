@@ -36,11 +36,13 @@ export function calcElapsedMinutes(startedAt: string, endedAt: string | null): n
 /**
  * 分数を「X時間Y分」形式にフォーマットする
  */
+export function formatHours(minutes: number): string {
+  const hours = minutes / 60
+  return hours.toFixed(1)
+}
+
 export function formatMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h > 0) return `${h}時間${m}分`
-  return `${m}分`
+  return `${formatHours(minutes)}時間`
 }
 
 /**

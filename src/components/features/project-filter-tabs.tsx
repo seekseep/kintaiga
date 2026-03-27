@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export type ProjectFilter = 'joined' | 'all'
 
@@ -11,21 +11,11 @@ type Props = {
 
 export function ProjectFilterTabs({ filter, onFilterChange }: Props) {
   return (
-    <div className="flex gap-2">
-      <Button
-        variant={filter === 'joined' ? 'default' : 'outline'}
-        size="sm"
-        onClick={() => onFilterChange('joined')}
-      >
-        参加中
-      </Button>
-      <Button
-        variant={filter === 'all' ? 'default' : 'outline'}
-        size="sm"
-        onClick={() => onFilterChange('all')}
-      >
-        すべて
-      </Button>
-    </div>
+    <Tabs value={filter} onValueChange={(value) => onFilterChange(value as ProjectFilter)}>
+      <TabsList>
+        <TabsTrigger value="joined">参加中</TabsTrigger>
+        <TabsTrigger value="all">すべて</TabsTrigger>
+      </TabsList>
+    </Tabs>
   )
 }

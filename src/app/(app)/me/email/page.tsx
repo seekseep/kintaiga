@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { UpdateEmailParametersSchema } from '@db/validation'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
+import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'
@@ -19,7 +20,7 @@ export default function EditEmailPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/me">マイページ</BreadcrumbLink>
+            <BreadcrumbLink asChild><Link href="/me">マイページ</Link></BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

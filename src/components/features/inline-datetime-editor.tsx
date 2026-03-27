@@ -94,7 +94,7 @@ export function InlineDateTimeEditor({
       >
         <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
         {value
-          ? format(new Date(value), 'yyyy/MM/dd HH:mm', { locale: ja })
+          ? format(new Date(value), 'yyyy/MM/dd(E) HH:mm', { locale: ja })
           : <Badge variant="default">{nullLabel}</Badge>
         }
       </Button>

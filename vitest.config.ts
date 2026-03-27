@@ -11,7 +11,7 @@ export default defineConfig({
   test: {
     include: [
       'src/domain/**/*.test.ts',
-      'src/services/**/__tests__/**/*.test.ts',
+      'src/services/**/*.test.ts',
     ],
   },
 })

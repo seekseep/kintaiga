@@ -8,6 +8,7 @@ import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormInput, FormSelect } from '@/components/form'
+import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -21,7 +22,7 @@ export default function UserNewPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/users">ユーザー</BreadcrumbLink>
+            <BreadcrumbLink asChild><Link href="/users">ユーザー</Link></BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

@@ -1,14 +1,15 @@
 import { z } from 'zod/v4'
-import { eq, and, or, isNull, gte, count } from 'drizzle-orm'
+import { eq, and, or, isNull, gte, count as countFn } from 'drizzle-orm'
 import { projects, assignments } from '@db/schema'
-import { InternalError } from '@/lib/api-server/errors'
+import { ValidationError } from '@/lib/api-server/errors'
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import type { MembershipStatus } from '@/schemas'
 import type { DbOrTx, Executor } from '../../types'
 
 const ListUserProjectStatementsParametersSchema = z.object({
   filter: z.string().optional(),
-  limit: z.number(),
-  offset: z.number(),
+  limit: z.number().optional().default(DEFAULT_LIMIT),
+  offset: z.number().optional().default(DEFAULT_OFFSET),
 })
 
 export type ListUserProjectStatementsInput = z.input<typeof ListUserProjectStatementsParametersSchema>
@@ -31,22 +32,21 @@ export async function listUserProjectStatements(
   input: ListUserProjectStatementsInput,
 ) {
   const result = ListUserProjectStatementsParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies
-  const { user } = executor
-  const isAdminUser = user.role === 'admin'
+  const isAdmin = executor.role === 'admin'
 
   // joined: アサインメントが有効期間内（endedAt=null or endedAt>=now）のプロジェクト
   // general ユーザーは常にこのフィルタ
-  if (parameters.filter === 'joined' || !isAdminUser) {
+  if (parameters.filter === 'joined' || !isAdmin) {
     const now = new Date()
     const activeAssignment = and(
-      eq(assignments.userId, user.id),
+      eq(assignments.userId, executor.id),
       or(isNull(assignments.endedAt), gte(assignments.endedAt, now))
     )
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, [{ count }]] = await Promise.all([
       db
         .select(projectColumns)
         .from(assignments)
@@ -55,7 +55,7 @@ export async function listUserProjectStatements(
         .limit(parameters.limit)
         .offset(parameters.offset),
       db
-        .select({ total: count() })
+        .select({ count: countFn() })
         .from(assignments)
         .where(activeAssignment),
     ])
@@ -63,12 +63,12 @@ export async function listUserProjectStatements(
       ...row,
       membershipStatus: 'joined' as MembershipStatus,
     }))
-    return { items, total }
+    return { items, count, limit: parameters.limit, offset: parameters.offset }
   }
 
   // all (admin only): 全プロジェクトにユーザーのアサインメント状態を付与
   const now = new Date()
-  const [rows, [{ total }]] = await Promise.all([
+  const [rows, [{ count }]] = await Promise.all([
     db
       .select({
         ...projectColumns,
@@ -80,12 +80,12 @@ export async function listUserProjectStatements(
         assignments,
         and(
           eq(assignments.projectId, projects.id),
-          eq(assignments.userId, user.id),
+          eq(assignments.userId, executor.id),
         ),
       )
       .limit(parameters.limit)
       .offset(parameters.offset),
-    db.select({ total: count() }).from(projects),
+    db.select({ count: countFn() }).from(projects),
   ])
 
   const items = rows.map(row => {
@@ -101,5 +101,5 @@ export async function listUserProjectStatements(
     return { ...project, membershipStatus }
   })
 
-  return { items, total }
+  return { items, count, limit: parameters.limit, offset: parameters.offset }
 }

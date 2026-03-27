@@ -1,12 +1,14 @@
 import { z } from 'zod/v4'
 import { assignments } from '@db/schema'
-import { InternalError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
+import { isAdminUser } from '@/domain/authorization'
 import type { DbOrTx, Executor } from '../../types'
 
 const CreateAssignmentParametersSchema = z.object({
   projectId: z.string(),
   userId: z.string(),
-  startedAt: z.string().optional(),
+  startedAt: z.iso.datetime({ local: true }),
+  endedAt: z.iso.datetime({ local: true }).nullable().default(null),
   targetMinutes: z.number().int().min(0).optional(),
 })
 
@@ -15,20 +17,24 @@ export type CreateAssignmentParameters = z.output<typeof CreateAssignmentParamet
 
 export async function createAssignment(
   dependencies: { db: DbOrTx },
-  _executor: Executor,
+  executor: Executor,
   input: CreateAssignmentInput,
 ) {
   const result = CreateAssignmentParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
+  if (!isAdminUser(executor)) throw new ForbiddenError()
+
   const { db } = dependencies
-  const values = {
+  const endedAt = parameters.endedAt ? new Date(parameters.endedAt) : null
+
+  const [created] = await db.insert(assignments).values({
     projectId: parameters.projectId,
     userId: parameters.userId,
-    ...(parameters.startedAt ? { startedAt: new Date(parameters.startedAt) } : {}),
-    ...(parameters.targetMinutes != null ? { targetMinutes: parameters.targetMinutes } : {}),
-  }
-  const [created] = await db.insert(assignments).values(values).returning()
+    startedAt: new Date(parameters.startedAt),
+    endedAt,
+    targetMinutes: parameters.targetMinutes,
+  }).returning()
   return created
 }

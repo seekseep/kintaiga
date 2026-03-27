@@ -1,27 +1,24 @@
 import { db } from '@/lib/api-server/db'
 import { withAuth } from '@/lib/api-server/auth'
 import { withErrorHandler } from '@/lib/api-server/errors'
-import { parseBody } from '@/lib/api-server/parse'
-import { CreateAssignmentParametersSchema } from '@db/validation'
-import { parsePagination, paginatedResponse } from '@/lib/api-server/pagination'
+import { getSearchParams } from '@/lib/api-server/search-params'
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import { listAssignments, createAssignment } from '@/services/assignments'
 
-export const GET = withErrorHandler(withAuth(async (req, user) => {
-  const url = new URL(req.url)
-  const { limit, offset } = parsePagination(url)
-  const params = {
-    projectId: url.searchParams.get('projectId') ?? undefined,
-    userId: url.searchParams.get('userId') ?? undefined,
-    active: url.searchParams.get('active') ?? undefined,
-    limit,
-    offset,
-  }
-  const { items, total } = await listAssignments({ db }, { type: 'user', user }, params)
-  return Response.json(paginatedResponse(items, total, { limit, offset }))
+export const GET = withErrorHandler(withAuth(async (req, executor) => {
+  const params = getSearchParams(req, [
+    { key: 'projectId', type: 'string' },
+    { key: 'userId', type: 'string' },
+    { key: 'active', type: 'string' },
+    { key: 'limit', type: 'number', defaultValue: DEFAULT_LIMIT },
+    { key: 'offset', type: 'number', defaultValue: DEFAULT_OFFSET },
+  ] as const)
+  const result = await listAssignments({ db }, executor, params)
+  return Response.json(result)
 }))
 
-export const POST = withErrorHandler(withAuth(async (req, user) => {
-  const parsed = await parseBody(req, CreateAssignmentParametersSchema)
-  const created = await createAssignment({ db }, { type: 'user', user }, parsed)
+export const POST = withErrorHandler(withAuth(async (req, executor) => {
+  const body = await req.json()
+  const created = await createAssignment({ db }, executor, body)
   return Response.json(created, { status: 201 })
-}, { roles: ['admin'] }))
+}))

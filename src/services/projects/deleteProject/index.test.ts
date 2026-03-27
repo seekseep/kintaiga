@@ -1,14 +1,53 @@
 import { describe, it, expect } from 'vitest'
-import { NotFoundError } from '@/lib/api-server/errors'
+import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/api-server/errors'
 import { deleteProject } from './'
-import { createAdminUser, createMockDb } from '../../testing/helpers'
+import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
+const deletedProject = {
+  id: 'proj-1',
+  name: 'Deleted Project',
+  description: null,
+  roundingInterval: null,
+  roundingDirection: null,
+  aggregationUnit: null,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+}
+
 describe('deleteProject', () => {
+  it('プロジェクトを削除できる', async () => {
+    const db = createMockDb({ deleteResult: [deletedProject] })
+    const result = await deleteProject(
+      { db: db as unknown as DbOrTx },
+      createAdminExecutor(),
+      { id: 'proj-1' },
+    )
+    expect(result).toMatchObject({ id: 'proj-1' })
+  })
+
+  it('一般ユーザーはプロジェクトを削除できない', async () => {
+    const db = createMockDb()
+    await expect(
+      deleteProject(
+        { db: db as unknown as DbOrTx },
+        createGeneralExecutor(),
+        { id: 'proj-1' },
+      )
+    ).rejects.toThrow(ForbiddenError)
+  })
+
   it('存在しないプロジェクトの削除は NotFoundError', async () => {
     const db = createMockDb({ deleteResult: [] })
     await expect(
-      deleteProject({ db: db as unknown as DbOrTx }, { type: 'user', user: createAdminUser() }, { id: 'nonexistent' })
+      deleteProject({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 'nonexistent' })
     ).rejects.toThrow(NotFoundError)
+  })
+
+  it('不正なパラメータは ValidationError', async () => {
+    const db = createMockDb()
+    await expect(
+      deleteProject({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 123 } as unknown as { id: string })
+    ).rejects.toThrow(ValidationError)
   })
 })

@@ -4,17 +4,17 @@ import {
   canModifyUser,
   canChangeRole,
   canCreateActivityForUser,
-  isAdmin,
+  isAdminUser,
 } from '.'
 
 describe('canControlActivity', () => {
   it('admin は誰のアクティビティも操作できる', () => {
-    expect(canControlActivity('admin', 'user-1', 'user-2')).toBe(true)
+    expect(canControlActivity({ role: 'admin', id: 'user-1' }, { userId: 'user-2' })).toBe(true)
   })
 
   it('general は自分のアクティビティのみ操作できる', () => {
-    expect(canControlActivity('general', 'user-1', 'user-1')).toBe(true)
-    expect(canControlActivity('general', 'user-1', 'user-2')).toBe(false)
+    expect(canControlActivity({ role: 'general', id: 'user-1' }, { userId: 'user-1' })).toBe(true)
+    expect(canControlActivity({ role: 'general', id: 'user-1' }, { userId: 'user-2' })).toBe(false)
   })
 })
 
@@ -47,9 +47,9 @@ describe('canCreateActivityForUser', () => {
   })
 })
 
-describe('isAdmin', () => {
+describe('isAdminUser', () => {
   it('ロール判定', () => {
-    expect(isAdmin('admin')).toBe(true)
-    expect(isAdmin('general')).toBe(false)
+    expect(isAdminUser({ id: 'user-1', role: 'admin' })).toBe(true)
+    expect(isAdminUser({ id: 'user-1', role: 'general' })).toBe(false)
   })
 })

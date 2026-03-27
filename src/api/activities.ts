@@ -1,8 +1,13 @@
 import { api } from '@/lib/api'
-import type { PaginatedResponse, ProjectActivity, CreateActivityBody, UpdateActivityBody } from '@/schemas'
+import type { PaginatedResponse, ProjectActivity } from '@/schemas'
 import type { ListActivitiesInput } from '@/services/activities/listActivities'
+import type { CreateActivityInput } from '@/services/activities/createActivity'
+import type { UpdateActivityInput } from '@/services/activities/updateActivity'
 
-export type { Activity, ProjectActivity, CreateActivityBody, UpdateActivityBody } from '@/schemas'
+export type { Activity, ProjectActivity } from '@/schemas'
+export type { CreateActivityInput } from '@/services/activities/createActivity'
+export type { UpdateActivityInput } from '@/services/activities/updateActivity'
+export type UpdateActivityBody = Omit<UpdateActivityInput, 'id'>
 
 export async function getActivities(params?: Partial<ListActivitiesInput>) {
   const query: Record<string, string> = {}
@@ -26,7 +31,7 @@ export async function getActivity(id: string) {
   return r.data
 }
 
-export async function createActivity(body: CreateActivityBody) {
+export async function createActivity(body: CreateActivityInput) {
   const r = await api.post<ProjectActivity>('/activities', body)
   return r.data
 }

@@ -92,21 +92,21 @@ describe('calcElapsedMinutes', () => {
 
 describe('formatMinutes', () => {
   it('0分', () => {
-    expect(formatMinutes(0)).toBe('0分')
+    expect(formatMinutes(0)).toBe('0.0時間')
   })
 
   it('60分未満', () => {
-    expect(formatMinutes(30)).toBe('30分')
+    expect(formatMinutes(30)).toBe('0.5時間')
   })
 
   it('60分以上', () => {
-    expect(formatMinutes(90)).toBe('1時間30分')
-    expect(formatMinutes(120)).toBe('2時間0分')
+    expect(formatMinutes(90)).toBe('1.5時間')
+    expect(formatMinutes(120)).toBe('2.0時間')
   })
 })
 
 describe('formatElapsed', () => {
   it('開始と終了から経過時間文字列を返す', () => {
-    expect(formatElapsed('2025-01-15T10:00:00Z', '2025-01-15T11:30:00Z')).toBe('1時間30分')
+    expect(formatElapsed('2025-01-15T10:00:00Z', '2025-01-15T11:30:00Z')).toBe('1.5時間')
   })
 })

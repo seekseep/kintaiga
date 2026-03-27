@@ -1,29 +1,22 @@
 import { vi } from 'vitest'
-import type { AuthUser } from '@/lib/api-server/auth'
+import type { Executor } from '../types'
 
-export function createAdminUser(overrides?: Partial<AuthUser>): AuthUser {
+export function createAdminExecutor(overrides?: Partial<Executor>): Executor {
   return {
     id: 'admin-user-id',
-    name: 'Admin',
     role: 'admin',
-    iconUrl: null,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
     ...overrides,
   }
 }
 
-export function createGeneralUser(overrides?: Partial<AuthUser>): AuthUser {
+export function createGeneralExecutor(overrides?: Partial<Executor>): Executor {
   return {
     id: 'general-user-id',
-    name: 'General',
     role: 'general',
-    iconUrl: null,
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
     ...overrides,
   }
 }
+
 
 function createChain(resolvedValue: unknown) {
   const methods = {

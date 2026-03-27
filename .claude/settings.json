@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp \"src/app/\\(app\\)/projects/[id]/page.tsx\" \"src/app/\\(app\\)/projects/[id]/\\(project\\)/page.tsx\")",
+      "Bash(cp -r \"src/app/\\(app\\)/projects/[id]/settings\" \"src/app/\\(app\\)/projects/[id]/\\(project\\)/settings\")",
+      "Bash(cp -r \"src/app/\\(app\\)/projects/[id]/name\" \"src/app/\\(app\\)/projects/[id]/\\(edit\\)/name\")",
+      "Bash(cp -r \"src/app/\\(app\\)/projects/[id]/description\" \"src/app/\\(app\\)/projects/[id]/\\(edit\\)/description\")",
+      "Bash(cp \"src/app/\\(app\\)/projects/[id]/users/[userId]/activities/page.tsx\" \"src/app/\\(app\\)/projects/[id]/\\(users\\)/users/[userId]/activities/page.tsx\")",
+      "Bash(rm \"src/app/\\(app\\)/projects/[id]/page.tsx\")",
+      "Bash(rm -r \"src/app/\\(app\\)/projects/[id]/settings\")",
+      "Bash(rm -r \"src/app/\\(app\\)/projects/[id]/name\")",
+      "Bash(rm -r \"src/app/\\(app\\)/projects/[id]/description\")",
+      "Bash(rm -r \"src/app/\\(app\\)/projects/[id]/users\")",
+      "Bash(find \"src/app/\\(app\\)/projects/[id]\" -type f)",
+      "Bash(mv \"src/app/\\(app\\)/projects/[id]/\\(edit\\)/name\" \"src/app/\\(app\\)/projects/[id]/\\(users\\)/name\")",
+      "Bash(mv \"src/app/\\(app\\)/projects/[id]/\\(edit\\)/description\" \"src/app/\\(app\\)/projects/[id]/\\(users\\)/description\")",
+      "Bash(rmdir \"src/app/\\(app\\)/projects/[id]/\\(edit\\)\")",
+      "Bash(find \"src/app/\\(app\\)/projects\" -name \"layout.tsx\")",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id] -type f -name \"*.tsx\" -o -name \"*.ts\")",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id] -type f -name \"*.tsx\" -o -type f -name \"*.ts\")",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id\\\\\\)/)",
+      "Bash(tree /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id]/ -L 3)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/projects/[id] -type f -name \"*.tsx\")"
+    ],
+    "additionalDirectories": [
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/projects/[id]/(users)",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/projects/[id]"
+    ]
+  }
+}

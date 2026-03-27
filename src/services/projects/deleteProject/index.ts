@@ -1,7 +1,8 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { projects } from '@db/schema'
-import { InternalError, NotFoundError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { isAdminUser } from '@/domain/authorization'
 import type { DbOrTx, Executor } from '../../types'
 
 const DeleteProjectParametersSchema = z.object({
@@ -13,11 +14,12 @@ export type DeleteProjectParameters = z.output<typeof DeleteProjectParametersSch
 
 export async function deleteProject(
   dependencies: { db: DbOrTx },
-  _executor: Executor,
+  executor: Executor,
   input: DeleteProjectInput,
 ) {
   const result = DeleteProjectParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
+  if (!isAdminUser(executor)) throw new ForbiddenError()
   const parameters = result.data
 
   const { db } = dependencies

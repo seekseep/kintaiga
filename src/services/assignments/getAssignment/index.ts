@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { assignments } from '@db/schema'
-import { InternalError, NotFoundError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
 import type { DbOrTx, Executor } from '../../types'
 
 const GetAssignmentParametersSchema = z.object({
@@ -17,7 +17,7 @@ export async function getAssignment(
   input: GetAssignmentInput,
 ) {
   const result = GetAssignmentParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies

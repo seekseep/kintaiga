@@ -11,10 +11,3 @@ export function validateActivityDates(
   }
   return { valid: true }
 }
-
-/**
- * 日付文字列が有効かどうかを判定する
- */
-export function isValidDateString(value: string): boolean {
-  return !isNaN(new Date(value).getTime())
-}

@@ -1,12 +1,13 @@
 import { z } from 'zod/v4'
-import { count } from 'drizzle-orm'
+import { count as countFn } from 'drizzle-orm'
 import { users } from '@db/schema'
-import { InternalError } from '@/lib/api-server/errors'
+import { ValidationError } from '@/lib/api-server/errors'
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import type { DbOrTx, Executor } from '../../types'
 
 const ListUsersParametersSchema = z.object({
-  limit: z.number(),
-  offset: z.number(),
+  limit: z.number().optional().default(DEFAULT_LIMIT),
+  offset: z.number().optional().default(DEFAULT_OFFSET),
 })
 
 export type ListUsersInput = z.input<typeof ListUsersParametersSchema>
@@ -18,13 +19,13 @@ export async function listUsers(
   input: ListUsersInput,
 ) {
   const result = ListUsersParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies
-  const [items, [{ total }]] = await Promise.all([
+  const [items, [{ count }]] = await Promise.all([
     db.select().from(users).limit(parameters.limit).offset(parameters.offset),
-    db.select({ total: count() }).from(users),
+    db.select({ count: countFn() }).from(users),
   ])
-  return { items, total }
+  return { items, count, limit: parameters.limit, offset: parameters.offset }
 }

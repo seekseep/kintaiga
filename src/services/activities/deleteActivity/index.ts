@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { activities } from '@db/schema'
-import { InternalError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
 import { canControlActivity } from '@/domain/authorization'
 import type { DbOrTx, Executor } from '../../types'
 
@@ -18,14 +18,14 @@ export async function deleteActivity(
   input: DeleteActivityInput,
 ) {
   const result = DeleteActivityParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies
-  const { user } = executor
-  const activityRows = await db.select().from(activities).where(eq(activities.id, parameters.id))
-  const activity = activityRows[0]
+
+  const [activity] = await db.select().from(activities).where(eq(activities.id, parameters.id))
   if (!activity) throw new NotFoundError()
-  if (!canControlActivity(user.role, user.id, activity.userId)) throw new ForbiddenError()
+  if (!canControlActivity(executor, activity)) throw new ForbiddenError()
+
   await db.delete(activities).where(eq(activities.id, parameters.id))
 }

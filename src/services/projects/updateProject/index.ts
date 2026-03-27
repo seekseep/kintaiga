@@ -1,9 +1,10 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { projects } from '@db/schema'
-import { InternalError, NotFoundError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { isAdminUser } from '@/domain/authorization'
 import { RoundingDirectionSchema, AggregationUnitSchema } from '@/schemas/_helpers'
-import { ROUNDING_INTERVALS } from '@/domain/config'
+import { ROUNDING_INTERVALS } from '@/domain/configuration'
 import type { DbOrTx, Executor } from '../../types'
 
 const UpdateProjectParametersSchema = z.object({
@@ -13,6 +14,7 @@ const UpdateProjectParametersSchema = z.object({
   roundingInterval: z.number().refine(v => (ROUNDING_INTERVALS as readonly number[]).includes(v)).nullable().optional(),
   roundingDirection: RoundingDirectionSchema.nullable().optional(),
   aggregationUnit: AggregationUnitSchema.nullable().optional(),
+  aggregationPeriod: z.number().int().min(1).nullable().optional(),
 })
 
 export type UpdateProjectInput = z.input<typeof UpdateProjectParametersSchema>
@@ -20,11 +22,12 @@ export type UpdateProjectParameters = z.output<typeof UpdateProjectParametersSch
 
 export async function updateProject(
   dependencies: { db: DbOrTx },
-  _executor: Executor,
+  executor: Executor,
   input: UpdateProjectInput,
 ) {
   const result = UpdateProjectParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
+  if (!isAdminUser(executor)) throw new ForbiddenError()
   const { id, ...updates } = result.data
 
   const { db } = dependencies

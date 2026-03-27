@@ -1,8 +1,8 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { projects, configurations } from '@db/schema'
-import { InternalError, NotFoundError } from '@/lib/api-server/errors'
-import { resolveProjectConfig } from '@/domain/config'
+import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
+import { resolveProjectConfig } from '@/domain/configuration'
 import type { DbOrTx, Executor } from '../../types'
 
 const GetProjectConfigurationParametersSchema = z.object({
@@ -18,7 +18,7 @@ export async function getProjectConfiguration(
   input: GetProjectConfigurationInput,
 ) {
   const result = GetProjectConfigurationParametersSchema.safeParse(input)
-  if (!result.success) throw new InternalError('Invalid parameters')
+  if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
   const { db } = dependencies

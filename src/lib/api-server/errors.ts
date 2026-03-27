@@ -41,6 +41,19 @@ export class ConflictError extends HttpError {
   }
 }
 
+export class ValidationError extends HttpError {
+  details: unknown[]
+
+  constructor(details: unknown[]) {
+    super(400, 'Validation failed')
+    this.details = details
+  }
+
+  toResponse(): Response {
+    return Response.json({ error: this.message, details: this.details }, { status: 400 })
+  }
+}
+
 export class InternalError extends HttpError {
   constructor(message = 'Internal server error') {
     super(500, message)
