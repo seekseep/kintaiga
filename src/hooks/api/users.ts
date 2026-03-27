@@ -4,6 +4,7 @@ import {
   getUser,
   createUser,
   updateUser,
+  updateUserRole,
   deleteUser,
   type CreateUserInput,
   type UpdateUserBody,
@@ -41,6 +42,17 @@ export function useUpdateUser() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: UpdateUserBody }) => updateUser(id, body),
+    onSuccess: (_data, { id }) => {
+      queryClient.invalidateQueries({ queryKey: userKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() })
+    },
+  })
+}
+
+export function useUpdateUserRole() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, role }: { id: string; role: 'admin' | 'general' }) => updateUserRole(id, { role }),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: userKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })

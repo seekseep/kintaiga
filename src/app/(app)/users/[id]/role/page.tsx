@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Formik } from 'formik'
-import { useUser, useUpdateUser } from '@/hooks/api/users'
+import { useUser, useUpdateUserRole } from '@/hooks/api/users'
 import { toast } from 'sonner'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
@@ -16,7 +16,7 @@ export default function EditUserRolePage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const { data: user, isLoading } = useUser(id)
-  const mutation = useUpdateUser()
+  const mutation = useUpdateUserRole()
 
   if (isLoading) return <Skeleton className="mx-auto h-64 max-w-lg" />
 
@@ -46,7 +46,7 @@ export default function EditUserRolePage() {
             enableReinitialize
             initialValues={{ role: user?.role ?? 'general' }}
             onSubmit={(values) => mutation.mutate(
-              { id, body: { role: values.role as 'admin' | 'general' } },
+              { id, role: values.role as 'admin' | 'general' },
               {
                 onSuccess: () => {
                   toast.success('ロールを変更しました')

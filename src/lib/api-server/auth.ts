@@ -38,7 +38,6 @@ async function verifyToken(req: Request): Promise<{ sub: string; role: Role | nu
     throw new Error('Invalid token')
   }
   const appMetadata = payload.app_metadata as { role?: Role } | undefined
-  console.log('[withAuth] sub:', payload.sub, 'app_metadata:', JSON.stringify(appMetadata))
   return { sub: payload.sub, role: appMetadata?.role ?? null }
 }
 

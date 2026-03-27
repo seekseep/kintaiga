@@ -32,6 +32,11 @@ export async function updateUser(id: string, body: UpdateUserBody) {
   return r.data
 }
 
+export async function updateUserRole(id: string, body: { role: 'admin' | 'general' }) {
+  const r = await api.patch<User>(`/users/${id}/role`, body)
+  return r.data
+}
+
 export async function deleteUser(id: string) {
   await api.delete(`/users/${id}`)
   return undefined
