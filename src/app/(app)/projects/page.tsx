@@ -31,7 +31,18 @@ export default function ProjectListPage() {
         </Button>
       </div>
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <div className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
+          <div className="flex border-b">
+            <div className="h-10 px-2 flex-1 flex items-center"><Skeleton className="h-4 w-16" /></div>
+            <div className="h-10 px-2 flex-1 flex items-center"><Skeleton className="h-4 w-16" /></div>
+          </div>
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="flex border-b last:border-0">
+              <div className="h-10 px-2 flex-1 flex items-center"><Skeleton className="h-4 w-32" /></div>
+              <div className="h-10 px-2 flex-1 flex items-center"><Skeleton className="h-4 w-48" /></div>
+            </div>
+          ))}
+        </div>
       ) : (
         <Table>
           <TableHeader>

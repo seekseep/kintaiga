@@ -16,7 +16,27 @@ const ROUNDING_INTERVALS = [1, 5, 10, 15, 20, 30, 60] as const
 export default function SettingsPage() {
   const { data: config, isLoading } = useConfiguration()
 
-  if (isLoading || !config) return <Skeleton className="h-64" />
+  if (isLoading || !config) return (
+    <div className="space-y-4">
+      <Skeleton className="h-5 w-16" />
+      <div className="mx-auto max-w-lg">
+        <div className="rounded-xl ring-1 ring-foreground/10 bg-card py-4">
+          <div className="px-6 pb-4">
+            <Skeleton className="h-6 w-32" />
+          </div>
+          <div className="px-6 space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            ))}
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-4">

@@ -21,7 +21,23 @@ export default function EditUserNamePage() {
   const { data: user, isLoading } = useUser(id)
   const mutation = useUpdateUser()
 
-  if (isLoading) return <Skeleton className="mx-auto h-64 max-w-lg" />
+  if (isLoading) return (
+    <div className="mx-auto max-w-lg space-y-4">
+      <Skeleton className="h-5 w-48" />
+      <div className="rounded-xl ring-1 ring-foreground/10 bg-card py-4">
+        <div className="px-6 pb-4">
+          <Skeleton className="h-6 w-28" />
+        </div>
+        <div className="px-6 space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="mx-auto max-w-lg space-y-4">

@@ -42,8 +42,16 @@ export default function ProjectsPage() {
       )}
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
+        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))' }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} className="rounded-xl ring-1 ring-foreground/10 bg-card pt-4 pb-3 px-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-6 w-6 rounded-md" />
+              </div>
+              <Skeleton className="h-9 w-full rounded-md" />
+            </div>
+          ))}
         </div>
       ) : user ? (
         <ProjectListWithActivity

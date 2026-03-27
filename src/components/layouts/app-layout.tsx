@@ -45,8 +45,30 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-svh items-center justify-center">
-        <Skeleton className="h-32 w-32 rounded-lg" />
+      <div className="flex min-h-svh">
+        <div className="hidden md:flex w-64 flex-col border-r bg-sidebar p-4 space-y-4">
+          <Skeleton className="h-7 w-24" />
+          <div className="space-y-1">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="flex items-center gap-2 rounded-md px-2 h-8">
+                <Skeleton className="h-4 w-4 rounded-md" />
+                <Skeleton className="h-4 flex-1" style={{ maxWidth: `${50 + i * 10}%` }} />
+              </div>
+            ))}
+          </div>
+          <div className="mt-auto flex items-center gap-3 rounded-md p-2">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="flex h-14 items-center gap-2 border-b px-4">
+            <Skeleton className="h-10 w-10 rounded-md" />
+          </div>
+          <div className="p-4">
+            <Skeleton className="h-64" />
+          </div>
+        </div>
       </div>
     )
   }

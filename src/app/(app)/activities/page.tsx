@@ -78,7 +78,26 @@ export default function ActivitiesPage() {
       />
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <div className="space-y-2">
+          <div className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
+            <div className="flex border-b">
+              {[16, 20, 20, 24, 24, 16, 32, 8].map((w, i) => (
+                <div key={i} className="h-10 px-2 flex items-center">
+                  <Skeleton className="h-4" style={{ width: `${w * 4}px` }} />
+                </div>
+              ))}
+            </div>
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex border-b last:border-0">
+                {[16, 20, 20, 24, 24, 16, 32, 8].map((w, j) => (
+                  <div key={j} className="h-10 px-2 flex items-center">
+                    <Skeleton className="h-4" style={{ width: `${w * 4}px` }} />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <ActivityTable
           activities={activities}

@@ -18,7 +18,36 @@ export default function UserDetailPage() {
   const { data: user, isLoading } = useUser(id)
   const deleteMutation = useDeleteUser()
 
-  if (isLoading) return <Skeleton className="mx-auto h-64 max-w-lg" />
+  if (isLoading) return (
+    <div className="mx-auto max-w-lg space-y-4">
+      <Skeleton className="h-5 w-32" />
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-16 w-16 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+      </div>
+      <div className="divide-y rounded-md border">
+        {[1, 2].map(i => (
+          <div key={i} className="flex items-center justify-between px-4 py-3">
+            <div className="space-y-1">
+              <Skeleton className="h-3.5 w-12" />
+              <Skeleton className="h-5 w-24" />
+            </div>
+            <Skeleton className="h-5 w-5" />
+          </div>
+        ))}
+      </div>
+      <div className="rounded-md border border-destructive/30">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <Skeleton className="h-5 w-5" />
+          <Skeleton className="h-5 w-32 flex-1" />
+          <Skeleton className="h-5 w-5" />
+        </div>
+      </div>
+    </div>
+  )
   if (!user) return <p className="text-center text-muted-foreground">ユーザーが見つかりません</p>
 
   return (

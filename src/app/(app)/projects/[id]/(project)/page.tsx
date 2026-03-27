@@ -31,7 +31,31 @@ export default function ProjectDetailPage() {
 
   const loading = loadingMembers || loadingUsers
 
-  if (loading) return <Skeleton className="h-64" />
+  if (loading) return (
+    <div className="space-y-6">
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-9 w-16 rounded-md" />
+        </div>
+        <Skeleton className="h-9 w-40 rounded-md" />
+        <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))' }}>
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="rounded-xl ring-1 ring-foreground/10 bg-card py-3 px-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-6 w-6 rounded-md" />
+              </div>
+              <Skeleton className="h-9 w-full rounded-md mt-2" />
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
 
   return (
     <div className="space-y-6">

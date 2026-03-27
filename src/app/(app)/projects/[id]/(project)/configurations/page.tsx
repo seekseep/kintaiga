@@ -48,8 +48,22 @@ export default function ProjectSettingsPage() {
   const mutation = useUpdateProject()
 
   if (loadingProject || loadingConfig) return (
-    <div className="mx-auto max-w-lg">
-      <Skeleton className="h-64" />
+    <div className="mx-auto max-w-lg space-y-4">
+      <Skeleton className="h-5 w-56" />
+      <div className="rounded-xl ring-1 ring-foreground/10 bg-card py-4">
+        <div className="px-6 pb-4">
+          <Skeleton className="h-6 w-40" />
+        </div>
+        <div className="px-6 space-y-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+          ))}
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
     </div>
   )
 

@@ -237,7 +237,37 @@ export default function ProjectUserActivitiesPage() {
     await updateMutation.mutateAsync({ id: activityId, body: { [field]: value } })
   }
 
-  if (isLoading || config === undefined || project === undefined) return <Skeleton className="h-64" />
+  if (isLoading || config === undefined || project === undefined) return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-9 w-64" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-9 w-9 rounded-md" />
+          <Skeleton className="h-9 w-28 rounded-md" />
+        </div>
+      </div>
+      <div className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
+        <div className="flex border-b">
+          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-4" /></div>
+          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-24" /></div>
+          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-24" /></div>
+          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-20" /></div>
+          <div className="h-10 px-2 flex-1 flex items-center"><Skeleton className="h-4 w-16" /></div>
+          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-7" /></div>
+        </div>
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} className="flex border-b last:border-0">
+            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-4" /></div>
+            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-28" /></div>
+            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-28" /></div>
+            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-16" /></div>
+            <div className="h-10 px-2 flex-1 flex items-center"><Skeleton className="h-4 w-full" /></div>
+            <div className="h-10 px-2 flex items-center"><Skeleton className="h-7 w-7 rounded-md" /></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   return (
     <div className="space-y-4">

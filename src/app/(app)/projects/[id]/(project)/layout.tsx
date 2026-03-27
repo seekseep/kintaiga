@@ -15,7 +15,19 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
 
   const { data: project, isLoading } = useProject(id)
 
-  if (isLoading) return <Skeleton className="h-64" />
+  if (isLoading) return (
+    <div className="space-y-6">
+      <Skeleton className="h-5 w-48" />
+      <div className="space-y-1">
+        <Skeleton className="h-7 w-40" />
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-5 w-56" />
+          <Skeleton className="h-5 w-5 rounded" />
+        </div>
+      </div>
+      <Skeleton className="h-64" />
+    </div>
+  )
   if (!project) return <p className="text-center text-muted-foreground">プロジェクトが見つかりません</p>
 
   const basePath = `/projects/${id}`

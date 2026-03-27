@@ -18,8 +18,23 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-svh items-center justify-center">
-        <Skeleton className="h-64 w-96" />
+      <div className="flex min-h-svh items-center justify-center p-4">
+        <div className="w-full max-w-md rounded-xl ring-1 ring-foreground/10 bg-card py-4">
+          <div className="px-6 pb-4 text-center">
+            <Skeleton className="h-8 w-32 mx-auto" />
+          </div>
+          <div className="px-6 space-y-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        </div>
       </div>
     )
   }
