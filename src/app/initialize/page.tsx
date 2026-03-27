@@ -42,7 +42,7 @@ export default function InitializePage() {
     <div className="flex min-h-svh items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">🐯 キンタイガ</CardTitle>
+          <CardTitle className="text-2xl">キンタイガ</CardTitle>
           <CardDescription>はじめに表示名を設定してください。</CardDescription>
         </CardHeader>
         <CardContent>

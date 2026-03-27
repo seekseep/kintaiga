@@ -32,7 +32,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="flex min-h-svh items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">🐯 キンタイガ</CardTitle>
+          <CardTitle className="text-2xl">キンタイガ</CardTitle>
         </CardHeader>
         <CardContent>
           {children}

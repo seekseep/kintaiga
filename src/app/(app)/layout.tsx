@@ -69,7 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar>
         <SidebarHeader className="p-4">
           <Link href="/" className="text-lg font-semibold">
-            🐯 キンタイガ
+            キンタイガ
           </Link>
         </SidebarHeader>
         <SidebarContent>
