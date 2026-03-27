@@ -1,0 +1,65 @@
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { Formik } from 'formik'
+import { supabase } from '@/lib/supabase'
+import { UpdateEmailParametersSchema } from '@db/validation'
+import { zodValidate } from '@/lib/form/zod-adapter'
+import { toast } from 'sonner'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { Button } from '@/components/ui/button'
+import { FormInput } from '@/components/form'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+export default function EditEmailPage() {
+  const router = useRouter()
+
+  return (
+    <div className="mx-auto max-w-lg space-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/me">マイページ</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>メールアドレス変更</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Card>
+        <CardHeader>
+          <CardTitle>メールアドレスの変更</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Formik
+            initialValues={{ email: '' }}
+            validate={zodValidate(UpdateEmailParametersSchema)}
+            onSubmit={async (values, { setSubmitting, setStatus }) => {
+              setStatus(null)
+              const { error } = await supabase.auth.updateUser({ email: values.email })
+              setSubmitting(false)
+              if (error) {
+                setStatus(error.message)
+                toast.error('変更に失敗しました')
+              } else {
+                toast.success('確認メールを送信しました。新しいメールアドレスで確認してください。')
+                router.push('/me')
+              }
+            }}
+          >
+            {({ handleSubmit, isSubmitting, status }) => (
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
+                <FormInput name="email" label="新しいメールアドレス" type="email" />
+                {status && <p className="text-sm text-destructive">{status}</p>}
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? '送信中...' : '確認メールを送信'}
+                </Button>
+              </form>
+            )}
+          </Formik>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

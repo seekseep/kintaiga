@@ -3,7 +3,7 @@ import { jwtVerify, createRemoteJWKSet } from 'jose'
 import { eq } from 'drizzle-orm'
 import { db } from '@/lib/api-server/db'
 import { users } from '@db/schema'
-import { handleError, UnauthorizedError, ForbiddenError } from '@/lib/api-server/errors'
+import { UnauthorizedError, ForbiddenError } from '@/lib/api-server/errors'
 
 const jwks = createRemoteJWKSet(
   new URL(`${process.env.SUPABASE_URL!}/auth/v1/.well-known/jwks.json`)
@@ -48,31 +48,28 @@ export function withAuth(handler: AuthHandlerAllowUnregistered, options: AuthOpt
 export function withAuth(handler: AuthHandler, options?: AuthOptions): (req: NextRequest, context: RouteContext) => Promise<Response>
 export function withAuth(handler: AuthHandler | AuthHandlerAllowUnregistered, options?: AuthOptions) {
   return async (req: NextRequest, context: RouteContext) => {
+    let sub: string
     try {
-      let sub: string
-      try {
-        sub = await verifyToken(req)
-      } catch {
-        throw new UnauthorizedError()
-      }
-
-      const user = await db.select().from(users).where(eq(users.id, sub)).then(r => r[0] ?? null)
-
-      if (!user && !options?.allowUnregistered) {
-        throw new UnauthorizedError('User not found')
-      }
-
-      if (user && options?.roles && !options.roles.includes(user.role)) {
-        throw new ForbiddenError()
-      }
-
-      if (options?.allowUnregistered) {
-        return await (handler as AuthHandlerAllowUnregistered)(req, user, sub, context)
-      }
-
-      return await (handler as AuthHandler)(req, user!, context)
-    } catch (err) {
-      return handleError(err)
+      sub = await verifyToken(req)
+    } catch {
+      throw new UnauthorizedError()
     }
+
+    const rows = await db.select().from(users).where(eq(users.id, sub))
+    const user = rows[0] ?? null
+
+    if (!user && !options?.allowUnregistered) {
+      throw new UnauthorizedError('User not found')
+    }
+
+    if (user && options?.roles && !options.roles.includes(user.role)) {
+      throw new ForbiddenError()
+    }
+
+    if (options?.allowUnregistered) {
+      return await (handler as AuthHandlerAllowUnregistered)(req, user, sub, context)
+    }
+
+    return await (handler as AuthHandler)(req, user!, context)
   }
 }

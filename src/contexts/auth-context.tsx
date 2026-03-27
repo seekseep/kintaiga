@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState, useCallback } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { getMe } from '@/api/me'
 import { ApiError } from '@/lib/api'
@@ -19,6 +20,7 @@ export type AuthContextValue = {
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient()
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -38,14 +40,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
       setSession(session)
       if (session) {
-        fetchUser().finally(() => setIsLoading(false))
+        try { await fetchUser() } finally { setIsLoading(false) }
       } else {
         setIsLoading(false)
       }
-    })
+    })()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
@@ -62,9 +65,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut()
+    queryClient.clear()
     setSession(null)
     setUser(null)
-  }, [])
+  }, [queryClient])
 
   return (
     <AuthContext.Provider value={{ session, user, isLoading, needsInitialization, signOut, refreshUser: fetchUser }}>

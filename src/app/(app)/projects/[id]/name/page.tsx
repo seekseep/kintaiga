@@ -1,10 +1,8 @@
 'use client'
 
 import { useRouter, useParams } from 'next/navigation'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { getProject, updateProject } from '@/api/projects'
-import { UpdateProjectParametersSchema } from '@db/validation'
+import { useProject, useUpdateProject } from '@/hooks/api/projects'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
@@ -19,22 +17,10 @@ const schema = z.object({ name: z.string().min(1) })
 export default function EditProjectNamePage() {
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
-  const queryClient = useQueryClient()
 
-  const { data: project, isLoading } = useQuery({
-    queryKey: ['projects', id],
-    queryFn: () => getProject(id),
-  })
+  const { data: project, isLoading } = useProject(id)
 
-  const mutation = useMutation({
-    mutationFn: (values: { name: string }) => updateProject(id, values),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects', id] })
-      toast.success('プロジェクト名を変更しました')
-      router.push(`/projects/${id}`)
-    },
-    onError: () => toast.error('変更に失敗しました'),
-  })
+  const mutation = useUpdateProject()
 
   if (isLoading) return <Skeleton className="h-64" />
 
@@ -64,7 +50,16 @@ export default function EditProjectNamePage() {
             enableReinitialize
             initialValues={{ name: project?.name ?? '' }}
             validate={zodValidate(schema)}
-            onSubmit={(values) => mutation.mutate(values)}
+            onSubmit={(values) => mutation.mutate(
+              { id, body: values },
+              {
+                onSuccess: () => {
+                  toast.success('プロジェクト名を変更しました')
+                  router.push(`/projects/${id}`)
+                },
+                onError: () => toast.error('変更に失敗しました'),
+              }
+            )}
           >
             {({ handleSubmit }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

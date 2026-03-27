@@ -2,10 +2,9 @@
 
 import { useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
 import { Formik } from 'formik'
 import { useAuth } from '@/hooks/use-auth'
-import { uploadMyIcon } from '@/api/me'
+import { useUploadMyIcon } from '@/hooks/api/me'
 import { UpdateIconParametersSchema } from '@db/validation'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
@@ -19,15 +18,7 @@ export default function EditIconPage() {
   const { user, refreshUser } = useAuth()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const mutation = useMutation({
-    mutationFn: (values: { icon: string }) => uploadMyIcon(values),
-    onSuccess: async () => {
-      await refreshUser()
-      toast.success('アイコンを変更しました')
-      router.push('/me')
-    },
-    onError: () => toast.error('変更に失敗しました'),
-  })
+  const mutation = useUploadMyIcon()
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
@@ -50,7 +41,14 @@ export default function EditIconPage() {
           <Formik
             initialValues={{ icon: '' }}
             validate={zodValidate(UpdateIconParametersSchema)}
-            onSubmit={(values) => mutation.mutate(values)}
+            onSubmit={(values) => mutation.mutate(values, {
+              onSuccess: async () => {
+                await refreshUser()
+                toast.success('アイコンを変更しました')
+                router.push('/me')
+              },
+              onError: () => toast.error('変更に失敗しました'),
+            })}
           >
             {({ handleSubmit, values, setFieldValue }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

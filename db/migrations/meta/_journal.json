@@ -36,6 +36,20 @@
       "when": 1774542693818,
       "tag": "0004_nice_arachne",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1774574297084,
+      "tag": "0005_funny_giant_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774581517080,
+      "tag": "0006_windy_malcolm_colcord",
+      "breakpoints": true
     }
   ]
 }

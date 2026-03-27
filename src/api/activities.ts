@@ -1,32 +1,10 @@
 import { api } from '@/lib/api'
-import type { PaginatedResponse, PaginationParams } from './types'
+import type { PaginatedResponse, ProjectActivity, CreateActivityBody, UpdateActivityBody } from '@/schemas'
+import type { ListActivitiesInput } from '@/services/activities/listActivities'
 
-export type Activity = {
-  id: string
-  userId: string
-  projectId: string
-  startedAt: string
-  endedAt: string | null
-  note: string | null
-  createdAt: string
-  updatedAt: string
-  projectName?: string
-  userName?: string
-}
+export type { Activity, ProjectActivity, CreateActivityBody, UpdateActivityBody } from '@/schemas'
 
-export type CreateActivityBody = {
-  projectId: string
-  userId?: string
-  startedAt?: string
-  note?: string
-}
-
-export type UpdateActivityBody = {
-  endedAt?: string | null
-  note?: string
-}
-
-export function getActivities(params?: { userId?: string; ongoing?: boolean; projectId?: string; startDate?: string; endDate?: string } & PaginationParams) {
+export async function getActivities(params?: Partial<ListActivitiesInput>) {
   const query: Record<string, string> = {}
   if (params?.userId) query.userId = params.userId
   if (params?.ongoing) query.ongoing = 'true'
@@ -35,25 +13,30 @@ export function getActivities(params?: { userId?: string; ongoing?: boolean; pro
   if (params?.endDate) query.endDate = params.endDate
   if (params?.limit != null) query.limit = String(params.limit)
   if (params?.offset != null) query.offset = String(params.offset)
-  return api.get<PaginatedResponse<Activity>>('/activities', { params: query }).then(r => r.data)
+  const r = await api.get<PaginatedResponse<ProjectActivity>>('/activities', { params: query })
+  return r.data
 }
 
-export function getOngoingActivities() {
+export async function getOngoingActivities() {
   return getActivities({ ongoing: true })
 }
 
-export function getActivity(id: string) {
-  return api.get<Activity>(`/activities/${id}`).then(r => r.data)
+export async function getActivity(id: string) {
+  const r = await api.get<ProjectActivity>(`/activities/${id}`)
+  return r.data
 }
 
-export function createActivity(body: CreateActivityBody) {
-  return api.post<Activity>('/activities', body).then(r => r.data)
+export async function createActivity(body: CreateActivityBody) {
+  const r = await api.post<ProjectActivity>('/activities', body)
+  return r.data
 }
 
-export function updateActivity(id: string, body: UpdateActivityBody) {
-  return api.patch<Activity>(`/activities/${id}`, body).then(r => r.data)
+export async function updateActivity(id: string, body: UpdateActivityBody) {
+  const r = await api.patch<ProjectActivity>(`/activities/${id}`, body)
+  return r.data
 }
 
-export function deleteActivity(id: string) {
-  return api.delete(`/activities/${id}`).then(() => undefined)
+export async function deleteActivity(id: string) {
+  await api.delete(`/activities/${id}`)
+  return undefined
 }

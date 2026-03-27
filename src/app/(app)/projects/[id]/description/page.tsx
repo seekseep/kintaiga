@@ -1,9 +1,8 @@
 'use client'
 
 import { useRouter, useParams } from 'next/navigation'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { getProject, updateProject } from '@/api/projects'
+import { useProject, useUpdateProject } from '@/hooks/api/projects'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
@@ -18,23 +17,10 @@ const schema = z.object({ description: z.string().nullable().optional() })
 export default function EditProjectDescriptionPage() {
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
-  const queryClient = useQueryClient()
 
-  const { data: project, isLoading } = useQuery({
-    queryKey: ['projects', id],
-    queryFn: () => getProject(id),
-  })
+  const { data: project, isLoading } = useProject(id)
 
-  const mutation = useMutation({
-    mutationFn: (values: { description?: string | null }) =>
-      updateProject(id, { description: values.description || undefined }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects', id] })
-      toast.success('説明を変更しました')
-      router.push(`/projects/${id}`)
-    },
-    onError: () => toast.error('変更に失敗しました'),
-  })
+  const mutation = useUpdateProject()
 
   if (isLoading) return <Skeleton className="h-64" />
 
@@ -64,7 +50,16 @@ export default function EditProjectDescriptionPage() {
             enableReinitialize
             initialValues={{ description: project?.description ?? '' }}
             validate={zodValidate(schema)}
-            onSubmit={(values) => mutation.mutate(values)}
+            onSubmit={(values) => mutation.mutate(
+              { id, body: { description: values.description || undefined } },
+              {
+                onSuccess: () => {
+                  toast.success('説明を変更しました')
+                  router.push(`/projects/${id}`)
+                },
+                onError: () => toast.error('変更に失敗しました'),
+              }
+            )}
           >
             {({ handleSubmit }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

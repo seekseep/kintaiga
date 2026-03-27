@@ -2,12 +2,10 @@
 
 import Link from 'next/link'
 import { useAuth } from '@/hooks/use-auth'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
-import { Separator } from '@/components/ui/separator'
+import { UserIcon, ImageIcon, MailIcon, LockIcon, LogOutIcon, Trash2Icon, ChevronRightIcon } from 'lucide-react'
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth()
@@ -23,36 +21,50 @@ export default function ProfilePage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <Card>
-        <CardHeader>
-          <CardTitle>マイページ</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={user.iconUrl ?? undefined} />
-              <AvatarFallback className="text-lg">{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-lg font-medium">{user.name}</p>
-              <Badge variant="secondary">{user.role === 'admin' ? '管理者' : '一般'}</Badge>
-            </div>
-          </div>
-          <Separator />
-          <div className="space-y-2">
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/me/name">名前を変更</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/me/icon">アイコンを変更</Link>
-            </Button>
-          </div>
-          <Separator />
-          <Button variant="destructive" className="w-full" onClick={signOut}>
-            ログアウト
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex items-center gap-4">
+        <Avatar className="h-16 w-16">
+          <AvatarImage src={user.iconUrl ?? undefined} />
+          <AvatarFallback className="text-lg">{user.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="text-lg font-medium">{user.name}</p>
+          <Badge variant="secondary">{user.role === 'admin' ? '管理者' : '一般'}</Badge>
+        </div>
+      </div>
+      <div className="divide-y rounded-md border">
+        <Link href="/me/name" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <UserIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="flex-1">名前を変更</span>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+        <Link href="/me/icon" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <ImageIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="flex-1">アイコンを変更</span>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+        <Link href="/me/email" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <MailIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="flex-1">メールアドレスを変更</span>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+        <Link href="/me/password" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <LockIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="flex-1">パスワードを変更</span>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+      </div>
+      <div className="divide-y rounded-md border border-destructive/30">
+        <button onClick={signOut} className="flex w-full items-center gap-3 px-4 py-3 hover:bg-destructive/5 transition-colors text-destructive">
+          <LogOutIcon className="h-5 w-5" />
+          <span className="flex-1 text-left">ログアウト</span>
+          <ChevronRightIcon className="h-5 w-5" />
+        </button>
+        <Link href="/me/delete" className="flex items-center gap-3 px-4 py-3 hover:bg-destructive/5 transition-colors text-destructive">
+          <Trash2Icon className="h-5 w-5" />
+          <span className="flex-1">アカウントを削除</span>
+          <ChevronRightIcon className="h-5 w-5" />
+        </Link>
+      </div>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
@@ -10,9 +10,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
@@ -26,6 +23,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Clock, LayoutDashboard, Users, FolderOpen, User, LogOut } from 'lucide-react'
+import { SidebarNavigation } from '@/components/features/sidebar-navigation'
+import type { MenuItem } from '@/components/features/sidebar-navigation'
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading, needsInitialization, signOut } = useAuth()
@@ -56,6 +55,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return null
   }
 
+  const menuItems: MenuItem[] = useMemo(() => {
+    const items: MenuItem[] = [
+      { href: '/', icon: LayoutDashboard, label: 'ダッシュボード', isActive: (p) => p === '/' },
+      { href: '/activities', icon: Clock, label: '稼働', isActive: (p) => p.startsWith('/activities') },
+    ]
+    if (user?.role === 'admin') {
+      items.push(
+        { href: '/users', icon: Users, label: 'ユーザー', isActive: (p) => p.startsWith('/users') },
+        { href: '/projects', icon: FolderOpen, label: 'プロジェクト', isActive: (p) => p.startsWith('/projects') },
+      )
+    }
+    return items
+  }, [user?.role])
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -65,44 +78,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </Link>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === '/'}>
-                <Link href="/">
-                  <LayoutDashboard />
-                  <span>ダッシュボード</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/activities')}>
-                <Link href="/activities/new">
-                  <Clock />
-                  <span>稼働</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {user?.role === 'admin' && (
-              <>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith('/users')}>
-                    <Link href="/users">
-                      <Users />
-                      <span>ユーザー</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith('/projects')}>
-                    <Link href="/projects">
-                      <FolderOpen />
-                      <span>プロジェクト</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </>
-            )}
-          </SidebarMenu>
+          <SidebarNavigation menuItems={menuItems} />
         </SidebarContent>
         <SidebarFooter className="p-2">
           {user && (
@@ -134,7 +110,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
+          <SidebarTrigger className="size-10" />
           <Separator orientation="vertical" className="h-6" />
         </header>
         <main className="flex-1 p-4">

@@ -1,39 +1,30 @@
 import { api } from '@/lib/api'
 import type { User } from './users'
-import type { Project } from './projects'
-import type { PaginatedResponse, PaginationParams } from './types'
+import type { RegisterMeBody, UpdateMeBody, UploadIconBody } from '@/schemas'
 
-export type RegisterMeBody = {
-  name: string
+export type { RegisterMeBody, UpdateMeBody, UploadIconBody } from '@/schemas'
+
+export async function getMe() {
+  const r = await api.get<User>('/me')
+  return r.data
 }
 
-export type UpdateMeBody = {
-  name?: string
+export async function registerMe(body: RegisterMeBody) {
+  const r = await api.post<User>('/me', body)
+  return r.data
 }
 
-export type UploadIconBody = {
-  icon: string
+export async function updateMe(body: UpdateMeBody) {
+  const r = await api.patch<User>('/me', body)
+  return r.data
 }
 
-export function getMe() {
-  return api.get<User>('/me').then(r => r.data)
+export async function uploadMyIcon(body: UploadIconBody) {
+  const r = await api.post<User>('/me/icon', body)
+  return r.data
 }
 
-export function registerMe(body: RegisterMeBody) {
-  return api.post<User>('/me', body).then(r => r.data)
-}
-
-export function updateMe(body: UpdateMeBody) {
-  return api.patch<User>('/me', body).then(r => r.data)
-}
-
-export function uploadMyIcon(body: UploadIconBody) {
-  return api.post<User>('/me/icon', body).then(r => r.data)
-}
-
-export function getMyProjects(params?: PaginationParams) {
-  const query: Record<string, string> = {}
-  if (params?.limit != null) query.limit = String(params.limit)
-  if (params?.offset != null) query.offset = String(params.offset)
-  return api.get<PaginatedResponse<Project>>('/me/projects', { params: query }).then(r => r.data)
+export async function withdrawMe() {
+  const r = await api.post('/me/withdraw')
+  return r.data
 }

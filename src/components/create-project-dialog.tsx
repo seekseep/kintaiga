@@ -1,8 +1,7 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { createProject } from '@/api/projects'
+import { useCreateProject } from '@/hooks/api/projects'
 import { CreateProjectParametersSchema } from '@db/validation'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
@@ -22,25 +21,24 @@ type Props = {
 }
 
 export function CreateProjectDialog({ open, onOpenChange }: Props) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    mutationFn: (values: { name: string; description?: string | null }) =>
-      createProject({ name: values.name, description: values.description || undefined }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['me', 'projects'] })
-      toast.success('プロジェクトを追加しました')
-      onOpenChange(false)
-    },
-    onError: () => toast.error('プロジェクトの追加に失敗しました'),
-  })
+  const mutation = useCreateProject()
 
   return (
     <Formik
       initialValues={{ name: '', description: '' }}
       validate={zodValidate(CreateProjectParametersSchema)}
       onSubmit={(values, { resetForm }) => {
-        mutation.mutate(values, { onSuccess: () => resetForm() })
+        mutation.mutate(
+          { name: values.name, description: values.description || undefined },
+          {
+            onSuccess: () => {
+              toast.success('プロジェクトを追加しました')
+              onOpenChange(false)
+              resetForm()
+            },
+            onError: () => toast.error('プロジェクトの追加に失敗しました'),
+          }
+        )
       }}
     >
       {({ handleSubmit, resetForm, dirty, isValid }) => (

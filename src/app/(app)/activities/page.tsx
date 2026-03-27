@@ -1,88 +1,51 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { getActivities, type Activity } from '@/api/activities'
-import { getMyProjects } from '@/api/me'
+import { endOfDay } from 'date-fns'
+import { useActivities } from '@/hooks/api/activities'
+import { useUserProjectStatements } from '@/hooks/api/projects'
+import { useUsers } from '@/hooks/api/users'
 import { useAuth } from '@/hooks/use-auth'
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
+import { useActivityFiltersSearchParams } from '@/hooks/use-activity-filters-search-params'
+import { RefreshCw } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { EditActivityDialog } from '@/components/edit-activity-dialog'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
-import { ElapsedTime, calcElapsedMinutes } from '@/components/elapsed-time'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-
-function getMonthRange(date: Date) {
-  const start = new Date(date.getFullYear(), date.getMonth(), 1)
-  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
-  return { startDate: start.toISOString(), endDate: end.toISOString() }
-}
-
-function formatMonth(date: Date) {
-  return `${date.getFullYear()}年${date.getMonth() + 1}月`
-}
-
-function groupByDate(activities: Activity[]) {
-  const groups: { date: string; activities: Activity[] }[] = []
-  let currentDate = ''
-  for (const activity of activities) {
-    const dateKey = new Date(activity.startedAt).toLocaleDateString('ja-JP')
-    if (dateKey !== currentDate) {
-      currentDate = dateKey
-      groups.push({ date: dateKey, activities: [] })
-    }
-    groups[groups.length - 1].activities.push(activity)
-  }
-  return groups
-}
+import { ActivityFilters } from '@/components/features/activity-filters'
+import { ActivityTable } from '@/components/features/activity-table'
 
 export default function ActivitiesPage() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
-  const [projectFilter, setProjectFilter] = useState<string>('all')
-  const [editingActivity, setEditingActivity] = useState<Activity | null>(null)
-  const [currentMonth, setCurrentMonth] = useState(() => {
-    const now = new Date()
-    return new Date(now.getFullYear(), now.getMonth(), 1)
+  const {
+    userFilter, setUserFilter,
+    projectFilter, setProjectFilter,
+    startDate, setStartDate,
+    endDate, setEndDate,
+  } = useActivityFiltersSearchParams()
+
+  const { data: projectsData } = useUserProjectStatements({ limit: 100 })
+
+  const { data: usersData } = useUsers({ limit: 100 }, { enabled: isAdmin })
+
+  const { data: activitiesData, isLoading, isFetching, refetch } = useActivities({
+    userId: userFilter === 'all' ? undefined : userFilter,
+    projectId: projectFilter === 'all' ? undefined : projectFilter,
+    startDate: startDate?.toISOString(),
+    endDate: endDate ? endOfDay(endDate).toISOString() : undefined,
   })
 
-  const { startDate, endDate } = useMemo(() => getMonthRange(currentMonth), [currentMonth])
-  const colCount = isAdmin ? 6 : 5
-
-  const goToPrevMonth = () => setCurrentMonth(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))
-  const goToNextMonth = () => setCurrentMonth(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))
-
-  const { data: myProjectsData } = useQuery({
-    queryKey: ['me', 'projects'],
-    queryFn: () => getMyProjects(),
-  })
-
-  const { data: activitiesData, isLoading } = useQuery({
-    queryKey: ['activities', { projectId: projectFilter === 'all' ? undefined : projectFilter, startDate, endDate }],
-    queryFn: () => getActivities({
-      projectId: projectFilter === 'all' ? undefined : projectFilter,
-      startDate,
-      endDate,
-      limit: 100,
-    }),
-  })
-
-  const myProjects = myProjectsData?.items ?? []
+  const myProjects = projectsData?.items ?? []
+  const users = usersData?.items ?? []
   const activities = activitiesData?.items ?? []
-  const groups = useMemo(() => groupByDate(activities), [activities])
 
-  const totalMinutes = useMemo(() =>
-    activities.reduce((sum, a) => sum + calcElapsedMinutes(a.startedAt, a.endedAt), 0),
-    [activities]
-  )
-  const totalHours = Math.floor(totalMinutes / 60)
-  const totalMins = totalMinutes % 60
-  const totalDisplay = totalHours > 0 ? `${totalHours}時間${totalMins}分` : `${totalMins}分`
+  const userOptions = [
+    { value: 'all', label: 'すべて' },
+    ...users.map(u => ({ value: u.id, label: u.name })),
+  ]
+  const projectOptions = [
+    { value: 'all', label: 'すべて' },
+    ...myProjects.map(p => ({ value: p.id, label: p.name })),
+  ]
 
   return (
     <div className="space-y-4">
@@ -93,98 +56,33 @@ export default function ActivitiesPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1 className="font-bold text-lg">稼働</h1>
-
-      <div className="flex items-center gap-3">
-        <Label>プロジェクト</Label>
-        <Select value={projectFilter} onValueChange={setProjectFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">すべて</SelectItem>
-            {myProjects.map(p => (
-              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" onClick={goToPrevMonth}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-sm font-medium min-w-32 text-center">{formatMonth(currentMonth)}</span>
-        <Button variant="outline" size="icon" onClick={goToNextMonth}>
-          <ChevronRight className="h-4 w-4" />
+      <div className="flex items-center justify-between">
+        <h1 className="font-bold text-lg">稼働</h1>
+        <Button variant="ghost" size="icon" onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
         </Button>
       </div>
+
+      <ActivityFilters
+        projectOptions={projectOptions}
+        projectFilter={projectFilter}
+        onProjectFilterChange={setProjectFilter}
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        showUserFilter={isAdmin}
+        userOptions={userOptions}
+        userFilter={userFilter}
+        onUserFilterChange={setUserFilter}
+      />
 
       {isLoading ? (
         <Skeleton className="h-64" />
-      ) : activities.length === 0 ? (
-        <Card>
-          <CardContent className="py-6 text-center text-muted-foreground">
-            稼働がありません
-          </CardContent>
-        </Card>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {isAdmin && <TableHead>ユーザー</TableHead>}
-              <TableHead>プロジェクト</TableHead>
-              <TableHead>開始</TableHead>
-              <TableHead>終了</TableHead>
-              <TableHead>経過時間</TableHead>
-              <TableHead>メモ</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {groups.map(group => (
-              <>
-                <TableRow key={`date-${group.date}`} className="bg-muted hover:bg-muted">
-                  <TableCell colSpan={colCount} className="font-medium text-xs text-muted-foreground py-2">
-                    {group.date}
-                  </TableCell>
-                </TableRow>
-                {group.activities.map(activity => (
-                  <TableRow
-                    key={activity.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => setEditingActivity(activity)}
-                  >
-                    {isAdmin && <TableCell>{activity.userName ?? '-'}</TableCell>}
-                    <TableCell>{activity.projectName ?? '-'}</TableCell>
-                    <TableCell>{new Date(activity.startedAt).toLocaleString('ja-JP')}</TableCell>
-                    <TableCell>
-                      {activity.endedAt
-                        ? new Date(activity.endedAt).toLocaleString('ja-JP')
-                        : <Badge variant="default">進行中</Badge>
-                      }
-                    </TableCell>
-                    <TableCell><ElapsedTime startedAt={activity.startedAt} endedAt={activity.endedAt} /></TableCell>
-                    <TableCell className="text-muted-foreground">{activity.note ?? '-'}</TableCell>
-                  </TableRow>
-                ))}
-              </>
-            ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell colSpan={colCount - 2} className="text-right font-medium">合計</TableCell>
-              <TableCell className="font-medium">{totalDisplay}</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableFooter>
-        </Table>
-      )}
-
-      {editingActivity && (
-        <EditActivityDialog
-          activity={editingActivity}
-          open={true}
-          onOpenChange={(open) => { if (!open) setEditingActivity(null) }}
+        <ActivityTable
+          activities={activities}
+          showUserColumn={isAdmin}
         />
       )}
     </div>

@@ -1,9 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { createProject } from '@/api/projects'
+import { useCreateProject } from '@/hooks/api/projects'
 import { CreateProjectParametersSchema } from '@db/validation'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
@@ -16,15 +15,7 @@ import { AdminGuard } from '@/components/layouts/admin-guard'
 export default function ProjectNewPage() {
   const router = useRouter()
 
-  const mutation = useMutation({
-    mutationFn: (values: { name: string; description?: string | null }) =>
-      createProject({ name: values.name, description: values.description || undefined }),
-    onSuccess: (project) => {
-      toast.success('プロジェクトを作成しました')
-      router.push(`/projects/${project.id}`)
-    },
-    onError: () => toast.error('作成に失敗しました'),
-  })
+  const mutation = useCreateProject()
 
   return (
     <AdminGuard>
@@ -48,7 +39,16 @@ export default function ProjectNewPage() {
           <Formik
             initialValues={{ name: '', description: '' }}
             validate={zodValidate(CreateProjectParametersSchema)}
-            onSubmit={(values) => mutation.mutate(values)}
+            onSubmit={(values) => mutation.mutate(
+              { name: values.name, description: values.description || undefined },
+              {
+                onSuccess: (project) => {
+                  toast.success('プロジェクトを作成しました')
+                  router.push(`/projects/${project.id}`)
+                },
+                onError: () => toast.error('作成に失敗しました'),
+              }
+            )}
           >
             {({ handleSubmit }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

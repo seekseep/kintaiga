@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
-import { registerMe } from '@/api/me'
+import { useRegisterMe } from '@/hooks/api/me'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,15 +16,7 @@ export default function InitializePage() {
   const { refreshUser } = useAuth()
   const [name, setName] = useState('')
 
-  const mutation = useMutation({
-    mutationFn: () => registerMe({ name }),
-    onSuccess: async () => {
-      await refreshUser()
-      toast.success('プロフィールを設定しました')
-      router.push('/')
-    },
-    onError: () => toast.error('設定に失敗しました'),
-  })
+  const mutation = useRegisterMe()
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
@@ -46,7 +37,14 @@ export default function InitializePage() {
           <CardDescription>はじめに表示名を設定してください。</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); mutation.mutate() }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); mutation.mutate({ name }, {
+              onSuccess: async () => {
+                await refreshUser()
+                toast.success('プロフィールを設定しました')
+                router.push('/')
+              },
+              onError: () => toast.error('設定に失敗しました'),
+            }) }} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">名前</Label>
               <Input id="name" value={name} onChange={e => setName(e.target.value)} required />

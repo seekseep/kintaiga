@@ -1,8 +1,7 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { createAssignment } from '@/api/assignments'
+import { useCreateAssignment } from '@/hooks/api/assignments'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import type { User } from '@/api/users'
 import { toast } from 'sonner'
@@ -36,25 +35,21 @@ type Props = {
 }
 
 export function AddMemberDialog({ projectId, unassignedUsers, open, onOpenChange }: Props) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    mutationFn: (values: { userId: string }) => createAssignment({ projectId, userId: values.userId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'assignments'] })
-      queryClient.invalidateQueries({ queryKey: ['users'] })
-      toast.success('メンバーを追加しました')
-      onOpenChange(false)
-    },
-    onError: () => toast.error('追加に失敗しました'),
-  })
+  const mutation = useCreateAssignment()
 
   return (
     <Formik
       initialValues={{ userId: '' }}
       validate={zodValidate(schema)}
       onSubmit={(values, { resetForm }) => {
-        mutation.mutate(values, { onSuccess: () => resetForm() })
+        mutation.mutate({ projectId, userId: values.userId }, {
+          onSuccess: () => {
+            toast.success('メンバーを追加しました')
+            onOpenChange(false)
+            resetForm()
+          },
+          onError: () => toast.error('追加に失敗しました'),
+        })
       }}
     >
       {({ handleSubmit, resetForm, values }) => (

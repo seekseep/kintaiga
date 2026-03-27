@@ -39,6 +39,7 @@ export const assignments = pgTable('assignments', {
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   startedAt: timestamp('started_at').defaultNow().notNull(),
   endedAt: timestamp('ended_at'),
+  targetMinutes: integer('target_minutes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => [
   index('assignments_project_id_idx').on(table.projectId),
@@ -59,3 +60,39 @@ export const activities = pgTable('activities', {
   index('activities_user_started_idx').on(table.userId, table.startedAt),
   index('activities_project_started_idx').on(table.projectId, table.startedAt),
 ])
+
+export const deletedUsers = pgTable('deleted_users', {
+  id: uuid('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  role: roleEnum('role').notNull(),
+  iconUrl: text('icon_url'),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
+  deletedAt: timestamp('deleted_at').defaultNow().notNull(),
+  deletedBy: uuid('deleted_by').notNull(),
+})
+
+export const deletedActivities = pgTable('deleted_activities', {
+  id: uuid('id').primaryKey(),
+  userId: uuid('user_id').notNull(),
+  projectId: uuid('project_id').notNull(),
+  startedAt: timestamp('started_at').notNull(),
+  endedAt: timestamp('ended_at'),
+  note: text('note'),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
+  deletedAt: timestamp('deleted_at').defaultNow().notNull(),
+  deletedBy: uuid('deleted_by').notNull(),
+})
+
+export const deletedAssignments = pgTable('deleted_assignments', {
+  id: uuid('id').primaryKey(),
+  projectId: uuid('project_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  startedAt: timestamp('started_at').notNull(),
+  endedAt: timestamp('ended_at'),
+  targetMinutes: integer('target_minutes'),
+  createdAt: timestamp('created_at').notNull(),
+  deletedAt: timestamp('deleted_at').defaultNow().notNull(),
+  deletedBy: uuid('deleted_by').notNull(),
+})

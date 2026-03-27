@@ -1,44 +1,18 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { getActivities, type Activity } from '@/api/activities'
-import { getProjectConfig } from '@/api/projects'
-import { calcElapsedMinutes, ElapsedTime } from '@/components/elapsed-time'
+import { useActivities } from '@/hooks/api/activities'
+import { useProjectConfig } from '@/hooks/api/projects'
+import { ElapsedTime } from '@/components/elapsed-time'
+import { formatMinutes } from '@/domain/time'
+import { filterActivitiesByMonth, calculateTotalMinutes } from '@/domain/aggregation'
+import { canControlActivity } from '@/domain/authorization'
+import { useAssignments } from '@/hooks/api/assignments'
 import { StartActivityDialog } from '@/components/start-activity-dialog'
 import { EndActivityDialog } from '@/components/end-activity-dialog'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
-import { Square, Play } from 'lucide-react'
-
-function roundMinutes(minutes: number, interval: number, direction: 'ceil' | 'floor'): number {
-  if (interval <= 0) return minutes
-  return direction === 'ceil'
-    ? Math.ceil(minutes / interval) * interval
-    : Math.floor(minutes / interval) * interval
-}
-
-function formatMinutes(minutes: number): string {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h > 0) return `${h}時間${m}分`
-  return `${m}分`
-}
-
-function getMonthRange(): { start: Date; end: Date } {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), 1)
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
-  return { start, end }
-}
-
-function filterByMonth(activities: Activity[]): Activity[] {
-  const { start, end } = getMonthRange()
-  return activities.filter(a => {
-    const d = new Date(a.startedAt)
-    return d >= start && d <= end
-  })
-}
+import { Square, Play, RefreshCw } from 'lucide-react'
 
 type Props = {
   userId: string
@@ -48,27 +22,23 @@ type Props = {
 
 export function ActivityControl({ userId, projectId, projectName }: Props) {
   const { user: currentUser } = useAuth()
-  const isAdmin = currentUser?.role === 'admin'
-  const canControl = isAdmin || currentUser?.id === userId
+  const canControl = currentUser ? canControlActivity(currentUser.role, currentUser.id, userId) : false
 
   const [startOpen, setStartOpen] = useState(false)
   const [endOpen, setEndOpen] = useState(false)
   const [tick, setTick] = useState(0)
 
-  const { data: config } = useQuery({
-    queryKey: ['projects', projectId, 'config'],
-    queryFn: () => getProjectConfig(projectId),
-  })
+  const { data: config } = useProjectConfig(projectId)
 
-  const { data: ongoingData } = useQuery({
-    queryKey: ['activities', { userId, projectId, ongoing: true }],
-    queryFn: () => getActivities({ userId, projectId, ongoing: true, limit: 1 }),
-  })
+  const { data: assignmentData } = useAssignments({ userId, projectId, active: true })
+  const targetMinutes = assignmentData?.items[0]?.targetMinutes ?? null
 
-  const { data: allData } = useQuery({
-    queryKey: ['activities', { userId, projectId }],
-    queryFn: () => getActivities({ userId, projectId, limit: 200 }),
-  })
+  const { data: ongoingData, isFetching: isFetchingOngoing, refetch: refetchOngoing } = useActivities({ userId, projectId, ongoing: true })
+
+  const { data: allData, isFetching: isFetchingAll, refetch: refetchAll } = useActivities({ userId, projectId })
+
+  const isFetchingActivities = isFetchingOngoing || isFetchingAll
+  const refetchActivities = () => { refetchOngoing(); refetchAll() }
 
   const ongoingActivity = ongoingData?.items[0] ?? null
   const allActivities = allData?.items ?? []
@@ -77,17 +47,14 @@ export function ActivityControl({ userId, projectId, projectName }: Props) {
   const periodActivities = useMemo(() => {
     if (!config) return allActivities
     return config.aggregationUnit === 'monthly'
-      ? filterByMonth(allActivities)
+      ? filterActivitiesByMonth(allActivities)
       : allActivities
   }, [allActivities, config])
 
   // 合計時間（tick で再計算トリガー）
   const totalMinutes = useMemo(() => {
     if (!config) return 0
-    return periodActivities.reduce((sum, a) => {
-      const raw = calcElapsedMinutes(a.startedAt, a.endedAt)
-      return sum + roundMinutes(raw, config.roundingInterval, config.roundingDirection)
-    }, 0)
+    return calculateTotalMinutes(periodActivities, config.roundingInterval, config.roundingDirection)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [periodActivities, config, tick])
 
@@ -103,44 +70,59 @@ export function ActivityControl({ userId, projectId, projectName }: Props) {
     : '全期間'
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="space-y-1">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span>{periodLabel}: {formatMinutes(totalMinutes)}</span>
-        {ongoingActivity && (
-          <span className="text-foreground font-medium">
-            (稼働中 <ElapsedTime startedAt={ongoingActivity.startedAt} endedAt={null} />)
-          </span>
-        )}
+        <span>
+          {periodLabel} {formatMinutes(totalMinutes)}
+          {' / '}
+          {targetMinutes != null ? formatMinutes(targetMinutes) : '--'}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); refetchActivities() }}
+          disabled={isFetchingActivities}
+        >
+          <RefreshCw className={`h-3 w-3 ${isFetchingActivities ? 'animate-spin' : ''}`} />
+        </Button>
       </div>
 
-      {canControl && (
-        ongoingActivity ? (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setEndOpen(true)
-            }}
-          >
-            <Square className="mr-1 h-3 w-3" />
-            終了
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setStartOpen(true)
-            }}
-          >
-            <Play className="mr-1 h-3 w-3" />
-            開始
-          </Button>
-        )
-      )}
+      <div className="flex items-center gap-2">
+        {ongoingActivity && (
+          <span className="text-sm text-foreground font-medium">
+            <ElapsedTime startedAt={ongoingActivity.startedAt} endedAt={null} />
+          </span>
+        )}
+        {canControl && (
+          ongoingActivity ? (
+            <Button
+              variant="destructive"
+              size="default"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setEndOpen(true)
+              }}
+            >
+              <Square className="mr-1 h-4 w-4" />
+              終了
+            </Button>
+          ) : (
+            <Button
+              size="default"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setStartOpen(true)
+              }}
+            >
+              <Play className="mr-1 h-4 w-4" />
+              開始
+            </Button>
+          )
+        )}
+      </div>
 
       {canControl && (
         <>

@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUser, updateUser, deleteUser } from '@/api/users'
+import { useUser, useUpdateUser, useDeleteUser } from '@/hooks/api/users'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,40 +18,20 @@ import { Skeleton } from '@/components/ui/skeleton'
 export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
   const [role, setRole] = useState<'admin' | 'general'>('general')
 
-  const { data: user, isLoading } = useQuery({
-    queryKey: ['users', id],
-    queryFn: () => getUser(id),
-    select: (data) => {
-      if (!editing && name === '' && role === 'general') {
-        setName(data.name)
-        setRole(data.role)
-      }
-      return data
-    },
-  })
+  const { data: user, isLoading } = useUser(id)
 
-  const saveMutation = useMutation({
-    mutationFn: () => updateUser(id, { name, role }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', id] })
-      setEditing(false)
-      toast.success('更新しました')
-    },
-    onError: () => toast.error('更新に失敗しました'),
-  })
+  // Sync form state when user data loads
+  if (user && !editing && name === '' && role === 'general') {
+    setName(user.name)
+    setRole(user.role)
+  }
 
-  const deleteMutation = useMutation({
-    mutationFn: () => deleteUser(id),
-    onSuccess: () => {
-      toast.success('削除しました')
-      router.push('/users')
-    },
-  })
+  const saveMutation = useUpdateUser()
+  const deleteMutation = useDeleteUser()
 
   if (isLoading) return <Skeleton className="mx-auto h-64 max-w-lg" />
   if (!user) return <p className="text-center text-muted-foreground">ユーザーが見つかりません</p>
@@ -98,7 +77,12 @@ export default function UserDetailPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteMutation.mutate()}>削除</AlertDialogAction>
+                    <AlertDialogAction onClick={() => deleteMutation.mutate(id, {
+                      onSuccess: () => {
+                        toast.success('削除しました')
+                        router.push('/users')
+                      },
+                    })}>削除</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -106,7 +90,13 @@ export default function UserDetailPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate() }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate({ id, body: { name, role } }, {
+              onSuccess: () => {
+                setEditing(false)
+                toast.success('更新しました')
+              },
+              onError: () => toast.error('更新に失敗しました'),
+            }) }} className="space-y-4">
             <div className="space-y-2">
               <Label>名前</Label>
               <Input value={name} onChange={e => setName(e.target.value)} disabled={!editing} />

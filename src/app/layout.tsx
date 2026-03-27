@@ -3,7 +3,7 @@ import { Providers } from './providers'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '🐯 キンタイガ',
+  title: 'キンタイガ',
   description: '勤怠の虎 - キンタイガ',
   icons: { icon: '/favicon.svg' },
 }

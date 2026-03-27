@@ -17,7 +17,27 @@
       "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/settings/)",
       "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga -type f -name *.json -path */src/components/ui/*)",
       "Bash(cat \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(app\\)/projects/[id]/users/[userId]/activities/page.tsx\")",
-      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/lib -name *.ts -type f)"
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/lib -name *.ts -type f)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src -name *filter* -o -name *search* -type f)",
+      "Bash(find src/components/ui -name \"*.tsx\" -exec basename {})",
+      "Bash(sed 's/.tsx$//')",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app -name \"page.tsx\" -exec basename {})",
+      "Bash(__NEW_LINE_eab0e0eb5d310bd3__ cd:*)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/configuration/)",
+      "Bash(npm run:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npm -v)",
+      "Read(//Users/seekseep/.npm/_logs/**)",
+      "Bash(pnpm run:*)",
+      "Bash(pnpm drizzle-kit:*)",
+      "Bash(pnpm build:*)",
+      "Bash(cat \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(app\\)/page.tsx\")",
+      "Bash(ls -la \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(auth\\)/\")",
+      "Bash(cat \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(auth\\)/signup/page.tsx\")",
+      "Bash(cat \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(auth\\)/layout.tsx\")",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm test:*)"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/projects/[id]"

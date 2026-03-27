@@ -1,10 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
 import { Formik } from 'formik'
 import { useAuth } from '@/hooks/use-auth'
-import { updateMe } from '@/api/me'
+import { useUpdateMe } from '@/hooks/api/me'
 import { UpdateProfileParametersSchema } from '@db/validation'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
@@ -17,15 +16,7 @@ export default function EditNamePage() {
   const router = useRouter()
   const { user, refreshUser } = useAuth()
 
-  const mutation = useMutation({
-    mutationFn: (values: { name: string }) => updateMe(values),
-    onSuccess: async () => {
-      await refreshUser()
-      toast.success('名前を変更しました')
-      router.push('/me')
-    },
-    onError: () => toast.error('変更に失敗しました'),
-  })
+  const mutation = useUpdateMe()
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
@@ -48,7 +39,14 @@ export default function EditNamePage() {
           <Formik
             initialValues={{ name: user?.name ?? '' }}
             validate={zodValidate(UpdateProfileParametersSchema)}
-            onSubmit={(values) => mutation.mutate(values)}
+            onSubmit={(values) => mutation.mutate(values, {
+              onSuccess: async () => {
+                await refreshUser()
+                toast.success('名前を変更しました')
+                router.push('/me')
+              },
+              onError: () => toast.error('変更に失敗しました'),
+            })}
           >
             {({ handleSubmit }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

@@ -1,8 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
-import { getProjects } from '@/api/projects'
+import { useUserProjectStatements } from '@/hooks/api/projects'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -11,10 +10,7 @@ import { Plus } from 'lucide-react'
 import { AdminGuard } from '@/components/layouts/admin-guard'
 
 export default function ProjectListPage() {
-  const { data: projectsData, isLoading } = useQuery({
-    queryKey: ['projects'],
-    queryFn: () => getProjects(),
-  })
+  const { data: projectsData, isLoading } = useUserProjectStatements()
 
   const projects = projectsData?.items ?? []
 

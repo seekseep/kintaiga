@@ -1,8 +1,8 @@
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { type Configuration, getConfiguration, updateConfiguration } from '@/api/configurations'
+import { type Configuration } from '@/api/configurations'
+import { useConfiguration, useUpdateConfiguration } from '@/hooks/api/configurations'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormSelect } from '@/components/form'
@@ -11,15 +11,10 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/co
 import { AdminGuard } from '@/components/layouts/admin-guard'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const ROUNDING_INTERVALS = [1, 5, 10, 15, 30, 60] as const
+const ROUNDING_INTERVALS = [1, 5, 10, 15, 20, 30, 60] as const
 
 export default function SettingsPage() {
-  const queryClient = useQueryClient()
-
-  const { data: config, isLoading } = useQuery({
-    queryKey: ['configuration'],
-    queryFn: getConfiguration,
-  })
+  const { data: config, isLoading } = useConfiguration()
 
   if (isLoading || !config) return <Skeleton className="h-64" />
 
@@ -32,25 +27,13 @@ export default function SettingsPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <ConfigurationForm config={config} queryClient={queryClient} />
+      <ConfigurationForm config={config} />
     </div>
   )
 }
 
-function ConfigurationForm({ config, queryClient }: { config: Configuration; queryClient: ReturnType<typeof useQueryClient> }) {
-  const mutation = useMutation({
-    mutationFn: (values: { roundingInterval: string; roundingDirection: string; aggregationUnit: string }) =>
-      updateConfiguration({
-        roundingInterval: Number(values.roundingInterval),
-        roundingDirection: values.roundingDirection as 'ceil' | 'floor',
-        aggregationUnit: values.aggregationUnit as 'monthly' | 'none',
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuration'] })
-      toast.success('設定を更新しました')
-    },
-    onError: () => toast.error('更新に失敗しました'),
-  })
+function ConfigurationForm({ config }: { config: Configuration }) {
+  const mutation = useUpdateConfiguration()
 
   // The schema expects numbers for roundingInterval, but FormSelect works with strings.
   // We validate at the form level using a custom schema that accepts strings,
@@ -71,7 +54,14 @@ function ConfigurationForm({ config, queryClient }: { config: Configuration; que
                 roundingDirection: config.roundingDirection,
                 aggregationUnit: config.aggregationUnit,
               }}
-              onSubmit={(values) => mutation.mutate(values)}
+              onSubmit={(values) => mutation.mutate({
+                roundingInterval: Number(values.roundingInterval),
+                roundingDirection: values.roundingDirection as 'ceil' | 'floor',
+                aggregationUnit: values.aggregationUnit as 'monthly' | 'none',
+              }, {
+                onSuccess: () => toast.success('設定を更新しました'),
+                onError: () => toast.error('更新に失敗しました'),
+              })}
             >
               {({ handleSubmit }) => (
                 <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

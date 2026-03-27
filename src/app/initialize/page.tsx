@@ -2,10 +2,9 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
 import { Formik } from 'formik'
 import { useAuth } from '@/hooks/use-auth'
-import { registerMe } from '@/api/me'
+import { useRegisterMe } from '@/hooks/api/me'
 import { CreateProfileParametersSchema } from '@db/validation'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
@@ -29,15 +28,7 @@ export default function InitializePage() {
     }
   }, [isLoading, session, needsInitialization, router])
 
-  const mutation = useMutation({
-    mutationFn: (values: { name: string }) => registerMe(values),
-    onSuccess: async () => {
-      await refreshUser()
-      toast.success('プロフィールを設定しました')
-      router.push('/')
-    },
-    onError: () => toast.error('設定に失敗しました'),
-  })
+  const mutation = useRegisterMe()
 
   if (isLoading || !session || !needsInitialization) {
     return (
@@ -58,7 +49,14 @@ export default function InitializePage() {
           <Formik
             initialValues={{ name: '' }}
             validate={zodValidate(CreateProfileParametersSchema)}
-            onSubmit={(values) => mutation.mutate(values)}
+            onSubmit={(values) => mutation.mutate(values, {
+              onSuccess: async () => {
+                await refreshUser()
+                toast.success('プロフィールを設定しました')
+                router.push('/')
+              },
+              onError: () => toast.error('設定に失敗しました'),
+            })}
           >
             {({ handleSubmit }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

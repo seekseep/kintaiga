@@ -1,9 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { createUser } from '@/api/users'
+import { useCreateUser } from '@/hooks/api/users'
 import { CreateUserParametersSchema } from '@db/validation'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
@@ -15,14 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 export default function UserNewPage() {
   const router = useRouter()
 
-  const mutation = useMutation({
-    mutationFn: (values: { email: string; password: string; name: string; role?: 'admin' | 'general' }) => createUser(values),
-    onSuccess: () => {
-      toast.success('ユーザーを作成しました')
-      router.push('/users')
-    },
-    onError: () => toast.error('作成に失敗しました'),
-  })
+  const mutation = useCreateUser()
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
@@ -45,7 +37,13 @@ export default function UserNewPage() {
           <Formik
             initialValues={{ email: '', password: '', name: '', role: 'general' as const }}
             validate={zodValidate(CreateUserParametersSchema)}
-            onSubmit={(values) => mutation.mutate(values)}
+            onSubmit={(values) => mutation.mutate(values, {
+              onSuccess: () => {
+                toast.success('ユーザーを作成しました')
+                router.push('/users')
+              },
+              onError: () => toast.error('作成に失敗しました'),
+            })}
           >
             {({ handleSubmit }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

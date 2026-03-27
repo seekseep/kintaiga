@@ -1,12 +1,12 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { createActivity } from '@/api/activities'
+import { useCreateActivity } from '@/hooks/api/activities'
+import { useProjectConfig } from '@/hooks/api/projects'
 import type { User } from '@/api/users'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { FormInput, FormTextarea, FormField } from '@/components/form'
+import { FormTextarea, FormField, FormDateTimePicker } from '@/components/form'
 import {
   Select,
   SelectContent,
@@ -22,11 +22,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
-function toLocalDatetime(date: Date) {
-  const offset = date.getTimezoneOffset()
-  const local = new Date(date.getTime() - offset * 60 * 1000)
-  return local.toISOString().slice(0, 16)
-}
+import { toLocalDatetimeString } from '@/domain/date-utils'
 
 type Props = {
   projectId: string
@@ -36,29 +32,30 @@ type Props = {
 }
 
 export function AddActivityDialog({ projectId, assignedUsers, open, onOpenChange }: Props) {
-  const queryClient = useQueryClient()
+  const { data: config } = useProjectConfig(projectId)
 
-  const mutation = useMutation({
-    mutationFn: (values: { userId: string; startedAt: string; note: string }) =>
-      createActivity({
-        projectId,
-        userId: values.userId,
-        startedAt: new Date(values.startedAt).toISOString(),
-        note: values.note || undefined,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['activities'] })
-      toast.success('稼働を追加しました')
-      onOpenChange(false)
-    },
-    onError: () => toast.error('追加に失敗しました'),
-  })
+  const mutation = useCreateActivity()
 
   return (
     <Formik
-      initialValues={{ userId: '', startedAt: toLocalDatetime(new Date()), note: '' }}
+      initialValues={{ userId: '', startedAt: toLocalDatetimeString(new Date()), note: '' }}
       onSubmit={(values, { resetForm }) => {
-        mutation.mutate(values, { onSuccess: () => resetForm() })
+        mutation.mutate(
+          {
+            projectId,
+            userId: values.userId,
+            startedAt: new Date(values.startedAt).toISOString(),
+            note: values.note || undefined,
+          },
+          {
+            onSuccess: () => {
+              toast.success('稼働を追加しました')
+              onOpenChange(false)
+              resetForm()
+            },
+            onError: () => toast.error('追加に失敗しました'),
+          }
+        )
       }}
     >
       {({ handleSubmit, resetForm, values, setValues }) => (
@@ -66,7 +63,7 @@ export function AddActivityDialog({ projectId, assignedUsers, open, onOpenChange
           open={open}
           onOpenChange={(value) => {
             if (!value) resetForm()
-            else setValues({ userId: '', startedAt: toLocalDatetime(new Date()), note: '' })
+            else setValues({ userId: '', startedAt: toLocalDatetimeString(new Date()), note: '' })
             onOpenChange(value)
           }}
         >
@@ -89,7 +86,7 @@ export function AddActivityDialog({ projectId, assignedUsers, open, onOpenChange
                   </Select>
                 )}
               </FormField>
-              <FormInput name="startedAt" label="開始日時" type="datetime-local" />
+              <FormDateTimePicker name="startedAt" label="開始日時" minuteStep={config?.roundingInterval} />
               <FormTextarea name="note" label="メモ（任意）" />
             </div>
             <DialogFooter>

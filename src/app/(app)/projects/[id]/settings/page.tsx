@@ -1,10 +1,9 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
-import { getProject, updateProject } from '@/api/projects'
-import { getConfiguration } from '@/api/configurations'
+import { useProject, useUpdateProject } from '@/hooks/api/projects'
+import { useConfiguration } from '@/hooks/api/configurations'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/form'
@@ -13,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AdminGuard } from '@/components/layouts/admin-guard'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const ROUNDING_INTERVALS = [1, 5, 10, 15, 30, 60] as const
+const ROUNDING_INTERVALS = [1, 5, 10, 15, 20, 30, 60] as const
 const USE_GLOBAL = '__global__'
 
 function labelForInterval(v: number) {
@@ -31,32 +30,12 @@ function labelForUnit(v: string) {
 export default function ProjectSettingsPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const queryClient = useQueryClient()
 
-  const { data: project, isLoading: loadingProject } = useQuery({
-    queryKey: ['projects', id],
-    queryFn: () => getProject(id),
-  })
+  const { data: project, isLoading: loadingProject } = useProject(id)
 
-  const { data: globalConfig, isLoading: loadingConfig } = useQuery({
-    queryKey: ['configuration'],
-    queryFn: getConfiguration,
-  })
+  const { data: globalConfig, isLoading: loadingConfig } = useConfiguration()
 
-  const mutation = useMutation({
-    mutationFn: (values: { roundingInterval: string; roundingDirection: string; aggregationUnit: string }) =>
-      updateProject(id, {
-        roundingInterval: values.roundingInterval === USE_GLOBAL ? null : Number(values.roundingInterval),
-        roundingDirection: values.roundingDirection === USE_GLOBAL ? null : values.roundingDirection as 'ceil' | 'floor',
-        aggregationUnit: values.aggregationUnit === USE_GLOBAL ? null : values.aggregationUnit as 'monthly' | 'none',
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects', id] })
-      toast.success('プロジェクト設定を更新しました')
-      router.push(`/projects/${id}`)
-    },
-    onError: () => toast.error('更新に失敗しました'),
-  })
+  const mutation = useUpdateProject()
 
   if (loadingProject || loadingConfig) return <Skeleton className="h-64" />
 
@@ -75,7 +54,23 @@ export default function ProjectSettingsPage() {
                 roundingDirection: project?.roundingDirection ?? USE_GLOBAL,
                 aggregationUnit: project?.aggregationUnit ?? USE_GLOBAL,
               }}
-              onSubmit={(values) => mutation.mutate(values)}
+              onSubmit={(values) => mutation.mutate(
+                {
+                  id,
+                  body: {
+                    roundingInterval: values.roundingInterval === USE_GLOBAL ? null : Number(values.roundingInterval),
+                    roundingDirection: values.roundingDirection === USE_GLOBAL ? null : values.roundingDirection as 'ceil' | 'floor',
+                    aggregationUnit: values.aggregationUnit === USE_GLOBAL ? null : values.aggregationUnit as 'monthly' | 'none',
+                  },
+                },
+                {
+                  onSuccess: () => {
+                    toast.success('プロジェクト設定を更新しました')
+                    router.push(`/projects/${id}`)
+                  },
+                  onError: () => toast.error('更新に失敗しました'),
+                }
+              )}
             >
               {({ handleSubmit }) => (
                 <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">

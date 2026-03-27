@@ -10,12 +10,17 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "user:update-role": "tsx scripts/update-user-role.ts"
+    "user:update-role": "tsx scripts/update-user-role.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
     "@supabase/supabase-js": "^2.100.0",
+    "@tanstack/query-sync-storage-persister": "^5.95.2",
     "@tanstack/react-query": "^5.95.2",
+    "@tanstack/react-query-persist-client": "^5.95.2",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.13.6",
     "class-variance-authority": "^0.7.1",
@@ -50,6 +55,7 @@
     "oxlint": "^1.57.0",
     "tailwindcss": "^4.2.2",
     "tsx": "^4.21.0",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.2"
   }
 }

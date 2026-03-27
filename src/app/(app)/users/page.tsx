@@ -1,8 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
-import { getUsers } from '@/api/users'
+import { useUsers } from '@/hooks/api/users'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -12,10 +11,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/co
 import { Plus } from 'lucide-react'
 
 export default function UserListPage() {
-  const { data: usersData, isLoading } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => getUsers(),
-  })
+  const { data: usersData, isLoading } = useUsers()
 
   const users = usersData?.items ?? []
 
