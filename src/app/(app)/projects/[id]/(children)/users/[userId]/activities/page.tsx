@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { Trash2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { format, addMonths, addWeeks, startOfDay, endOfDay } from 'date-fns'
+import { format, addMonths, addWeeks, startOfDay, endOfDay, startOfMonth, startOfWeek } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { useProject, useProjectConfig } from '@/hooks/api/projects'
 import { useActivities, useUpdateActivity, useDeleteActivity } from '@/hooks/api/activities'
@@ -39,16 +39,14 @@ function addPeriod(date: Date, unit: PeriodUnit, count: number): Date {
   return unit === 'weekly' ? addWeeks(date, count) : addMonths(date, count)
 }
 
-/** プロジェクトの開始日を基準に、今日を含む期間を返す */
-function getCurrentPeriod(projectCreatedAt: string, unit: PeriodUnit, period: number): { start: Date; end: Date } {
-  const base = startOfDay(new Date(projectCreatedAt))
+/** 今日を含むカレンダー区間（月初 or 週初）を返す */
+function getCurrentPeriod(_projectCreatedAt: string, unit: PeriodUnit, period: number): { start: Date; end: Date } {
   const now = new Date()
-  let offset = 0
-  while (addPeriod(base, unit, (offset + 1) * period).getTime() <= now.getTime()) {
-    offset++
-  }
-  const start = addPeriod(base, unit, offset * period)
-  const end = new Date(addPeriod(base, unit, (offset + 1) * period).getTime() - 1)
+  const base = unit === 'weekly'
+    ? startOfWeek(now, { locale: ja })
+    : startOfMonth(now)
+  const start = addPeriod(base, unit, 0)
+  const end = new Date(addPeriod(base, unit, period).getTime() - 1)
   return { start, end }
 }
 

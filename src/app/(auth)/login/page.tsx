@@ -25,7 +25,7 @@ export default function LoginPage() {
           <FormInput name="password" label="パスワード" type="password" />
           {status && <p className="text-sm text-destructive">{status}</p>}
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? '🐯 ログイン中...' : 'ログイン'}
+            {isSubmitting ? 'ログイン中...' : 'ログイン'}
           </Button>
           <div className="flex justify-between text-sm">
             <Link href="/signup" className="text-muted-foreground hover:underline">アカウント作成</Link>

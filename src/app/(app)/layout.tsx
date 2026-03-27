@@ -47,7 +47,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (isLoading) {
     return (
       <div className="flex min-h-svh items-center justify-center">
-        <div className="animate-pulse text-8xl">🐯</div>
+        <img src="/favicon.png" alt="キンタイガ" className="animate-pulse h-24 w-24" />
       </div>
     )
   }
@@ -59,7 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex min-h-svh items-center justify-center">
-        <div className="animate-pulse text-8xl">🐯</div>
+        <img src="/favicon.png" alt="キンタイガ" className="animate-pulse h-24 w-24" />
       </div>
     )
   }
