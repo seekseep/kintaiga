@@ -28,7 +28,7 @@ export type ActivityControlHandle = {
 
 export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function ActivityControl({ userId, projectId, projectName }, ref) {
   const { user: currentUser } = useAuth()
-  const canControl = currentUser ? canControlActivity({ user: currentUser }, { userId }) : false
+  const canControl = currentUser ? canControlActivity(currentUser, { userId }) : false
 
   const [startOpen, setStartOpen] = useState(false)
   const [endOpen, setEndOpen] = useState(false)
