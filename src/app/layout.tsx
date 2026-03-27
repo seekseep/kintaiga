@@ -5,7 +5,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'キンタイガ',
   description: '勤怠の虎 - キンタイガ',
-  icons: { icon: '/favicon.svg' },
+  icons: { icon: '/favicon.png' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
