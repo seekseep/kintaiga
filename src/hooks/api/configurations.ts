@@ -5,11 +5,13 @@ import {
   type UpdateConfigurationInput,
 } from '@/api/configurations'
 import { configurationKeys, projectKeys } from '@/lib/query-keys'
+import { useOrganization } from '@/contexts/organization-context'
 
 export function useConfiguration(options?: { enabled?: boolean }) {
+  const { name: organizationName } = useOrganization()
   return useQuery({
-    queryKey: configurationKeys.detail(),
-    queryFn: getConfiguration,
+    queryKey: configurationKeys.detail(organizationName),
+    queryFn: () => getConfiguration(organizationName),
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     ...options,
@@ -17,12 +19,13 @@ export function useConfiguration(options?: { enabled?: boolean }) {
 }
 
 export function useUpdateConfiguration() {
+  const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: UpdateConfigurationInput) => updateConfiguration(body),
+    mutationFn: (body: UpdateConfigurationInput) => updateConfiguration(organizationName, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: configurationKeys.all })
-      queryClient.invalidateQueries({ queryKey: projectKeys.all })
+      queryClient.invalidateQueries({ queryKey: configurationKeys.all(organizationName) })
+      queryClient.invalidateQueries({ queryKey: projectKeys.all(organizationName) })
     },
   })
 }

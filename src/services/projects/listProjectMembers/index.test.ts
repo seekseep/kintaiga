@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { listProjectMembers } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const activeMemberRow = {
@@ -41,7 +41,7 @@ describe('listProjectMembers', () => {
     const db = createMockDb({ selectResult: [activeMemberRow] })
     const result = await listProjectMembers(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { projectId: 'proj-1' },
     )
     expect(result.items).toHaveLength(1)
@@ -56,7 +56,7 @@ describe('listProjectMembers', () => {
     const db = createMockDb({ selectResult: [activeMemberRow] })
     const result = await listProjectMembers(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { projectId: 'proj-1' },
     )
     expect(result.items).toHaveLength(1)
@@ -66,7 +66,7 @@ describe('listProjectMembers', () => {
     const db = createMockDb({ selectResult: [activeMemberRow] })
     const result = await listProjectMembers(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { projectId: 'proj-1' },
     )
     expect(result.items[0].active).toBe(true)
@@ -76,7 +76,7 @@ describe('listProjectMembers', () => {
     const db = createMockDb({ selectResult: [suspendedMemberRow] })
     const result = await listProjectMembers(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { projectId: 'proj-1' },
     )
     expect(result.items[0].active).toBe(false)
@@ -86,7 +86,7 @@ describe('listProjectMembers', () => {
     const db = createMockDb({ selectResult: [futureSuspendedMemberRow] })
     const result = await listProjectMembers(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { projectId: 'proj-1' },
     )
     expect(result.items[0].active).toBe(true)
@@ -96,7 +96,7 @@ describe('listProjectMembers', () => {
     const db = createMockDb({ selectResult: [] })
     const result = await listProjectMembers(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { projectId: 'proj-1' },
     )
     expect(result.items).toHaveLength(0)
@@ -106,7 +106,7 @@ describe('listProjectMembers', () => {
     const db = createMockDb({ selectResult: [activeMemberRow] })
     const result = await listProjectMembers(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { projectId: 'proj-1' },
     )
     expect(typeof result.items[0].startedAt).toBe('string')

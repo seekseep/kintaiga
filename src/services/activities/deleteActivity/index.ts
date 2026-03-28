@@ -2,8 +2,8 @@ import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { activities } from '@db/schema'
 import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
-import { canControlActivity } from '@/domain/authorization'
-import type { DbOrTx, Executor } from '../../types'
+import { canControlActivityInOrganization } from '@/domain/authorization'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const DeleteActivityParametersSchema = z.object({
   id: z.string(),
@@ -14,7 +14,7 @@ export type DeleteActivityParameters = z.output<typeof DeleteActivityParametersS
 
 export async function deleteActivity(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: DeleteActivityInput,
 ) {
   const result = DeleteActivityParametersSchema.safeParse(input)
@@ -25,7 +25,7 @@ export async function deleteActivity(
 
   const [activity] = await db.select().from(activities).where(eq(activities.id, parameters.id))
   if (!activity) throw new NotFoundError()
-  if (!canControlActivity(executor, activity)) throw new ForbiddenError()
+  if (!canControlActivityInOrganization(executor, activity)) throw new ForbiddenError()
 
   await db.delete(activities).where(eq(activities.id, parameters.id))
 }

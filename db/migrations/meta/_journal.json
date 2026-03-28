@@ -57,6 +57,41 @@
       "when": 1774594814595,
       "tag": "0007_little_zemo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774613973257,
+      "tag": "0008_little_natasha_romanoff",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774629885219,
+      "tag": "0009_conscious_adam_destine",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774669777263,
+      "tag": "0010_loose_thundra",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1774915200000,
+      "tag": "0011_rename_configurations",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1774915300000,
+      "tag": "0012_add_display_name",
+      "breakpoints": true
     }
   ]
 }

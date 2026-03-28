@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, useState } from 'react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ActivityControl, type ActivityControlHandle } from '@/components/activity-control'
@@ -15,6 +16,7 @@ type Props = {
 }
 
 function ProjectCard({ statement, currentUserId }: { statement: UserProjectStatement; currentUserId: string }) {
+  const { organizationName } = useParams<{ organizationName: string }>()
   const activityRef = useRef<ActivityControlHandle>(null)
   const [isFetching, setIsFetching] = useState(false)
 
@@ -28,7 +30,7 @@ function ProjectCard({ statement, currentUserId }: { statement: UserProjectState
     <Card>
       <CardContent className="pt-4 pb-3 space-y-2">
         <div className="flex items-center justify-between">
-          <Link href={`/projects/${statement.id}`} className="hover:underline">
+          <Link href={`/${organizationName}/projects/${statement.id}`} className="hover:underline">
             <CardTitle className="text-base">{statement.name}</CardTitle>
           </Link>
           {statement.membershipStatus === 'joined' && (

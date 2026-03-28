@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useParams } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 
 import {
@@ -10,6 +10,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarGroup,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -25,12 +26,18 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { FolderOpen, Clock, Users, User, LogOut, Settings } from 'lucide-react'
+import { useMyOrganizations } from '@/hooks/api/organizations'
+import { FolderOpen, Clock, Users, User, LogOut, Settings, Building2, ChevronsUpDown, Plus } from 'lucide-react'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading, needsInitialization, signOut } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
+  const params = useParams<{ organizationName?: string }>()
+  const organizationName = params?.organizationName
+
+  const { data: organizations } = useMyOrganizations({ enabled: !!user })
+  const organizationItems = organizations?.items ?? []
 
   useEffect(() => {
     if (!isLoading && !session) {
@@ -64,45 +71,75 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
+  const organizationPrefix = organizationName ? `/${organizationName}` : ''
+
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader className="p-4">
+        <SidebarHeader className="p-2">
           <Link href="/" className="text-lg font-semibold">
             キンタイガ
           </Link>
+          {organizationName && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex w-full items-center gap-2 rounded-md p-2 text-sm hover:bg-sidebar-accent">
+                  <Building2 className="h-4 w-4" />
+                  <span className="flex-1 truncate text-left">{organizationItems.find(o => o.name === organizationName)?.displayName ?? organizationName}</span>
+                  <ChevronsUpDown className="h-3 w-3 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                {organizationItems.map((org) => (
+                  <DropdownMenuItem key={org.id} asChild>
+                    <Link href={`/${org.name}/projects`}>
+                      <Building2 className="h-4 w-4" />
+                      {org.displayName}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem asChild>
+                  <Link href="/organizations/new">
+                    <Plus className="h-4 w-4" />
+                    組織を作成
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </SidebarHeader>
         <SidebarContent>
+          <SidebarGroup>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === '/' || pathname.startsWith('/projects/')}>
-                <Link href="/">
-                  <FolderOpen />
-                  <span>プロジェクト</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === '/activities'}>
-                <Link href="/activities">
-                  <Clock />
-                  <span>稼働</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {user?.role === 'admin' && (
+            {organizationName && (
               <>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith('/users')}>
-                    <Link href="/users">
+                  <SidebarMenuButton asChild isActive={pathname === `${organizationPrefix}` || pathname.startsWith(`${organizationPrefix}/projects`)}>
+                    <Link href={`${organizationPrefix}/projects`}>
+                      <FolderOpen />
+                      <span>プロジェクト</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/activities`)}>
+                    <Link href={`${organizationPrefix}/activities`}>
+                      <Clock />
+                      <span>稼働</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/users`)}>
+                    <Link href={`${organizationPrefix}/users`}>
                       <Users />
                       <span>ユーザー</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith('/configuration')}>
-                    <Link href="/configuration">
+                  <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/configuration`)}>
+                    <Link href={`${organizationPrefix}/configuration`}>
                       <Settings />
                       <span>設定</span>
                     </Link>
@@ -110,7 +147,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuItem>
               </>
             )}
+            {!organizationName && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname === '/'}>
+                  <Link href="/">
+                    <Building2 />
+                    <span>組織一覧</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
+          </SidebarGroup>
         </SidebarContent>
         <SidebarFooter className="p-2">
           {user && (

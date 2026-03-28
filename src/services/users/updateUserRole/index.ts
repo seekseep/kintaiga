@@ -5,7 +5,7 @@ import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server
 import { isAdminUser } from '@/domain/authorization'
 import { RoleSchema } from '@/schemas/_helpers'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const UpdateUserRoleParametersSchema = z.object({
   id: z.string(),
@@ -17,7 +17,7 @@ export type UpdateUserRoleParameters = z.output<typeof UpdateUserRoleParametersS
 
 export async function updateUserRole(
   dependencies: { db: DbOrTx; supabase: SupabaseClient },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: UpdateUserRoleInput,
 ) {
   const result = UpdateUserRoleParametersSchema.safeParse(input)

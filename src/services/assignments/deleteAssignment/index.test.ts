@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/api-server/errors'
 import { deleteAssignment } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const deletedAssignment = {
@@ -20,7 +20,7 @@ describe('deleteAssignment', () => {
     const db = createMockDb({ deleteResult: [deletedAssignment] })
     const result = await deleteAssignment(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'asgn-1' },
     )
     expect(result).toMatchObject({ id: 'asgn-1' })
@@ -29,21 +29,21 @@ describe('deleteAssignment', () => {
   it('一般ユーザーはアサインメントを削除できない', async () => {
     const db = createMockDb()
     await expect(
-      deleteAssignment({ db: db as unknown as DbOrTx }, createGeneralExecutor(), { id: 'asgn-1' })
+      deleteAssignment({ db: db as unknown as DbOrTx }, createMemberExecutor(), { id: 'asgn-1' })
     ).rejects.toThrow(ForbiddenError)
   })
 
   it('存在しないアサインメントの削除は NotFoundError', async () => {
     const db = createMockDb({ deleteResult: [] })
     await expect(
-      deleteAssignment({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 'nonexistent' })
+      deleteAssignment({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 'nonexistent' })
     ).rejects.toThrow(NotFoundError)
   })
 
   it('不正なパラメータは ValidationError', async () => {
     const db = createMockDb()
     await expect(
-      deleteAssignment({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 123 } as unknown as { id: string })
+      deleteAssignment({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 123 } as unknown as { id: string })
     ).rejects.toThrow(ValidationError)
   })
 })

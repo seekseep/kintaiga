@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
 import { createProject } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const createdProject = {
@@ -17,7 +17,7 @@ describe('createProject', () => {
     const db = createMockDb({ insertResult: [createdProject] })
     const result = await createProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { name: 'New Project' },
     )
     expect(result).toMatchObject({ id: 'proj-1', name: 'New Project' })
@@ -28,7 +28,7 @@ describe('createProject', () => {
     const db = createMockDb({ insertResult: [withDesc] })
     const result = await createProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { name: 'New Project', description: 'A test project' },
     )
     expect(result).toMatchObject({ description: 'A test project' })
@@ -38,7 +38,7 @@ describe('createProject', () => {
     const db = createMockDb({ insertResult: [createdProject] })
     const result = await createProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { name: 'New Project', description: null },
     )
     expect(result).toMatchObject({ description: null })
@@ -49,7 +49,7 @@ describe('createProject', () => {
     await expect(
       createProject(
         { db: db as unknown as DbOrTx },
-        createGeneralExecutor(),
+        createMemberExecutor(),
         { name: 'New Project' },
       )
     ).rejects.toThrow(ForbiddenError)
@@ -60,7 +60,7 @@ describe('createProject', () => {
     await expect(
       createProject(
         { db: db as unknown as DbOrTx },
-        createAdminExecutor(),
+        createOwnerExecutor(),
         { name: 123 } as unknown as { name: string },
       )
     ).rejects.toThrow(ValidationError)

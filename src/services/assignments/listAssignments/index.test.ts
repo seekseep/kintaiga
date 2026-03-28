@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ValidationError } from '@/lib/api-server/errors'
 import { listAssignments } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const assignmentRow = {
@@ -20,7 +20,7 @@ describe('listAssignments', () => {
     const db = createMockDb({ selectResult: [assignmentRow] })
     const result = await listAssignments(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toHaveProperty('items')
@@ -30,7 +30,7 @@ describe('listAssignments', () => {
     const db = createMockDb({ selectResult: [assignmentRow] })
     const result = await listAssignments(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toHaveProperty('items')
@@ -40,7 +40,7 @@ describe('listAssignments', () => {
     const db = createMockDb({ selectResult: [assignmentRow] })
     const result = await listAssignments(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, projectId: 'proj-1' },
     )
     expect(result).toHaveProperty('items')
@@ -50,7 +50,7 @@ describe('listAssignments', () => {
     const db = createMockDb({ selectResult: [assignmentRow] })
     const result = await listAssignments(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, userId: 'user-1' },
     )
     expect(result).toHaveProperty('items')
@@ -60,7 +60,7 @@ describe('listAssignments', () => {
     const db = createMockDb({ selectResult: [assignmentRow] })
     const result = await listAssignments(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, active: 'true' },
     )
     expect(result).toHaveProperty('items')
@@ -70,7 +70,7 @@ describe('listAssignments', () => {
     const db = createMockDb({ selectResult: [assignmentRow] })
     const result = await listAssignments(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, active: 'false' },
     )
     expect(result).toHaveProperty('items')
@@ -81,7 +81,7 @@ describe('listAssignments', () => {
     await expect(
       listAssignments(
         { db: db as unknown as DbOrTx },
-        createAdminExecutor(),
+        createOwnerExecutor(),
         { limit: 'bad', offset: 0 } as unknown as { limit: number; offset: number },
       )
     ).rejects.toThrow(ValidationError)

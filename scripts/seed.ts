@@ -16,12 +16,19 @@ const supabase = createClient(
 // --- 定数 ---
 
 const SEED_USERS = [
+  // seed-org & Mococo (共通メンバー)
   { name: '横山', email: 'yokoyama@example.com', password: 'password123', role: 'admin' as const },
   { name: '坂本', email: 'sakamoto@example.com', password: 'password123', role: 'admin' as const },
   { name: '政島', email: 'masajima@example.com', password: 'password123', role: 'general' as const },
+  // N社
+  { name: '田中', email: 'tanaka@example.com', password: 'password123', role: 'general' as const },
+  { name: '木下', email: 'kinoshita@example.com', password: 'password123', role: 'general' as const },
+  { name: '鈴木', email: 'suzuki@example.com', password: 'password123', role: 'general' as const },
+  { name: '吉田', email: 'yoshida@example.com', password: 'password123', role: 'general' as const },
 ]
 
 const PROJECT_NAMES = ['Android', 'Excel', 'Neo4j', 'リファクタリング'] as const
+const NSHA_PROJECT_NAMES = ['Webサイトリニューアル', '社内ツール開発', 'データ分析基盤'] as const
 
 // 日本の祝日 (2025/6 ~ 2026/3)
 const HOLIDAYS = new Set([
@@ -115,6 +122,9 @@ async function main() {
   await db.delete(schema.assignments)
   await db.delete(schema.users)
   await db.delete(schema.projects)
+  await db.delete(schema.organizationMembers)
+  await db.delete(schema.organizationConfigurations)
+  await db.delete(schema.organizations)
   console.log('  Done.')
 
   // 4. Users
@@ -132,12 +142,76 @@ async function main() {
     yokoyama: dbUsers[0].id,
     sakamoto: dbUsers[1].id,
     masajima: dbUsers[2].id,
+    tanaka: dbUsers[3].id,
+    kinoshita: dbUsers[4].id,
+    suzuki: dbUsers[5].id,
+    yoshida: dbUsers[6].id,
   }
+
+  // 4.5. Organization
+  console.log('\n4.5. Inserting organization...')
+  const [org] = await db.insert(schema.organizations).values({
+    name: 'seed-org',
+  }).returning()
+  console.log(`  Inserted organization: ${org.name} (${org.id})`)
+
+  // Organization members
+  await db.insert(schema.organizationMembers).values([
+    { organizationId: org.id, userId: userId.yokoyama, organizationRole: 'owner' as const },
+    { organizationId: org.id, userId: userId.sakamoto, organizationRole: 'manager' as const },
+    { organizationId: org.id, userId: userId.masajima, organizationRole: 'member' as const },
+  ])
+  console.log('  Inserted 3 organization members.')
+
+  // Default configuration
+  await db.insert(schema.organizationConfigurations).values({
+    organizationId: org.id,
+  })
+  console.log('  Inserted default configuration.')
+
+  // --- Mococo 組織 ---
+  console.log('\n4.6. Inserting Mococo organization...')
+  const [mococoOrg] = await db.insert(schema.organizations).values({
+    name: 'mococo',
+    displayName: 'Mococo',
+  }).returning()
+  console.log(`  Inserted organization: ${mococoOrg.name} (${mococoOrg.id})`)
+
+  await db.insert(schema.organizationMembers).values([
+    { organizationId: mococoOrg.id, userId: userId.yokoyama, organizationRole: 'owner' as const },
+    { organizationId: mococoOrg.id, userId: userId.sakamoto, organizationRole: 'manager' as const },
+    { organizationId: mococoOrg.id, userId: userId.masajima, organizationRole: 'member' as const },
+  ])
+  console.log('  Inserted 3 Mococo members.')
+
+  await db.insert(schema.organizationConfigurations).values({
+    organizationId: mococoOrg.id,
+  })
+
+  // --- N社 組織 ---
+  console.log('\n4.7. Inserting N社 organization...')
+  const [nshaOrg] = await db.insert(schema.organizations).values({
+    name: 'nsha',
+    displayName: 'N社',
+  }).returning()
+  console.log(`  Inserted organization: ${nshaOrg.name} (${nshaOrg.id})`)
+
+  await db.insert(schema.organizationMembers).values([
+    { organizationId: nshaOrg.id, userId: userId.tanaka, organizationRole: 'owner' as const },
+    { organizationId: nshaOrg.id, userId: userId.kinoshita, organizationRole: 'manager' as const },
+    { organizationId: nshaOrg.id, userId: userId.suzuki, organizationRole: 'member' as const },
+    { organizationId: nshaOrg.id, userId: userId.yoshida, organizationRole: 'member' as const },
+  ])
+  console.log('  Inserted 4 N社 members.')
+
+  await db.insert(schema.organizationConfigurations).values({
+    organizationId: nshaOrg.id,
+  })
 
   // 5. Projects
   console.log('\n5. Inserting projects...')
   const dbProjects = await db.insert(schema.projects).values(
-    PROJECT_NAMES.map((name) => ({ name }))
+    PROJECT_NAMES.map((name) => ({ name, organizationId: org.id }))
   ).returning()
   console.log(`  Inserted ${dbProjects.length} projects.`)
 
@@ -146,6 +220,19 @@ async function main() {
     excel: dbProjects[1].id,
     neo4j: dbProjects[2].id,
     refactoring: dbProjects[3].id,
+  }
+
+  // 5.5. N社 Projects
+  console.log('\n5.5. Inserting N社 projects...')
+  const nshaDbProjects = await db.insert(schema.projects).values(
+    NSHA_PROJECT_NAMES.map((name) => ({ name, organizationId: nshaOrg.id }))
+  ).returning()
+  console.log(`  Inserted ${nshaDbProjects.length} N社 projects.`)
+
+  const nshaProjectId = {
+    web: nshaDbProjects[0].id,
+    tool: nshaDbProjects[1].id,
+    data: nshaDbProjects[2].id,
   }
 
   // 6. Assignments
@@ -164,7 +251,22 @@ async function main() {
     // リファクタリング: 2026/3 横山のみ
     { projectId: projectId.refactoring, userId: userId.yokoyama, startedAt: new Date(2026, 2, 1), endedAt: new Date(2026, 2, 31), targetMinutes: 1200 },
   ]
-  const dbAssignments = await db.insert(schema.assignments).values(assignmentValues satisfies AssignmentInsert[]).returning()
+  // N社 Assignments
+  const nshaAssignmentValues: AssignmentInsert[] = [
+    // Webサイトリニューアル: 2025/10 ~ 2026/3 田中・木下・鈴木
+    { projectId: nshaProjectId.web, userId: userId.tanaka, startedAt: new Date(2025, 9, 1), endedAt: new Date(2026, 2, 31), targetMinutes: 9600 },
+    { projectId: nshaProjectId.web, userId: userId.kinoshita, startedAt: new Date(2025, 9, 1), endedAt: new Date(2026, 2, 31), targetMinutes: 9600 },
+    { projectId: nshaProjectId.web, userId: userId.suzuki, startedAt: new Date(2025, 9, 1), endedAt: new Date(2026, 2, 31), targetMinutes: 4800 },
+    // 社内ツール開発: 2026/1 ~ 2026/3 吉田・鈴木
+    { projectId: nshaProjectId.tool, userId: userId.yoshida, startedAt: new Date(2026, 0, 1), endedAt: new Date(2026, 2, 31), targetMinutes: 7200 },
+    { projectId: nshaProjectId.tool, userId: userId.suzuki, startedAt: new Date(2026, 0, 1), endedAt: new Date(2026, 2, 31), targetMinutes: 4800 },
+    // データ分析基盤: 2026/2 ~ 2026/3 吉田・田中
+    { projectId: nshaProjectId.data, userId: userId.yoshida, startedAt: new Date(2026, 1, 1), endedAt: new Date(2026, 2, 31), targetMinutes: 4800 },
+    { projectId: nshaProjectId.data, userId: userId.tanaka, startedAt: new Date(2026, 1, 1), endedAt: new Date(2026, 2, 31), targetMinutes: 4800 },
+  ]
+
+  const allAssignmentValues = [...assignmentValues, ...nshaAssignmentValues]
+  const dbAssignments = await db.insert(schema.assignments).values(allAssignmentValues satisfies AssignmentInsert[]).returning()
   console.log(`  Inserted ${dbAssignments.length} assignments.`)
 
   // 7. Activities 生成
@@ -252,6 +354,87 @@ async function main() {
           { userId: userId.yokoyama, projectId: projectId.refactoring, startedAt: makeTimestamp(day, 14), endedAt: makeTimestamp(day, 18) },
         )
       }
+    }
+  }
+
+  // --- N社 Activities ---
+  // 2025/10 ~ 2025/12: Webサイトリニューアル 田中フル、木下フル、鈴木半日
+  for (let month = 10; month <= 12; month++) {
+    const days = getBusinessDays(2025, month)
+    for (const day of days) {
+      for (const uid of [userId.tanaka, userId.kinoshita]) {
+        activities.push(
+          { userId: uid, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 12) },
+          { userId: uid, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 13), endedAt: makeTimestamp(day, 18) },
+        )
+      }
+      activities.push(
+        { userId: userId.suzuki, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 13) },
+      )
+    }
+  }
+
+  // 2026/1: Webサイトリニューアル 田中・木下半日、鈴木半日 + 社内ツール 吉田フル、鈴木午後
+  {
+    const days = getBusinessDays(2026, 1)
+    for (const day of days) {
+      for (const uid of [userId.tanaka, userId.kinoshita]) {
+        activities.push(
+          { userId: uid, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 13) },
+        )
+      }
+      activities.push(
+        { userId: userId.suzuki, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 12) },
+        { userId: userId.suzuki, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 13), endedAt: makeTimestamp(day, 18) },
+      )
+      activities.push(
+        { userId: userId.yoshida, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 12) },
+        { userId: userId.yoshida, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 13), endedAt: makeTimestamp(day, 18) },
+      )
+    }
+  }
+
+  // 2026/2: Web 田中午前、木下午前 + データ分析 田中午後、吉田午前 + 社内ツール 吉田午後、鈴木フル
+  {
+    const days = getBusinessDays(2026, 2)
+    for (const day of days) {
+      activities.push(
+        { userId: userId.tanaka, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 13) },
+        { userId: userId.tanaka, projectId: nshaProjectId.data, startedAt: makeTimestamp(day, 14), endedAt: makeTimestamp(day, 18) },
+      )
+      activities.push(
+        { userId: userId.kinoshita, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 13) },
+      )
+      activities.push(
+        { userId: userId.yoshida, projectId: nshaProjectId.data, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 13) },
+        { userId: userId.yoshida, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 14), endedAt: makeTimestamp(day, 18) },
+      )
+      activities.push(
+        { userId: userId.suzuki, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 12) },
+        { userId: userId.suzuki, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 13), endedAt: makeTimestamp(day, 18) },
+      )
+    }
+  }
+
+  // 2026/3: Web 田中午前、木下午前 + データ分析 田中午後、吉田午前 + 社内ツール 吉田午後、鈴木フル
+  {
+    const days = getBusinessDays(2026, 3)
+    for (const day of days) {
+      activities.push(
+        { userId: userId.tanaka, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 13) },
+        { userId: userId.tanaka, projectId: nshaProjectId.data, startedAt: makeTimestamp(day, 14), endedAt: makeTimestamp(day, 18) },
+      )
+      activities.push(
+        { userId: userId.kinoshita, projectId: nshaProjectId.web, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 13) },
+      )
+      activities.push(
+        { userId: userId.yoshida, projectId: nshaProjectId.data, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 13) },
+        { userId: userId.yoshida, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 14), endedAt: makeTimestamp(day, 18) },
+      )
+      activities.push(
+        { userId: userId.suzuki, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 9), endedAt: makeTimestamp(day, 12) },
+        { userId: userId.suzuki, projectId: nshaProjectId.tool, startedAt: makeTimestamp(day, 13), endedAt: makeTimestamp(day, 18) },
+      )
     }
   }
 

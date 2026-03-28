@@ -1,8 +1,8 @@
 import { z } from 'zod/v4'
 import { assignments } from '@db/schema'
 import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
-import { isAdminUser } from '@/domain/authorization'
-import type { DbOrTx, Executor } from '../../types'
+import { isOrganizationManagerOrAbove } from '@/domain/authorization'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const CreateAssignmentParametersSchema = z.object({
   projectId: z.string(),
@@ -17,14 +17,14 @@ export type CreateAssignmentParameters = z.output<typeof CreateAssignmentParamet
 
 export async function createAssignment(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: CreateAssignmentInput,
 ) {
   const result = CreateAssignmentParametersSchema.safeParse(input)
   if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
-  if (!isAdminUser(executor)) throw new ForbiddenError()
+  if (!isOrganizationManagerOrAbove(executor)) throw new ForbiddenError()
 
   const { db } = dependencies
   const endedAt = parameters.endedAt ? new Date(parameters.endedAt) : null

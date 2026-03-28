@@ -9,7 +9,7 @@ export type { CreateActivityInput } from '@/services/activities/createActivity'
 export type { UpdateActivityInput } from '@/services/activities/updateActivity'
 export type UpdateActivityBody = Omit<UpdateActivityInput, 'id'>
 
-export async function getActivities(params?: Partial<ListActivitiesInput>) {
+export async function getActivities(organizationName: string, params?: Partial<ListActivitiesInput>) {
   const query: Record<string, string> = {}
   if (params?.userId) query.userId = params.userId
   if (params?.ongoing) query.ongoing = 'true'
@@ -18,30 +18,30 @@ export async function getActivities(params?: Partial<ListActivitiesInput>) {
   if (params?.endDate) query.endDate = params.endDate
   if (params?.limit != null) query.limit = String(params.limit)
   if (params?.offset != null) query.offset = String(params.offset)
-  const r = await api.get<PaginatedResponse<ProjectActivity>>('/activities', { params: query })
+  const r = await api.get<PaginatedResponse<ProjectActivity>>(`/organizations/${organizationName}/activities`, { params: query })
   return r.data
 }
 
-export async function getOngoingActivities() {
-  return getActivities({ ongoing: true })
+export async function getOngoingActivities(organizationName: string) {
+  return getActivities(organizationName, { ongoing: true })
 }
 
-export async function getActivity(id: string) {
-  const r = await api.get<ProjectActivity>(`/activities/${id}`)
+export async function getActivity(organizationName: string, id: string) {
+  const r = await api.get<ProjectActivity>(`/organizations/${organizationName}/activities/${id}`)
   return r.data
 }
 
-export async function createActivity(body: CreateActivityInput) {
-  const r = await api.post<ProjectActivity>('/activities', body)
+export async function createActivity(organizationName: string, body: CreateActivityInput) {
+  const r = await api.post<ProjectActivity>(`/organizations/${organizationName}/activities`, body)
   return r.data
 }
 
-export async function updateActivity(id: string, body: UpdateActivityBody) {
-  const r = await api.patch<ProjectActivity>(`/activities/${id}`, body)
+export async function updateActivity(organizationName: string, id: string, body: UpdateActivityBody) {
+  const r = await api.patch<ProjectActivity>(`/organizations/${organizationName}/activities/${id}`, body)
   return r.data
 }
 
-export async function deleteActivity(id: string) {
-  await api.delete(`/activities/${id}`)
+export async function deleteActivity(organizationName: string, id: string) {
+  await api.delete(`/organizations/${organizationName}/activities/${id}`)
   return undefined
 }

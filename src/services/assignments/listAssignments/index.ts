@@ -3,7 +3,7 @@ import { eq, and, or, count as countFn, isNull, gte, lt, type SQL } from 'drizzl
 import { assignments } from '@db/schema'
 import { ValidationError } from '@/lib/api-server/errors'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const ListAssignmentsParametersSchema = z.object({
   projectId: z.string().optional(),
@@ -18,7 +18,7 @@ export type ListAssignmentsParameters = z.output<typeof ListAssignmentsParameter
 
 export async function listAssignments(
   dependencies: { db: DbOrTx },
-  _executor: Executor,
+  _executor: OrganizationExecutor,
   input: ListAssignmentsInput,
 ) {
   const result = ListAssignmentsParametersSchema.safeParse(input)

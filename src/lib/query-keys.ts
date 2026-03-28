@@ -13,45 +13,52 @@ export type ActivityFilters = {
 export const meKeys = {
   all: ['me'] as const,
   profile: () => [...meKeys.all, 'profile'] as const,
+  organizations: () => [...meKeys.all, 'organizations'] as const,
+}
+
+export const organizationKeys = {
+  all: ['organizations'] as const,
+  detail: (organizationName: string) => [...organizationKeys.all, organizationName] as const,
+  members: (organizationName: string) => [...organizationKeys.detail(organizationName), 'members'] as const,
 }
 
 export const projectKeys = {
-  all: ['projects'] as const,
-  lists: () => [...projectKeys.all, 'list'] as const,
-  statements: () => [...projectKeys.all, 'statement'] as const,
-  statement: (params?: GetUserProjectStatementsParams) => [...projectKeys.statements(), params] as const,
-  details: () => [...projectKeys.all, 'detail'] as const,
-  detail: (id: string) => [...projectKeys.details(), id] as const,
-  config: (id: string) => [...projectKeys.detail(id), 'config'] as const,
-  assignments: (id: string) => [...projectKeys.detail(id), 'assignments'] as const,
-  members: (id: string) => [...projectKeys.detail(id), 'members'] as const,
+  all: (organizationName: string) => ['projects', organizationName] as const,
+  lists: (organizationName: string) => [...projectKeys.all(organizationName), 'list'] as const,
+  statements: (organizationName: string) => [...projectKeys.all(organizationName), 'statement'] as const,
+  statement: (organizationName: string, params?: GetUserProjectStatementsParams) => [...projectKeys.statements(organizationName), params] as const,
+  details: (organizationName: string) => [...projectKeys.all(organizationName), 'detail'] as const,
+  detail: (organizationName: string, id: string) => [...projectKeys.details(organizationName), id] as const,
+  config: (organizationName: string, id: string) => [...projectKeys.detail(organizationName, id), 'config'] as const,
+  assignments: (organizationName: string, id: string) => [...projectKeys.detail(organizationName, id), 'assignments'] as const,
+  members: (organizationName: string, id: string) => [...projectKeys.detail(organizationName, id), 'members'] as const,
 }
 
 export const activityKeys = {
-  all: ['activities'] as const,
-  lists: () => [...activityKeys.all, 'list'] as const,
-  list: (filters?: ActivityFilters) => [...activityKeys.lists(), filters] as const,
-  details: () => [...activityKeys.all, 'detail'] as const,
-  detail: (id: string) => [...activityKeys.details(), id] as const,
+  all: (organizationName: string) => ['activities', organizationName] as const,
+  lists: (organizationName: string) => [...activityKeys.all(organizationName), 'list'] as const,
+  list: (organizationName: string, filters?: ActivityFilters) => [...activityKeys.lists(organizationName), filters] as const,
+  details: (organizationName: string) => [...activityKeys.all(organizationName), 'detail'] as const,
+  detail: (organizationName: string, id: string) => [...activityKeys.details(organizationName), id] as const,
 }
 
 export const userKeys = {
-  all: ['users'] as const,
-  lists: () => [...userKeys.all, 'list'] as const,
-  list: (params?: PaginationParams) => [...userKeys.lists(), params] as const,
-  details: () => [...userKeys.all, 'detail'] as const,
-  detail: (id: string) => [...userKeys.details(), id] as const,
+  all: (organizationName: string) => ['users', organizationName] as const,
+  lists: (organizationName: string) => [...userKeys.all(organizationName), 'list'] as const,
+  list: (organizationName: string, params?: PaginationParams) => [...userKeys.lists(organizationName), params] as const,
+  details: (organizationName: string) => [...userKeys.all(organizationName), 'detail'] as const,
+  detail: (organizationName: string, id: string) => [...userKeys.details(organizationName), id] as const,
 }
 
 export const assignmentKeys = {
-  all: ['assignments'] as const,
-  lists: () => [...assignmentKeys.all, 'list'] as const,
-  list: (params?: GetAssignmentsParams) => [...assignmentKeys.lists(), params] as const,
-  details: () => [...assignmentKeys.all, 'detail'] as const,
-  detail: (id: string) => [...assignmentKeys.details(), id] as const,
+  all: (organizationName: string) => ['assignments', organizationName] as const,
+  lists: (organizationName: string) => [...assignmentKeys.all(organizationName), 'list'] as const,
+  list: (organizationName: string, params?: GetAssignmentsParams) => [...assignmentKeys.lists(organizationName), params] as const,
+  details: (organizationName: string) => [...assignmentKeys.all(organizationName), 'detail'] as const,
+  detail: (organizationName: string, id: string) => [...assignmentKeys.details(organizationName), id] as const,
 }
 
 export const configurationKeys = {
-  all: ['configuration'] as const,
-  detail: () => [...configurationKeys.all, 'detail'] as const,
+  all: (organizationName: string) => ['configuration', organizationName] as const,
+  detail: (organizationName: string) => [...configurationKeys.all(organizationName), 'detail'] as const,
 }

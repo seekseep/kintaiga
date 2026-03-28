@@ -28,6 +28,7 @@ export default function ProfilePage() {
         </Avatar>
         <div>
           <p className="text-lg font-medium">{user.name}</p>
+          {user.email && <p className="text-sm text-muted-foreground">{user.email}</p>}
           <Badge variant="secondary">{user.role === 'admin' ? '管理者' : '一般'}</Badge>
         </div>
       </div>

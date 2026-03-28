@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
 import { getProjectConfiguration } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 vi.mock('@/domain/config', () => ({
@@ -78,7 +78,7 @@ describe('getProjectConfiguration', () => {
     const mockDb = createMockDbForConfig([projectRow], [configRow])
     const result = await getProjectConfiguration(
       { db: mockDb as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'proj-1' },
     )
     expect(result).toMatchObject({ roundingInterval: 15 })
@@ -88,7 +88,7 @@ describe('getProjectConfiguration', () => {
     const mockDb = createMockDbForConfig([projectRow], [configRow])
     const result = await getProjectConfiguration(
       { db: mockDb as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { id: 'proj-1' },
     )
     expect(result).toMatchObject({ roundingInterval: 15 })
@@ -99,7 +99,7 @@ describe('getProjectConfiguration', () => {
     await expect(
       getProjectConfiguration(
         { db: mockDb as unknown as DbOrTx },
-        createAdminExecutor(),
+        createOwnerExecutor(),
         { id: 'nonexistent' },
       )
     ).rejects.toThrow(NotFoundError)
@@ -110,7 +110,7 @@ describe('getProjectConfiguration', () => {
     await expect(
       getProjectConfiguration(
         { db: mockDb as unknown as DbOrTx },
-        createAdminExecutor(),
+        createOwnerExecutor(),
         { id: 'proj-1' },
       )
     ).rejects.toThrow(NotFoundError)
@@ -121,7 +121,7 @@ describe('getProjectConfiguration', () => {
     await expect(
       getProjectConfiguration(
         { db: db as unknown as DbOrTx },
-        createAdminExecutor(),
+        createOwnerExecutor(),
         { id: 123 } as unknown as { id: string },
       )
     ).rejects.toThrow(ValidationError)

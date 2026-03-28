@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 import { users } from '@db/schema'
 import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
 import { canModifyUser } from '@/domain/authorization'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const UpdateUserParametersSchema = z.object({
   id: z.string(),
@@ -15,7 +15,7 @@ export type UpdateUserParameters = z.output<typeof UpdateUserParametersSchema>
 
 export async function updateUser(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: UpdateUserInput,
 ) {
   const result = UpdateUserParametersSchema.safeParse(input)
@@ -23,7 +23,7 @@ export async function updateUser(
   const { id, ...fields } = result.data
 
   const { db } = dependencies
-  if (!canModifyUser(executor.role, executor.id, id)) throw new ForbiddenError()
+  if (!canModifyUser(executor, id)) throw new ForbiddenError()
 
   const updates: Record<string, unknown> = { updatedAt: new Date() }
   if (fields.name !== undefined) updates.name = fields.name

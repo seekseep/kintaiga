@@ -11,41 +11,41 @@ export type UpdateProjectBody = Omit<UpdateProjectInput, 'id'>
 
 export type GetUserProjectStatementsParams = Partial<ListUserProjectStatementsInput>
 
-export async function getUserProjectStatements(params?: GetUserProjectStatementsParams) {
+export async function getUserProjectStatements(organizationName: string, params?: GetUserProjectStatementsParams) {
   const query: Record<string, string> = {}
   if (params?.limit != null) query.limit = String(params.limit)
   if (params?.offset != null) query.offset = String(params.offset)
   if (params?.filter) query.filter = params.filter
-  const r = await api.get<PaginatedResponse<UserProjectStatement>>('/me/project-statements', { params: query })
+  const r = await api.get<PaginatedResponse<UserProjectStatement>>(`/organizations/${organizationName}/projects`, { params: query })
   return r.data
 }
 
-export async function getProject(id: string) {
-  const r = await api.get<Project>(`/projects/${id}`)
+export async function getProject(organizationName: string, id: string) {
+  const r = await api.get<Project>(`/organizations/${organizationName}/projects/${id}`)
   return r.data
 }
 
-export async function createProject(body: CreateProjectInput) {
-  const r = await api.post<Project>('/projects', body)
+export async function createProject(organizationName: string, body: CreateProjectInput) {
+  const r = await api.post<Project>(`/organizations/${organizationName}/projects`, body)
   return r.data
 }
 
-export async function updateProject(id: string, body: UpdateProjectBody) {
-  const r = await api.patch<Project>(`/projects/${id}`, body)
+export async function updateProject(organizationName: string, id: string, body: UpdateProjectBody) {
+  const r = await api.patch<Project>(`/organizations/${organizationName}/projects/${id}`, body)
   return r.data
 }
 
-export async function deleteProject(id: string) {
-  await api.delete(`/projects/${id}`)
+export async function deleteProject(organizationName: string, id: string) {
+  await api.delete(`/organizations/${organizationName}/projects/${id}`)
   return undefined
 }
 
-export async function getProjectConfig(id: string) {
-  const r = await api.get<ProjectConfig>(`/projects/${id}/configuration`)
+export async function getProjectConfig(organizationName: string, id: string) {
+  const r = await api.get<ProjectConfig>(`/organizations/${organizationName}/projects/${id}/configuration`)
   return r.data
 }
 
-export async function getProjectMembers(id: string) {
-  const r = await api.get<{ items: ProjectMember[] }>(`/projects/${id}/members`)
+export async function getProjectMembers(organizationName: string, id: string) {
+  const r = await api.get<{ items: ProjectMember[] }>(`/organizations/${organizationName}/projects/${id}/members`)
   return r.data
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { InternalError, ValidationError } from '@/lib/api-server/errors'
 import { updateIcon } from './'
-import { createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createUserExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -37,7 +37,7 @@ describe('updateIcon', () => {
     const supabase = createMockSupabase()
     const result = await updateIcon(
       { db: db as unknown as DbOrTx, supabase },
-      createGeneralExecutor(),
+      createUserExecutor({ user: { id: 'general-user-id' } }),
       { icon: validBase64Icon },
     )
     expect(result).toMatchObject({ id: 'general-user-id', iconUrl: expect.any(String) })
@@ -49,7 +49,7 @@ describe('updateIcon', () => {
     await expect(
       updateIcon(
         { db: db as unknown as DbOrTx, supabase },
-        createGeneralExecutor(),
+        createUserExecutor({ user: { id: 'general-user-id' } }),
         { icon: validBase64Icon },
       )
     ).rejects.toThrow(InternalError)
@@ -61,7 +61,7 @@ describe('updateIcon', () => {
     await expect(
       updateIcon(
         { db: db as unknown as DbOrTx, supabase },
-        createGeneralExecutor(),
+        createUserExecutor({ user: { id: 'general-user-id' } }),
         { icon: 123 } as unknown as { icon: string },
       )
     ).rejects.toThrow(ValidationError)

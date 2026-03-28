@@ -2,9 +2,10 @@ import { z } from 'zod/v4'
 import { eq, and, or, isNull, gte, count as countFn } from 'drizzle-orm'
 import { projects, assignments } from '@db/schema'
 import { ValidationError } from '@/lib/api-server/errors'
+import { isOrganizationManagerOrAbove } from '@/domain/authorization'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import type { MembershipStatus } from '@/schemas'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const ListUserProjectStatementsParametersSchema = z.object({
   filter: z.string().optional(),
@@ -28,7 +29,7 @@ const projectColumns = {
 
 export async function listUserProjectStatements(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: ListUserProjectStatementsInput,
 ) {
   const result = ListUserProjectStatementsParametersSchema.safeParse(input)
@@ -36,27 +37,29 @@ export async function listUserProjectStatements(
   const parameters = result.data
 
   const { db } = dependencies
-  const isAdmin = executor.role === 'admin'
+  const isManager = isOrganizationManagerOrAbove(executor)
 
   // joined: アサインメントが有効期間内（endedAt=null or endedAt>=now）のプロジェクト
-  // general ユーザーは常にこのフィルタ
-  if (parameters.filter === 'joined' || !isAdmin) {
+  // member ユーザーは常にこのフィルタ
+  if (parameters.filter === 'joined' || !isManager) {
     const now = new Date()
     const activeAssignment = and(
-      eq(assignments.userId, executor.id),
+      eq(assignments.userId, executor.user.id),
       or(isNull(assignments.endedAt), gte(assignments.endedAt, now))
     )
+    const orgFilter = eq(projects.organizationId, executor.organization.id)
     const [rows, [{ count }]] = await Promise.all([
       db
         .select(projectColumns)
         .from(assignments)
-        .innerJoin(projects, eq(assignments.projectId, projects.id))
+        .innerJoin(projects, and(eq(assignments.projectId, projects.id), orgFilter))
         .where(activeAssignment)
         .limit(parameters.limit)
         .offset(parameters.offset),
       db
         .select({ count: countFn() })
         .from(assignments)
+        .innerJoin(projects, and(eq(assignments.projectId, projects.id), orgFilter))
         .where(activeAssignment),
     ])
     const items = rows.map(row => ({
@@ -66,8 +69,9 @@ export async function listUserProjectStatements(
     return { items, count, limit: parameters.limit, offset: parameters.offset }
   }
 
-  // all (admin only): 全プロジェクトにユーザーのアサインメント状態を付与
+  // all (manager/owner): 組織内の全プロジェクトにユーザーのアサインメント状態を付与
   const now = new Date()
+  const orgFilter = eq(projects.organizationId, executor.organization.id)
   const [rows, [{ count }]] = await Promise.all([
     db
       .select({
@@ -80,12 +84,13 @@ export async function listUserProjectStatements(
         assignments,
         and(
           eq(assignments.projectId, projects.id),
-          eq(assignments.userId, executor.id),
+          eq(assignments.userId, executor.user.id),
         ),
       )
+      .where(orgFilter)
       .limit(parameters.limit)
       .offset(parameters.offset),
-    db.select({ count: countFn() }).from(projects),
+    db.select({ count: countFn() }).from(projects).where(orgFilter),
   ])
 
   const items = rows.map(row => {

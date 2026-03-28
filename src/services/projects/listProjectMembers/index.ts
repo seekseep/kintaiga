@@ -1,11 +1,11 @@
 import { eq } from 'drizzle-orm'
 import { assignments, users } from '@db/schema'
 import type { ProjectMember } from '@/schemas/project-member'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 export async function listProjectMembers(
   dependencies: { db: DbOrTx },
-  _executor: Executor,
+  _executor: OrganizationExecutor,
   input: { projectId: string },
 ) {
   const { db } = dependencies

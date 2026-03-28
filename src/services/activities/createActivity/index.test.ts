@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { ForbiddenError, ValidationError } from '@/lib/api-server/errors'
 import { createActivity } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const assignmentRow = {
   id: 'asgn-1',
   projectId: 'proj-1',
-  userId: 'general-user-id',
+  userId: 'member-user-id',
   startedAt: new Date('2024-01-01'),
   endedAt: null,
   targetMinutes: null,
@@ -17,7 +17,7 @@ const assignmentRow = {
 
 const createdActivity = {
   id: 'act-1',
-  userId: 'general-user-id',
+  userId: 'member-user-id',
   projectId: 'proj-1',
   startedAt: new Date('2024-06-01T09:00:00Z'),
   endedAt: null,
@@ -31,7 +31,7 @@ describe('createActivity', () => {
     const db = createMockDb({ selectResult: [assignmentRow], insertResult: [createdActivity] })
     const result = await createActivity(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { projectId: 'proj-1' },
     )
     expect(result).toMatchObject({ id: 'act-1', projectId: 'proj-1' })
@@ -42,7 +42,7 @@ describe('createActivity', () => {
     const db = createMockDb({ selectResult: [adminAssignment], insertResult: [{ ...createdActivity, userId: 'other-user-id' }] })
     const result = await createActivity(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { projectId: 'proj-1', userId: 'other-user-id' },
     )
     expect(result).toMatchObject({ userId: 'other-user-id' })
@@ -52,17 +52,17 @@ describe('createActivity', () => {
     const db = createMockDb({ selectResult: [assignmentRow], insertResult: [createdActivity] })
     const result = await createActivity(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { projectId: 'proj-1', userId: 'other-user-id' },
     )
-    expect(result).toMatchObject({ userId: 'general-user-id' })
+    expect(result).toMatchObject({ userId: 'member-user-id' })
   })
 
   it('startedAt を指定してアクティビティを作成できる', async () => {
     const db = createMockDb({ selectResult: [assignmentRow], insertResult: [createdActivity] })
     const result = await createActivity(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { projectId: 'proj-1', startedAt: '2024-06-01T09:00:00Z' },
     )
     expect(result).toMatchObject({ id: 'act-1' })
@@ -73,7 +73,7 @@ describe('createActivity', () => {
     const db = createMockDb({ selectResult: [assignmentRow], insertResult: [activityWithNote] })
     const result = await createActivity(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { projectId: 'proj-1', note: 'テストメモ' },
     )
     expect(result).toMatchObject({ note: 'テストメモ' })
@@ -84,7 +84,7 @@ describe('createActivity', () => {
     await expect(
       createActivity(
         { db: db as unknown as DbOrTx },
-        createGeneralExecutor(),
+        createMemberExecutor(),
         { projectId: 'proj-999' },
       )
     ).rejects.toThrow(ForbiddenError)
@@ -95,7 +95,7 @@ describe('createActivity', () => {
     await expect(
       createActivity(
         { db: db as unknown as DbOrTx },
-        createGeneralExecutor(),
+        createMemberExecutor(),
         { projectId: 'proj-1', startedAt: 'invalid-date' },
       )
     ).rejects.toThrow(ValidationError)
@@ -106,7 +106,7 @@ describe('createActivity', () => {
     await expect(
       createActivity(
         { db: db as unknown as DbOrTx },
-        createGeneralExecutor(),
+        createMemberExecutor(),
         { projectId: 123 } as unknown as { projectId: string },
       )
     ).rejects.toThrow(ValidationError)

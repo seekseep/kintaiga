@@ -13,29 +13,33 @@ import {
 } from '@/api/projects'
 import { ApiError } from '@/lib/api'
 import { projectKeys } from '@/lib/query-keys'
+import { useOrganization } from '@/contexts/organization-context'
 
 export function useUserProjectStatements(params?: GetUserProjectStatementsParams, options?: { enabled?: boolean }) {
+  const { name: organizationName } = useOrganization()
   return useQuery({
-    queryKey: projectKeys.statement(params),
-    queryFn: () => getUserProjectStatements(params),
+    queryKey: projectKeys.statement(organizationName, params),
+    queryFn: () => getUserProjectStatements(organizationName, params),
     ...options,
   })
 }
 
 export function useProject(id: string, options?: { enabled?: boolean }) {
+  const { name: organizationName } = useOrganization()
   return useQuery({
-    queryKey: projectKeys.detail(id),
-    queryFn: () => getProject(id),
+    queryKey: projectKeys.detail(organizationName, id),
+    queryFn: () => getProject(organizationName, id),
     ...options,
   })
 }
 
 export function useProjectConfig(id: string, options?: { enabled?: boolean }) {
+  const { name: organizationName } = useOrganization()
   return useQuery({
-    queryKey: projectKeys.config(id),
+    queryKey: projectKeys.config(organizationName, id),
     queryFn: async () => {
       try {
-        return await getProjectConfig(id)
+        return await getProjectConfig(organizationName, id)
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) return null
         throw err
@@ -50,41 +54,45 @@ export function useProjectConfig(id: string, options?: { enabled?: boolean }) {
 }
 
 export function useProjectMembers(id: string, options?: { enabled?: boolean }) {
+  const { name: organizationName } = useOrganization()
   return useQuery({
-    queryKey: projectKeys.members(id),
-    queryFn: () => getProjectMembers(id),
+    queryKey: projectKeys.members(organizationName, id),
+    queryFn: () => getProjectMembers(organizationName, id),
     ...options,
   })
 }
 
 export function useCreateProject() {
+  const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateProjectInput) => createProject(body),
+    mutationFn: (body: CreateProjectInput) => createProject(organizationName, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.statements() })
-      queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: projectKeys.statements(organizationName) })
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists(organizationName) })
     },
   })
 }
 
 export function useUpdateProject() {
+  const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateProjectBody }) => updateProject(id, body),
+    mutationFn: ({ id, body }: { id: string; body: UpdateProjectBody }) => updateProject(organizationName, id, body),
     onSuccess: (_data, { id }) => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.detail(id) })
-      queryClient.invalidateQueries({ queryKey: projectKeys.config(id) })
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(organizationName, id) })
+      queryClient.invalidateQueries({ queryKey: projectKeys.config(organizationName, id) })
     },
   })
 }
 
 export function useDeleteProject() {
+  const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => deleteProject(id),
+    mutationFn: (id: string) => deleteProject(organizationName, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.all })
+      queryClient.invalidateQueries({ queryKey: projectKeys.all(organizationName) })
     },
   })
 }

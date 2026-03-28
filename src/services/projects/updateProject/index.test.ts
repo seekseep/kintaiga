@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/api-server/errors'
 import { updateProject } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const existingProject = {
@@ -21,7 +21,7 @@ describe('updateProject', () => {
     const db = createMockDb({ updateResult: [updated] })
     const result = await updateProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'proj-1', name: 'Updated' },
     )
     expect(result).toMatchObject({ name: 'Updated' })
@@ -32,7 +32,7 @@ describe('updateProject', () => {
     const db = createMockDb({ updateResult: [updated] })
     const result = await updateProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'proj-1', description: 'New description' },
     )
     expect(result).toMatchObject({ description: 'New description' })
@@ -43,7 +43,7 @@ describe('updateProject', () => {
     const db = createMockDb({ updateResult: [updated] })
     const result = await updateProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'proj-1', description: null },
     )
     expect(result).toMatchObject({ description: null })
@@ -54,7 +54,7 @@ describe('updateProject', () => {
     const db = createMockDb({ updateResult: [updated] })
     const result = await updateProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'proj-1', roundingInterval: 30 },
     )
     expect(result).toMatchObject({ roundingInterval: 30 })
@@ -65,7 +65,7 @@ describe('updateProject', () => {
     const db = createMockDb({ updateResult: [updated] })
     const result = await updateProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'proj-1', roundingDirection: 'floor' },
     )
     expect(result).toMatchObject({ roundingDirection: 'floor' })
@@ -76,7 +76,7 @@ describe('updateProject', () => {
     const db = createMockDb({ updateResult: [updated] })
     const result = await updateProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'proj-1', aggregationUnit: 'none' },
     )
     expect(result).toMatchObject({ aggregationUnit: 'none' })
@@ -87,7 +87,7 @@ describe('updateProject', () => {
     await expect(
       updateProject(
         { db: db as unknown as DbOrTx },
-        createGeneralExecutor(),
+        createMemberExecutor(),
         { id: 'proj-1', name: 'Updated' },
       )
     ).rejects.toThrow(ForbiddenError)
@@ -96,21 +96,21 @@ describe('updateProject', () => {
   it('存在しないプロジェクトの更新は NotFoundError', async () => {
     const db = createMockDb({ updateResult: [] })
     await expect(
-      updateProject({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 'nonexistent', name: 'Updated' })
+      updateProject({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 'nonexistent', name: 'Updated' })
     ).rejects.toThrow(NotFoundError)
   })
 
   it('不正なパラメータは ValidationError', async () => {
     const db = createMockDb()
     await expect(
-      updateProject({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 123 } as unknown as { id: string })
+      updateProject({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 123 } as unknown as { id: string })
     ).rejects.toThrow(ValidationError)
   })
 
   it('不正な roundingInterval は ValidationError', async () => {
     const db = createMockDb()
     await expect(
-      updateProject({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 'proj-1', roundingInterval: 7 })
+      updateProject({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 'proj-1', roundingInterval: 7 })
     ).rejects.toThrow(ValidationError)
   })
 })

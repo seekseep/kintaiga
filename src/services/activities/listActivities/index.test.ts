@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ValidationError } from '@/lib/api-server/errors'
 import { listActivities } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const activityRow = {
@@ -22,7 +22,7 @@ describe('listActivities', () => {
     const db = createMockDb({ selectResult: [activityRow] })
     const result = await listActivities(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toMatchObject({ items: [activityRow], count: undefined })
@@ -32,7 +32,7 @@ describe('listActivities', () => {
     const db = createMockDb({ selectResult: [activityRow] })
     const result = await listActivities(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toHaveProperty('items')
@@ -42,7 +42,7 @@ describe('listActivities', () => {
     const db = createMockDb({ selectResult: [activityRow] })
     const result = await listActivities(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, userId: 'general-user-id' },
     )
     expect(result).toHaveProperty('items')
@@ -52,7 +52,7 @@ describe('listActivities', () => {
     const db = createMockDb({ selectResult: [activityRow] })
     const result = await listActivities(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, ongoing: true },
     )
     expect(result).toHaveProperty('items')
@@ -62,7 +62,7 @@ describe('listActivities', () => {
     const db = createMockDb({ selectResult: [activityRow] })
     const result = await listActivities(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, projectId: 'proj-1' },
     )
     expect(result).toHaveProperty('items')
@@ -72,7 +72,7 @@ describe('listActivities', () => {
     const db = createMockDb({ selectResult: [activityRow] })
     const result = await listActivities(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, startDate: '2024-01-01', endDate: '2024-12-31' },
     )
     expect(result).toHaveProperty('items')
@@ -83,7 +83,7 @@ describe('listActivities', () => {
     await expect(
       listActivities(
         { db: db as unknown as DbOrTx },
-        createAdminExecutor(),
+        createOwnerExecutor(),
         { limit: 'bad', offset: 0 } as unknown as { limit: number; offset: number },
       )
     ).rejects.toThrow(ValidationError)

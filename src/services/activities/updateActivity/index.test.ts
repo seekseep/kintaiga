@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ForbiddenError, NotFoundError, ValidationError } from '@/lib/api-server/errors'
 import { updateActivity } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const activityOwnedByOther = {
@@ -18,7 +18,7 @@ const activityOwnedByOther = {
 
 const activityOwnedBySelf = {
   ...activityOwnedByOther,
-  userId: 'general-user-id',
+  userId: 'member-user-id',
 }
 
 describe('updateActivity', () => {
@@ -30,7 +30,7 @@ describe('updateActivity', () => {
     })
     const result = await updateActivity(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'act-1', note: 'updated' },
     )
     expect(result).toMatchObject({ note: 'updated' })
@@ -44,7 +44,7 @@ describe('updateActivity', () => {
     })
     const result = await updateActivity(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { id: 'act-1', note: 'my update' },
     )
     expect(result).toMatchObject({ note: 'my update' })
@@ -58,7 +58,7 @@ describe('updateActivity', () => {
     })
     const result = await updateActivity(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { id: 'act-1', startedAt: '2024-07-01T10:00:00Z' },
     )
     expect(result).toMatchObject({ startedAt: new Date('2024-07-01T10:00:00Z') })
@@ -72,7 +72,7 @@ describe('updateActivity', () => {
     })
     const result = await updateActivity(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { id: 'act-1', endedAt: '2024-06-01T17:00:00Z' },
     )
     expect(result).toMatchObject({ endedAt: new Date('2024-06-01T17:00:00Z') })
@@ -86,7 +86,7 @@ describe('updateActivity', () => {
     })
     const result = await updateActivity(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { id: 'act-1', endedAt: null },
     )
     expect(result).toMatchObject({ endedAt: null })
@@ -95,21 +95,21 @@ describe('updateActivity', () => {
   it('一般ユーザーは他人のアクティビティを更新できない', async () => {
     const db = createMockDb({ selectResult: [activityOwnedByOther] })
     await expect(
-      updateActivity({ db: db as unknown as DbOrTx }, createGeneralExecutor(), { id: 'act-1', note: 'updated' })
+      updateActivity({ db: db as unknown as DbOrTx }, createMemberExecutor(), { id: 'act-1', note: 'updated' })
     ).rejects.toThrow(ForbiddenError)
   })
 
   it('存在しないアクティビティは NotFoundError', async () => {
     const db = createMockDb({ selectResult: [] })
     await expect(
-      updateActivity({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 'nonexistent', note: 'updated' })
+      updateActivity({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 'nonexistent', note: 'updated' })
     ).rejects.toThrow(NotFoundError)
   })
 
   it('不正なパラメータは ValidationError', async () => {
     const db = createMockDb()
     await expect(
-      updateActivity({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 123 } as unknown as { id: string })
+      updateActivity({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 123 } as unknown as { id: string })
     ).rejects.toThrow(ValidationError)
   })
 })

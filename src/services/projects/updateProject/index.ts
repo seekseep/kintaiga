@@ -1,11 +1,11 @@
 import { z } from 'zod/v4'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { projects } from '@db/schema'
 import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
-import { isAdminUser } from '@/domain/authorization'
+import { canManageOrganizationProjects } from '@/domain/authorization'
 import { RoundingDirectionSchema, AggregationUnitSchema } from '@/schemas/_helpers'
 import { ROUNDING_INTERVALS } from '@/domain/configuration'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const UpdateProjectParametersSchema = z.object({
   id: z.string(),
@@ -22,18 +22,18 @@ export type UpdateProjectParameters = z.output<typeof UpdateProjectParametersSch
 
 export async function updateProject(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: UpdateProjectInput,
 ) {
   const result = UpdateProjectParametersSchema.safeParse(input)
   if (!result.success) throw new ValidationError(result.error.issues)
-  if (!isAdminUser(executor)) throw new ForbiddenError()
+  if (!canManageOrganizationProjects(executor)) throw new ForbiddenError()
   const { id, ...updates } = result.data
 
   const { db } = dependencies
   const [updated] = await db.update(projects)
     .set({ ...updates, updatedAt: new Date() })
-    .where(eq(projects.id, id))
+    .where(and(eq(projects.id, id), eq(projects.organizationId, executor.organization.id)))
     .returning()
   if (!updated) throw new NotFoundError()
   return updated

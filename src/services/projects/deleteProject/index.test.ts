@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/api-server/errors'
 import { deleteProject } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const deletedProject = {
@@ -20,7 +20,7 @@ describe('deleteProject', () => {
     const db = createMockDb({ deleteResult: [deletedProject] })
     const result = await deleteProject(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { id: 'proj-1' },
     )
     expect(result).toMatchObject({ id: 'proj-1' })
@@ -31,7 +31,7 @@ describe('deleteProject', () => {
     await expect(
       deleteProject(
         { db: db as unknown as DbOrTx },
-        createGeneralExecutor(),
+        createMemberExecutor(),
         { id: 'proj-1' },
       )
     ).rejects.toThrow(ForbiddenError)
@@ -40,14 +40,14 @@ describe('deleteProject', () => {
   it('存在しないプロジェクトの削除は NotFoundError', async () => {
     const db = createMockDb({ deleteResult: [] })
     await expect(
-      deleteProject({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 'nonexistent' })
+      deleteProject({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 'nonexistent' })
     ).rejects.toThrow(NotFoundError)
   })
 
   it('不正なパラメータは ValidationError', async () => {
     const db = createMockDb()
     await expect(
-      deleteProject({ db: db as unknown as DbOrTx }, createAdminExecutor(), { id: 123 } as unknown as { id: string })
+      deleteProject({ db: db as unknown as DbOrTx }, createOwnerExecutor(), { id: 123 } as unknown as { id: string })
     ).rejects.toThrow(ValidationError)
   })
 })

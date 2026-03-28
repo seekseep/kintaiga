@@ -4,7 +4,7 @@ import { users, activities, assignments, deletedUsers, deletedActivities, delete
 import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
 import { canModifyUser } from '@/domain/authorization'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, Executor } from '../../types'
+import type { Database, OrganizationExecutor } from '../../types'
 
 const ArchiveAndDeleteUserParametersSchema = z.object({
   targetId: z.string(),
@@ -16,17 +16,17 @@ export type ArchiveAndDeleteUserParameters = z.output<typeof ArchiveAndDeleteUse
 
 export async function archiveAndDeleteUser(
   dependencies: { db: Database; supabase: SupabaseClient },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: ArchiveAndDeleteUserInput,
 ) {
   const result = ArchiveAndDeleteUserParametersSchema.safeParse(input)
   if (!result.success) throw new ValidationError(result.error.issues)
   const parameters = result.data
 
-  if (!canModifyUser(executor.role, executor.id, parameters.targetId)) throw new ForbiddenError()
+  if (!canModifyUser(executor, parameters.targetId)) throw new ForbiddenError()
 
   const { db, supabase } = dependencies
-  const deletedBy = executor.id
+  const deletedBy = executor.user.id
 
   await db.transaction(async (tx) => {
     const targetRows = await tx.select().from(users).where(eq(users.id, parameters.targetId))

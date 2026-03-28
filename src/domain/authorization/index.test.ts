@@ -5,7 +5,17 @@ import {
   canChangeRole,
   canCreateActivityForUser,
   isAdminUser,
+  isOrganizationOwner,
+  isOrganizationManagerOrAbove,
+  canManageOrganizationMembers,
+  canManageOrganizationProjects,
+  canCreateReport,
+  canTransferOwnership,
+  canControlActivityInOrganization,
 } from '.'
+import type { OrganizationExecutor } from '@/services/types'
+
+// --- System-level tests (既存) ---
 
 describe('canControlActivity', () => {
   it('admin は誰のアクティビティも操作できる', () => {
@@ -20,36 +30,170 @@ describe('canControlActivity', () => {
 
 describe('canModifyUser', () => {
   it('admin は誰のプロフィールも変更できる', () => {
-    expect(canModifyUser('admin', 'user-1', 'user-2')).toBe(true)
+    expect(canModifyUser({ user: { role: 'admin', id: 'user-1' } }, 'user-2')).toBe(true)
   })
 
   it('general は自分のプロフィールのみ変更できる', () => {
-    expect(canModifyUser('general', 'user-1', 'user-1')).toBe(true)
-    expect(canModifyUser('general', 'user-1', 'user-2')).toBe(false)
+    expect(canModifyUser({ user: { role: 'general', id: 'user-1' } }, 'user-1')).toBe(true)
+    expect(canModifyUser({ user: { role: 'general', id: 'user-1' } }, 'user-2')).toBe(false)
   })
 })
 
 describe('canChangeRole', () => {
   it('admin のみ true', () => {
-    expect(canChangeRole('admin')).toBe(true)
-    expect(canChangeRole('general')).toBe(false)
+    expect(canChangeRole({ user: { role: 'admin' } })).toBe(true)
+    expect(canChangeRole({ user: { role: 'general' } })).toBe(false)
   })
 })
 
 describe('canCreateActivityForUser', () => {
   it('admin は他ユーザーの代理作成が可能', () => {
-    expect(canCreateActivityForUser('admin', 'user-1', 'user-2')).toBe(true)
+    expect(canCreateActivityForUser({ user: { role: 'admin', id: 'user-1' } }, 'user-2')).toBe(true)
   })
 
   it('general は自分のみ', () => {
-    expect(canCreateActivityForUser('general', 'user-1', 'user-1')).toBe(true)
-    expect(canCreateActivityForUser('general', 'user-1', 'user-2')).toBe(false)
+    expect(canCreateActivityForUser({ user: { role: 'general', id: 'user-1' } }, 'user-1')).toBe(true)
+    expect(canCreateActivityForUser({ user: { role: 'general', id: 'user-1' } }, 'user-2')).toBe(false)
   })
 })
 
 describe('isAdminUser', () => {
   it('ロール判定', () => {
-    expect(isAdminUser({ id: 'user-1', role: 'admin' })).toBe(true)
-    expect(isAdminUser({ id: 'user-1', role: 'general' })).toBe(false)
+    expect(isAdminUser({ user: { role: 'admin' } })).toBe(true)
+    expect(isAdminUser({ user: { role: 'general' } })).toBe(false)
+  })
+})
+
+// --- Organization-level tests ---
+
+function createExecutor(overrides?: {
+  user?: Partial<OrganizationExecutor['user']>
+  organization?: Partial<OrganizationExecutor['organization']>
+}): OrganizationExecutor {
+  return {
+    type: 'organization',
+    user: { id: 'user-1', role: 'general', ...overrides?.user },
+    organization: { id: 'organization-1', role: 'member', plan: 'free', ...overrides?.organization },
+  }
+}
+
+describe('isOrganizationOwner', () => {
+  it('owner は true', () => {
+    expect(isOrganizationOwner(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
+  })
+
+  it('manager は false', () => {
+    expect(isOrganizationOwner(createExecutor({ organization: { role: 'manager' } }))).toBe(false)
+  })
+
+  it('member は false', () => {
+    expect(isOrganizationOwner(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+  })
+
+  it('system admin は true', () => {
+    expect(isOrganizationOwner(createExecutor({ user: { role: 'admin' }, organization: { role: 'member' } }))).toBe(true)
+  })
+})
+
+describe('isOrganizationManagerOrAbove', () => {
+  it('owner は true', () => {
+    expect(isOrganizationManagerOrAbove(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
+  })
+
+  it('manager は true', () => {
+    expect(isOrganizationManagerOrAbove(createExecutor({ organization: { role: 'manager' } }))).toBe(true)
+  })
+
+  it('member は false', () => {
+    expect(isOrganizationManagerOrAbove(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+  })
+
+  it('system admin は true', () => {
+    expect(isOrganizationManagerOrAbove(createExecutor({ user: { role: 'admin' }, organization: { role: 'member' } }))).toBe(true)
+  })
+})
+
+describe('canManageOrganizationMembers', () => {
+  it('owner は管理可能', () => {
+    expect(canManageOrganizationMembers(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
+  })
+
+  it('manager は管理可能', () => {
+    expect(canManageOrganizationMembers(createExecutor({ organization: { role: 'manager' } }))).toBe(true)
+  })
+
+  it('member は管理不可', () => {
+    expect(canManageOrganizationMembers(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+  })
+})
+
+describe('canManageOrganizationProjects', () => {
+  it('owner は管理可能', () => {
+    expect(canManageOrganizationProjects(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
+  })
+
+  it('manager は管理可能', () => {
+    expect(canManageOrganizationProjects(createExecutor({ organization: { role: 'manager' } }))).toBe(true)
+  })
+
+  it('member は管理不可', () => {
+    expect(canManageOrganizationProjects(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+  })
+})
+
+describe('canCreateReport', () => {
+  it('premium の owner/manager は作成可能', () => {
+    expect(canCreateReport(createExecutor({ organization: { role: 'owner', plan: 'premium' } }))).toBe(true)
+    expect(canCreateReport(createExecutor({ organization: { role: 'manager', plan: 'premium' } }))).toBe(true)
+  })
+
+  it('free プランでは作成不可', () => {
+    expect(canCreateReport(createExecutor({ organization: { role: 'owner', plan: 'free' } }))).toBe(false)
+    expect(canCreateReport(createExecutor({ organization: { role: 'manager', plan: 'free' } }))).toBe(false)
+  })
+
+  it('premium でも member は作成不可', () => {
+    expect(canCreateReport(createExecutor({ organization: { role: 'member', plan: 'premium' } }))).toBe(false)
+  })
+
+  it('system admin + premium は作成可能', () => {
+    expect(canCreateReport(createExecutor({ user: { role: 'admin' }, organization: { role: 'member', plan: 'premium' } }))).toBe(true)
+  })
+})
+
+describe('canTransferOwnership', () => {
+  it('owner は移譲可能', () => {
+    expect(canTransferOwnership(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
+  })
+
+  it('manager は移譲不可', () => {
+    expect(canTransferOwnership(createExecutor({ organization: { role: 'manager' } }))).toBe(false)
+  })
+
+  it('member は移譲不可', () => {
+    expect(canTransferOwnership(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+  })
+
+  it('system admin は移譲可能', () => {
+    expect(canTransferOwnership(createExecutor({ user: { role: 'admin' }, organization: { role: 'member' } }))).toBe(true)
+  })
+})
+
+describe('canControlActivityInOrganization', () => {
+  it('owner は他人のアクティビティも操作可能', () => {
+    expect(canControlActivityInOrganization(createExecutor({ organization: { role: 'owner' } }), { userId: 'user-2' })).toBe(true)
+  })
+
+  it('manager は他人のアクティビティも操作可能', () => {
+    expect(canControlActivityInOrganization(createExecutor({ organization: { role: 'manager' } }), { userId: 'user-2' })).toBe(true)
+  })
+
+  it('member は自分のアクティビティのみ操作可能', () => {
+    expect(canControlActivityInOrganization(createExecutor({ user: { id: 'user-1' }, organization: { role: 'member' } }), { userId: 'user-1' })).toBe(true)
+    expect(canControlActivityInOrganization(createExecutor({ user: { id: 'user-1' }, organization: { role: 'member' } }), { userId: 'user-2' })).toBe(false)
+  })
+
+  it('system admin は全操作可能', () => {
+    expect(canControlActivityInOrganization(createExecutor({ user: { role: 'admin' }, organization: { role: 'member' } }), { userId: 'user-2' })).toBe(true)
   })
 })

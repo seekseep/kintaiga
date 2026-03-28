@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ValidationError } from '@/lib/api-server/errors'
 import { listUsers } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const userRow = {
@@ -18,7 +18,7 @@ describe('listUsers', () => {
     const db = createMockDb({ selectResult: [userRow] })
     const result = await listUsers(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toHaveProperty('items')
@@ -29,7 +29,7 @@ describe('listUsers', () => {
     const db = createMockDb({ selectResult: [userRow] })
     const result = await listUsers(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toHaveProperty('items')
@@ -39,7 +39,7 @@ describe('listUsers', () => {
     const db = createMockDb({ selectResult: [{ count: 0 }] })
     const result = await listUsers(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toHaveProperty('items')
@@ -50,7 +50,7 @@ describe('listUsers', () => {
     await expect(
       listUsers(
         { db: db as unknown as DbOrTx },
-        createAdminExecutor(),
+        createOwnerExecutor(),
         { limit: 'bad', offset: 0 } as unknown as { limit: number; offset: number },
       )
     ).rejects.toThrow(ValidationError)

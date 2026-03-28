@@ -1,9 +1,9 @@
 import { z } from 'zod/v4'
 import { eq, and } from 'drizzle-orm'
-import { activities, assignments } from '@db/schema'
+import { activities, assignments, projects } from '@db/schema'
 import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
-import { isAdminUser } from '@/domain/authorization'
-import type { DbOrTx, Executor } from '../../types'
+import { isOrganizationManagerOrAbove } from '@/domain/authorization'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const CreateActivityParametersSchema = z.object({
   projectId: z.string(),
@@ -18,7 +18,7 @@ export type CreateActivityParameters = z.output<typeof CreateActivityParametersS
 
 export async function createActivity(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: CreateActivityInput,
 ) {
   const result = CreateActivityParametersSchema.safeParse(input)
@@ -26,7 +26,14 @@ export async function createActivity(
   const parameters = result.data
 
   const { db } = dependencies
-  const targetUserId = (isAdminUser(executor) && parameters.userId) ? parameters.userId : executor.id
+
+  // プロジェクトが組織に属するか確認
+  const [project] = await db.select().from(projects)
+    .where(and(eq(projects.id, parameters.projectId), eq(projects.organizationId, executor.organization.id)))
+    .limit(1)
+  if (!project) throw new ForbiddenError('Project not found in this organization')
+
+  const targetUserId = (isOrganizationManagerOrAbove(executor) && parameters.userId) ? parameters.userId : executor.user.id
 
   const assignmentRows = await db.select().from(assignments)
     .where(and(

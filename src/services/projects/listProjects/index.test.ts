@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ValidationError } from '@/lib/api-server/errors'
 import { listUserProjectStatements } from './'
-import { createAdminExecutor, createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const projectRow = {
@@ -38,7 +38,7 @@ describe('listUserProjectStatements', () => {
     const db = createMockDb({ selectResult: [projectRow] })
     const result = await listUserProjectStatements(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toHaveProperty('items')
@@ -49,7 +49,7 @@ describe('listUserProjectStatements', () => {
     const db = createMockDb({ selectResult: [projectRow] })
     const result = await listUserProjectStatements(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createMemberExecutor(),
       { limit: 10, offset: 0, filter: 'joined' },
     )
     expect(result).toHaveProperty('items')
@@ -59,7 +59,7 @@ describe('listUserProjectStatements', () => {
     const db = createMockDb({ selectResult: [projectRow] })
     const result = await listUserProjectStatements(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0, filter: 'joined' },
     )
     expect(result).toHaveProperty('items')
@@ -69,7 +69,7 @@ describe('listUserProjectStatements', () => {
     const db = createMockDb({ selectResult: [projectRowWithAssignment] })
     const result = await listUserProjectStatements(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result).toHaveProperty('items')
@@ -80,7 +80,7 @@ describe('listUserProjectStatements', () => {
     const db = createMockDb({ selectResult: [projectRowWithNoAssignment] })
     const result = await listUserProjectStatements(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result.items[0]).toMatchObject({ membershipStatus: 'none' })
@@ -90,7 +90,7 @@ describe('listUserProjectStatements', () => {
     const db = createMockDb({ selectResult: [projectRowWithSuspendedAssignment] })
     const result = await listUserProjectStatements(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result.items[0]).toMatchObject({ membershipStatus: 'suspended' })
@@ -100,7 +100,7 @@ describe('listUserProjectStatements', () => {
     const db = createMockDb({ selectResult: [projectRowWithAssignment] })
     const result = await listUserProjectStatements(
       { db: db as unknown as DbOrTx },
-      createAdminExecutor(),
+      createOwnerExecutor(),
       { limit: 10, offset: 0 },
     )
     expect(result.items[0]).toMatchObject({ membershipStatus: 'joined' })
@@ -111,7 +111,7 @@ describe('listUserProjectStatements', () => {
     await expect(
       listUserProjectStatements(
         { db: db as unknown as DbOrTx },
-        createAdminExecutor(),
+        createOwnerExecutor(),
         { limit: 'bad', offset: 0 } as unknown as { limit: number; offset: number },
       )
     ).rejects.toThrow(ValidationError)

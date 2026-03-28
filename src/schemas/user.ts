@@ -3,6 +3,7 @@ import { RoleSchema } from './_helpers'
 
 export const UserRecordSchema = z.object({
   id: z.string(),
+  email: z.string().nullable(),
   name: z.string(),
   role: RoleSchema,
   iconUrl: z.string().nullable(),
@@ -12,6 +13,7 @@ export const UserRecordSchema = z.object({
 
 export const UserSchema = z.object({
   id: z.string(),
+  email: z.string().nullable(),
   name: z.string(),
   role: RoleSchema,
   iconUrl: z.string().nullable(),

@@ -32,7 +32,7 @@ describe('updateUser', () => {
     const result = await updateUser(
       { db: db as unknown as DbOrTx },
       self,
-      { id: self.id, name: 'Updated' },
+      { id: self.user.id, name: 'Updated' },
     )
     expect(result).toMatchObject({ name: 'Updated' })
   })

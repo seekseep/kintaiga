@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ValidationError } from '@/lib/api-server/errors'
 import { updateProfile } from './'
-import { createGeneralExecutor, createMockDb } from '../../testing/helpers'
+import { createUserExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
 const updatedUser = {
@@ -18,7 +18,7 @@ describe('updateProfile', () => {
     const db = createMockDb({ updateResult: [updatedUser] })
     const result = await updateProfile(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createUserExecutor(),
       { name: 'Updated Name' },
     )
     expect(result).toMatchObject({ id: 'general-user-id', name: 'Updated Name' })
@@ -28,7 +28,7 @@ describe('updateProfile', () => {
     const db = createMockDb({ updateResult: [{ ...updatedUser, name: 'General' }] })
     const result = await updateProfile(
       { db: db as unknown as DbOrTx },
-      createGeneralExecutor(),
+      createUserExecutor(),
       {},
     )
     expect(result).toMatchObject({ id: 'general-user-id' })
@@ -39,7 +39,7 @@ describe('updateProfile', () => {
     await expect(
       updateProfile(
         { db: db as unknown as DbOrTx },
-        createGeneralExecutor(),
+        createUserExecutor(),
         { name: 123 } as unknown as { name?: string },
       )
     ).rejects.toThrow(ValidationError)

@@ -2,8 +2,8 @@ import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { activities } from '@db/schema'
 import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
-import { canControlActivity } from '@/domain/authorization'
-import type { DbOrTx, Executor } from '../../types'
+import { canControlActivityInOrganization } from '@/domain/authorization'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const UpdateActivityParametersSchema = z.object({
   id: z.string(),
@@ -17,7 +17,7 @@ export type UpdateActivityParameters = z.output<typeof UpdateActivityParametersS
 
 export async function updateActivity(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: UpdateActivityInput,
 ) {
   const result = UpdateActivityParametersSchema.safeParse(input)
@@ -28,7 +28,7 @@ export async function updateActivity(
   const activityRows = await db.select().from(activities).where(eq(activities.id, parameters.id))
   const activity = activityRows[0]
   if (!activity) throw new NotFoundError()
-  if (!canControlActivity(executor, activity)) throw new ForbiddenError()
+  if (!canControlActivityInOrganization(executor, activity)) throw new ForbiddenError()
 
   const updates: Record<string, unknown> = { updatedAt: new Date() }
   if (parameters.startedAt !== undefined) updates.startedAt = new Date(parameters.startedAt)

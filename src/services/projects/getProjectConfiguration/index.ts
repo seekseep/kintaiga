@@ -1,9 +1,9 @@
 import { z } from 'zod/v4'
-import { eq } from 'drizzle-orm'
-import { projects, configurations } from '@db/schema'
+import { eq, and } from 'drizzle-orm'
+import { projects, organizationConfigurations } from '@db/schema'
 import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
 import { resolveProjectConfig } from '@/domain/configuration'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const GetProjectConfigurationParametersSchema = z.object({
   id: z.string(),
@@ -14,7 +14,7 @@ export type GetProjectConfigurationParameters = z.output<typeof GetProjectConfig
 
 export async function getProjectConfiguration(
   dependencies: { db: DbOrTx },
-  _executor: Executor,
+  executor: OrganizationExecutor,
   input: GetProjectConfigurationInput,
 ) {
   const result = GetProjectConfigurationParametersSchema.safeParse(input)
@@ -23,8 +23,10 @@ export async function getProjectConfiguration(
 
   const { db } = dependencies
   const [projectRows, configRows] = await Promise.all([
-    db.select().from(projects).where(eq(projects.id, parameters.id)),
-    db.select().from(configurations).limit(1),
+    db.select().from(projects).where(
+      and(eq(projects.id, parameters.id), eq(projects.organizationId, executor.organization.id))
+    ),
+    db.select().from(organizationConfigurations).where(eq(organizationConfigurations.organizationId, executor.organization.id)).limit(1),
   ])
   const project = projectRows[0]
   const config = configRows[0]

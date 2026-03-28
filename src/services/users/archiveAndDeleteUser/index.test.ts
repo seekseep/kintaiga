@@ -134,15 +134,15 @@ describe('archiveAndDeleteUser', () => {
 
   it('一般ユーザーは自分自身を削除できる', async () => {
     const generalUser = createGeneralExecutor()
-    const selfTarget = { ...targetUser, id: generalUser.id }
+    const selfTarget = { ...targetUser, id: generalUser.user.id }
     const db = createMockDb({ userRows: [selfTarget] })
     const supabase = createMockSupabase()
     await archiveAndDeleteUser(
       { db, supabase },
       generalUser,
-      { targetId: generalUser.id },
+      { targetId: generalUser.user.id },
     )
-    expect(supabase.auth.admin.deleteUser).toHaveBeenCalledWith(generalUser.id)
+    expect(supabase.auth.admin.deleteUser).toHaveBeenCalledWith(generalUser.user.id)
   })
 
   it('一般ユーザーは他人を削除できない', async () => {

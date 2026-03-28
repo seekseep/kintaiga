@@ -2,7 +2,7 @@ import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { assignments } from '@db/schema'
 import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const GetAssignmentParametersSchema = z.object({
   id: z.string(),
@@ -13,7 +13,7 @@ export type GetAssignmentParameters = z.output<typeof GetAssignmentParametersSch
 
 export async function getAssignment(
   dependencies: { db: DbOrTx },
-  _executor: Executor,
+  _executor: OrganizationExecutor,
   input: GetAssignmentInput,
 ) {
   const result = GetAssignmentParametersSchema.safeParse(input)

@@ -2,7 +2,7 @@ import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { users } from '@db/schema'
 import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const GetUserParametersSchema = z.object({
   id: z.string(),
@@ -13,7 +13,7 @@ export type GetUserParameters = z.output<typeof GetUserParametersSchema>
 
 export async function getUser(
   dependencies: { db: DbOrTx },
-  _executor: Executor,
+  _executor: OrganizationExecutor,
   input: GetUserInput,
 ) {
   const result = GetUserParametersSchema.safeParse(input)

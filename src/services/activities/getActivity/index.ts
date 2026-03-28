@@ -2,8 +2,8 @@ import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { activities, projects } from '@db/schema'
 import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
-import { canControlActivity } from '@/domain/authorization'
-import type { DbOrTx, Executor } from '../../types'
+import { canControlActivityInOrganization } from '@/domain/authorization'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const GetActivityParametersSchema = z.object({
   id: z.string(),
@@ -14,7 +14,7 @@ export type GetActivityParameters = z.output<typeof GetActivityParametersSchema>
 
 export async function getActivity(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: GetActivityInput,
 ) {
   const result = GetActivityParametersSchema.safeParse(input)
@@ -39,7 +39,7 @@ export async function getActivity(
     .where(eq(activities.id, parameters.id))
   if (!activity) throw new NotFoundError()
 
-    if (!canControlActivity(executor, activity)) throw new ForbiddenError()
+    if (!canControlActivityInOrganization(executor, activity)) throw new ForbiddenError()
 
   return activity
 }

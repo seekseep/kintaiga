@@ -1,10 +1,10 @@
 import { z } from 'zod/v4'
-import { eq, and, isNull, count as countFn, desc, gte, lte, type SQL } from 'drizzle-orm'
+import { eq, and, isNull, count as countFn, desc, gte, lte, inArray, type SQL } from 'drizzle-orm'
 import { activities, projects, users } from '@db/schema'
 import { ValidationError } from '@/lib/api-server/errors'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
-import { isAdminUser } from '@/domain/authorization'
-import type { DbOrTx, Executor } from '../../types'
+import { isOrganizationManagerOrAbove } from '@/domain/authorization'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const ListActivitiesParametersSchema = z.object({
   userId: z.string().optional(),
@@ -21,7 +21,7 @@ export type ListActivitiesParameters = z.output<typeof ListActivitiesParametersS
 
 export async function listActivities(
   dependencies: { db: DbOrTx },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: ListActivitiesInput,
 ) {
   const result = ListActivitiesParametersSchema.safeParse(input)
@@ -31,8 +31,13 @@ export async function listActivities(
   const { db } = dependencies
   const conditions: SQL[] = []
 
-  if (!isAdminUser(executor)) {
-    conditions.push(eq(activities.userId, executor.id))
+  // 組織内のプロジェクトに限定
+  const organizationProjects = db.select({ id: projects.id }).from(projects)
+    .where(eq(projects.organizationId, executor.organization.id))
+  conditions.push(inArray(activities.projectId, organizationProjects))
+
+  if (!isOrganizationManagerOrAbove(executor)) {
+    conditions.push(eq(activities.userId, executor.user.id))
   } else if (parameters.userId) {
     conditions.push(eq(activities.userId, parameters.userId))
   }

@@ -4,7 +4,7 @@ import { InternalError, ValidationError, ConflictError, ForbiddenError } from '@
 import { isAdminUser } from '@/domain/authorization'
 import { RoleSchema } from '@/schemas/_helpers'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { DbOrTx, Executor } from '../../types'
+import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const CreateUserParametersSchema = z.object({
   email: z.string(),
@@ -18,7 +18,7 @@ export type CreateUserParameters = z.output<typeof CreateUserParametersSchema>
 
 export async function createUser(
   dependencies: { db: DbOrTx; supabase: SupabaseClient },
-  executor: Executor,
+  executor: OrganizationExecutor,
   input: CreateUserInput,
 ) {
   const result = CreateUserParametersSchema.safeParse(input)
