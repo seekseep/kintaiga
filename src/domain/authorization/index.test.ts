@@ -4,9 +4,9 @@ import {
   canModifyUser,
   canChangeRole,
   canCreateActivityForUser,
-  isAdminUser,
-  isOrganizationOwner,
-  isOrganizationManagerOrAbove,
+  canActAsAdmin,
+  canActAsOrganizationOwner,
+  canActAsOrganizationManager,
   canManageOrganizationMembers,
   canManageOrganizationProjects,
   canCreateReport,
@@ -57,10 +57,10 @@ describe('canCreateActivityForUser', () => {
   })
 })
 
-describe('isAdminUser', () => {
+describe('canActAsAdmin', () => {
   it('ロール判定', () => {
-    expect(isAdminUser({ user: { role: 'admin' } })).toBe(true)
-    expect(isAdminUser({ user: { role: 'general' } })).toBe(false)
+    expect(canActAsAdmin({ user: { role: 'admin' } })).toBe(true)
+    expect(canActAsAdmin({ user: { role: 'general' } })).toBe(false)
   })
 })
 
@@ -73,43 +73,43 @@ function createExecutor(overrides?: {
   return {
     type: 'organization',
     user: { id: 'user-1', role: 'general', ...overrides?.user },
-    organization: { id: 'organization-1', role: 'member', plan: 'free', ...overrides?.organization },
+    organization: { id: 'organization-1', role: 'worker', plan: 'free', ...overrides?.organization },
   }
 }
 
-describe('isOrganizationOwner', () => {
+describe('canActAsOrganizationOwner', () => {
   it('owner は true', () => {
-    expect(isOrganizationOwner(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
+    expect(canActAsOrganizationOwner(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
   })
 
   it('manager は false', () => {
-    expect(isOrganizationOwner(createExecutor({ organization: { role: 'manager' } }))).toBe(false)
+    expect(canActAsOrganizationOwner(createExecutor({ organization: { role: 'manager' } }))).toBe(false)
   })
 
   it('member は false', () => {
-    expect(isOrganizationOwner(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+    expect(canActAsOrganizationOwner(createExecutor({ organization: { role: 'worker' } }))).toBe(false)
   })
 
   it('system admin は true', () => {
-    expect(isOrganizationOwner(createExecutor({ user: { role: 'admin' }, organization: { role: 'member' } }))).toBe(true)
+    expect(canActAsOrganizationOwner(createExecutor({ user: { role: 'admin' }, organization: { role: 'worker' } }))).toBe(true)
   })
 })
 
-describe('isOrganizationManagerOrAbove', () => {
+describe('canActAsOrganizationManager', () => {
   it('owner は true', () => {
-    expect(isOrganizationManagerOrAbove(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
+    expect(canActAsOrganizationManager(createExecutor({ organization: { role: 'owner' } }))).toBe(true)
   })
 
   it('manager は true', () => {
-    expect(isOrganizationManagerOrAbove(createExecutor({ organization: { role: 'manager' } }))).toBe(true)
+    expect(canActAsOrganizationManager(createExecutor({ organization: { role: 'manager' } }))).toBe(true)
   })
 
   it('member は false', () => {
-    expect(isOrganizationManagerOrAbove(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+    expect(canActAsOrganizationManager(createExecutor({ organization: { role: 'worker' } }))).toBe(false)
   })
 
   it('system admin は true', () => {
-    expect(isOrganizationManagerOrAbove(createExecutor({ user: { role: 'admin' }, organization: { role: 'member' } }))).toBe(true)
+    expect(canActAsOrganizationManager(createExecutor({ user: { role: 'admin' }, organization: { role: 'worker' } }))).toBe(true)
   })
 })
 
@@ -123,7 +123,7 @@ describe('canManageOrganizationMembers', () => {
   })
 
   it('member は管理不可', () => {
-    expect(canManageOrganizationMembers(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+    expect(canManageOrganizationMembers(createExecutor({ organization: { role: 'worker' } }))).toBe(false)
   })
 })
 
@@ -137,7 +137,7 @@ describe('canManageOrganizationProjects', () => {
   })
 
   it('member は管理不可', () => {
-    expect(canManageOrganizationProjects(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+    expect(canManageOrganizationProjects(createExecutor({ organization: { role: 'worker' } }))).toBe(false)
   })
 })
 
@@ -153,11 +153,11 @@ describe('canCreateReport', () => {
   })
 
   it('premium でも member は作成不可', () => {
-    expect(canCreateReport(createExecutor({ organization: { role: 'member', plan: 'premium' } }))).toBe(false)
+    expect(canCreateReport(createExecutor({ organization: { role: 'worker', plan: 'premium' } }))).toBe(false)
   })
 
   it('system admin + premium は作成可能', () => {
-    expect(canCreateReport(createExecutor({ user: { role: 'admin' }, organization: { role: 'member', plan: 'premium' } }))).toBe(true)
+    expect(canCreateReport(createExecutor({ user: { role: 'admin' }, organization: { role: 'worker', plan: 'premium' } }))).toBe(true)
   })
 })
 
@@ -171,11 +171,11 @@ describe('canTransferOwnership', () => {
   })
 
   it('member は移譲不可', () => {
-    expect(canTransferOwnership(createExecutor({ organization: { role: 'member' } }))).toBe(false)
+    expect(canTransferOwnership(createExecutor({ organization: { role: 'worker' } }))).toBe(false)
   })
 
   it('system admin は移譲可能', () => {
-    expect(canTransferOwnership(createExecutor({ user: { role: 'admin' }, organization: { role: 'member' } }))).toBe(true)
+    expect(canTransferOwnership(createExecutor({ user: { role: 'admin' }, organization: { role: 'worker' } }))).toBe(true)
   })
 })
 
@@ -189,11 +189,11 @@ describe('canControlActivityInOrganization', () => {
   })
 
   it('member は自分のアクティビティのみ操作可能', () => {
-    expect(canControlActivityInOrganization(createExecutor({ user: { id: 'user-1' }, organization: { role: 'member' } }), { userId: 'user-1' })).toBe(true)
-    expect(canControlActivityInOrganization(createExecutor({ user: { id: 'user-1' }, organization: { role: 'member' } }), { userId: 'user-2' })).toBe(false)
+    expect(canControlActivityInOrganization(createExecutor({ user: { id: 'user-1' }, organization: { role: 'worker' } }), { userId: 'user-1' })).toBe(true)
+    expect(canControlActivityInOrganization(createExecutor({ user: { id: 'user-1' }, organization: { role: 'worker' } }), { userId: 'user-2' })).toBe(false)
   })
 
   it('system admin は全操作可能', () => {
-    expect(canControlActivityInOrganization(createExecutor({ user: { role: 'admin' }, organization: { role: 'member' } }), { userId: 'user-2' })).toBe(true)
+    expect(canControlActivityInOrganization(createExecutor({ user: { role: 'admin' }, organization: { role: 'worker' } }), { userId: 'user-2' })).toBe(true)
   })
 })

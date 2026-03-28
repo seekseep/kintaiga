@@ -1,5 +1,5 @@
 import { db } from '@/lib/api-server/db'
-import { resolveToken } from '@/services/tokens'
+import { resolveUserToken } from '@/services/user/tokens'
 import { UnauthorizedError } from '@/lib/api-server/errors'
 import type { OrganizationExecutor } from '@/services/types'
 
@@ -14,5 +14,5 @@ export async function authenticateRequest(
   if (!rawToken.startsWith('kga_')) {
     throw new UnauthorizedError('Invalid token format')
   }
-  return resolveToken({ db }, rawToken)
+  return resolveUserToken({ db }, rawToken)
 }

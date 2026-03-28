@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { User } from './users'
+import type { User } from './organization/members'
 import type { CreateProfileInput } from '@/services/me/createProfile'
 import type { UpdateProfileInput } from '@/services/me/updateProfile'
 import type { UpdateIconInput } from '@/services/me/updateIcon'

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useUpdateActivity, useDeleteActivity } from '@/hooks/api/activities'
 import { parseCommand, computePreview } from '@/domain/activity-command'
-import type { ProjectActivity as Activity } from '@/api/activities'
+import type { ProjectActivity as Activity } from '@/api/organization/project/activitiy'
 
 type ActivityPreview = {
   startedAt: string
@@ -42,7 +42,7 @@ function BulkDeleteButton({ selectedIds, onComplete }: { selectedIds: string[]; 
     let errorCount = 0
     for (const id of selectedIds) {
       try {
-        await mutation.mutateAsync(id)
+        await mutation.mutateAsync({ id })
         successCount++
       } catch {
         errorCount++
@@ -127,7 +127,7 @@ export function ActivityCommandBar({ selectedIds, activities, onClearSelection, 
       try {
         await updateMutation.mutateAsync({
           id,
-          body: { startedAt: previewData.startedAt, endedAt: previewData.endedAt },
+          startedAt: previewData.startedAt, endedAt: previewData.endedAt,
         })
         successCount++
       } catch {

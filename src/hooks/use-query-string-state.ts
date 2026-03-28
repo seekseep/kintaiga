@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
-export type ParamDefinition<T> = {
+export type ParameterDefinition<T> = {
   key: string
   defaultValue: T
   serialize: (value: T) => string | undefined
@@ -11,7 +11,7 @@ export type ParamDefinition<T> = {
 }
 
 export function useQueryStringState<T>(
-  def: ParamDefinition<T>
+  def: ParameterDefinition<T>
 ): [T, (value: T) => void] {
   const router = useRouter()
   const pathname = usePathname()
@@ -21,14 +21,14 @@ export function useQueryStringState<T>(
 
   const setValue = useCallback(
     (newValue: T) => {
-      const params = new URLSearchParams(window.location.search)
+      const searchParameters = new URLSearchParams(window.location.search)
       const serialized = def.serialize(newValue)
       if (serialized === undefined) {
-        params.delete(def.key)
+        searchParameters.delete(def.key)
       } else {
-        params.set(def.key, serialized)
+        searchParameters.set(def.key, serialized)
       }
-      const qs = params.toString()
+      const qs = searchParameters.toString()
       router.replace(pathname + (qs ? `?${qs}` : ''), { scroll: false })
     },
     [def, router, pathname]

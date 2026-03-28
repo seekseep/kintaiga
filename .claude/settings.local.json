@@ -30,11 +30,21 @@
       "Bash(find src/app/api -name '*.ts' -exec grep -l 'withOrganizationanization' {})",
       "Bash(find src:*)",
       "Bash(for f:*)",
-      "Bash(do sed:*)"
+      "Bash(do sed:*)",
+      "Read(//Users/seekseek/Development/github.com/seekseep/kintaiga/src/services/assignments/updateAssignment/**)",
+      "Read(//Users/seekseek/Development/github.com/seekseep/kintaiga/src/**)",
+      "Bash(find src/services src/domain/authorization -name '*.ts' ! -name '*.test.ts' -exec sed -i '' 's/isAdminUser/canActAsAdmin/g; s/isOrganizationManagerOrAbove/canActAsOrganizationManager/g; s/isOrganizationOwner/canActAsOrganizationOwner/g' {} +)",
+      "Bash(find src/services src/domain/authorization -name '*.test.ts' -exec sed -i '' 's/isAdminUser/canActAsAdmin/g; s/isOrganizationManagerOrAbove/canActAsOrganizationManager/g; s/isOrganizationOwner/canActAsOrganizationOwner/g' {} +)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/users/[id]/)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/services/reports -type f -name *.ts -o -name *.tsx)"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens",
-      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/configuration"
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/configuration",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/configuration/work",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/users/new",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/users/[id]/name"
     ]
   }
 }

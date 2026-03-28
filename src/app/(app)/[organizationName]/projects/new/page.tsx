@@ -3,7 +3,7 @@
 import { useRouter, useParams } from 'next/navigation'
 import { Formik } from 'formik'
 import { useCreateProject } from '@/hooks/api/projects'
-import { CreateProjectParametersSchema } from '@db/validation'
+import { CreateOrganizationProjectParametersSchema } from '@/services/organization/project/createOrganizationProject'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,7 @@ export default function ProjectNewPage() {
         <CardContent>
           <Formik
             initialValues={{ name: '', description: '' }}
-            validate={zodValidate(CreateProjectParametersSchema)}
+            validate={zodValidate(CreateOrganizationProjectParametersSchema)}
             onSubmit={(values) => mutation.mutate(
               { name: values.name, description: values.description || undefined },
               {

@@ -6,7 +6,7 @@ import { useUserProjectStatements } from '@/hooks/api/projects'
 import { useUsers } from '@/hooks/api/users'
 import { useAuth } from '@/hooks/use-auth'
 import { useOrganization } from '@/contexts/organization-context'
-import { useActivityFiltersSearchParams } from '@/hooks/use-activity-filters-search-params'
+import { useActivityFiltersSearchParameters } from '@/hooks/use-activity-filters-search-parameters'
 import { RefreshCw } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,7 @@ export default function ActivitiesPage() {
     projectFilter, setProjectFilter,
     startDate, setStartDate,
     endDate, setEndDate,
-  } = useActivityFiltersSearchParams()
+  } = useActivityFiltersSearchParameters()
 
   const { data: projectsData } = useUserProjectStatements({ limit: 100 })
 

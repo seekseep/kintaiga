@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getActivities,
-  getActivity,
-  createActivity,
-  updateActivity,
-  deleteActivity,
+  listOrganizationActivities,
+  getOrganizationActivity,
+  createOrganizationActivity,
+  updateOrganizationActivity,
+  deleteOrganizationActivity,
   type CreateActivityInput,
-  type UpdateActivityBody,
-} from '@/api/activities'
+} from '@/api/organization/project/activitiy'
+import type { UpdateOrganizationProjectMemberActivityInput as UpdateActivityInput } from '@/services/organization/project/member/activity/updateOrganizationProjectMemberActivity'
+import type { DeleteOrganizationProjectMemberActivityInput as DeleteActivityInput } from '@/services/organization/project/member/activity/deleteOrganizationProjectMemberActivity'
 import { activityKeys, type ActivityFilters } from '@/lib/query-keys'
 import { useOrganization } from '@/contexts/organization-context'
 
@@ -15,7 +16,7 @@ export function useActivities(filters?: ActivityFilters, options?: { enabled?: b
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: activityKeys.list(organizationName, filters),
-    queryFn: () => getActivities(organizationName, { ...filters, limit: 200 }),
+    queryFn: () => listOrganizationActivities(organizationName, { ...filters, limit: 200 }),
     staleTime: 30 * 1000,
     gcTime: 15 * 60 * 1000,
     ...options,
@@ -30,7 +31,7 @@ export function useActivity(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: activityKeys.detail(organizationName, id),
-    queryFn: () => getActivity(organizationName, id),
+    queryFn: () => getOrganizationActivity(organizationName, id),
     staleTime: 30 * 1000,
     gcTime: 15 * 60 * 1000,
     ...options,
@@ -41,7 +42,7 @@ export function useCreateActivity() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateActivityInput) => createActivity(organizationName, body),
+    mutationFn: (body: CreateActivityInput) => createOrganizationActivity(organizationName, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.lists(organizationName) })
     },
@@ -52,7 +53,7 @@ export function useUpdateActivity() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateActivityBody }) => updateActivity(organizationName, id, body),
+    mutationFn: (input: UpdateActivityInput) => updateOrganizationActivity(organizationName, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.lists(organizationName) })
     },
@@ -63,7 +64,7 @@ export function useDeleteActivity() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => deleteActivity(organizationName, id),
+    mutationFn: (input: DeleteActivityInput) => deleteOrganizationActivity(organizationName, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.lists(organizationName) })
     },

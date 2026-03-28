@@ -43,10 +43,8 @@ export function EndActivityDialog({ activityId, projectId, projectName, open, on
         mutation.mutate(
           {
             id: activityId,
-            body: {
-              endedAt: new Date(values.endedAt).toISOString(),
-              note: values.note || undefined,
-            },
+            endedAt: new Date(values.endedAt).toISOString(),
+            note: values.note || undefined,
           },
           {
             onSuccess: () => {

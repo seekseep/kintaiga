@@ -9,7 +9,7 @@ export function paginatedResponseSchema<T extends z.ZodType>(itemSchema: T) {
   })
 }
 
-export const PaginationParamsSchema = z.object({
+export const PaginationParametersSchema = z.object({
   limit: z.number().optional(),
   offset: z.number().optional(),
 })
@@ -21,4 +21,4 @@ export type PaginatedResponse<T> = {
   count: number
 }
 
-export type PaginationParams = z.infer<typeof PaginationParamsSchema>
+export type PaginationParameters = z.infer<typeof PaginationParametersSchema>

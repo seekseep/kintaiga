@@ -1,1 +1,1 @@
-export type { PaginatedResponse, PaginationParams } from '@/schemas'
+export type { PaginatedResponse, PaginationParameters } from '@/schemas'

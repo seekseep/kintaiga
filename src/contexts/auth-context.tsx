@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { getMe } from '@/api/me'
 import { ApiError } from '@/lib/api'
-import type { User } from '@/api/users'
+import type { User } from '@/api/organization/members'
 
 export type { User }
 

@@ -2,16 +2,16 @@ import { db } from '@/lib/api-server/db'
 import { supabase } from '@/lib/api-server/supabase'
 import { withOrganization } from '@/lib/api-server/middlewares/with-organization'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
-import { getSearchParams } from '@/lib/api-server/search-params'
+import { getSearchParameters } from '@/lib/api-server/search-parameters'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
-import { listUsers, createUser } from '@/services/users'
+import { listUsers, createUser } from '@/services/user'
 
 export const GET = withErrorHandler(withOrganization(async (req, executor) => {
-  const params = getSearchParams(req, [
+  const parameters = getSearchParameters(req, [
     { key: 'limit', type: 'number', defaultValue: DEFAULT_LIMIT },
     { key: 'offset', type: 'number', defaultValue: DEFAULT_OFFSET },
   ] as const)
-  const result = await listUsers({ db }, executor, params)
+  const result = await listUsers({ db }, executor, parameters)
   return Response.json(result)
 }))
 

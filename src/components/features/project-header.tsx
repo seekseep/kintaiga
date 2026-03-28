@@ -107,11 +107,11 @@ export function ProjectHeader({ project, projectId, basePath, editable }: Props)
       toast.error('名前は必須です')
       return
     }
-    await mutation.mutateAsync({ id: projectId, body: { name } })
+    await mutation.mutateAsync({ id: projectId, name })
   }, [mutation, projectId])
 
   const saveDescription = useCallback(async (description: string) => {
-    await mutation.mutateAsync({ id: projectId, body: { description: description || null } })
+    await mutation.mutateAsync({ id: projectId, description: description || null })
   }, [mutation, projectId])
 
   return (

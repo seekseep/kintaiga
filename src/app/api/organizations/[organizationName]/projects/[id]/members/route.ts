@@ -1,10 +1,10 @@
 import { db } from '@/lib/api-server/db'
 import { withOrganization } from '@/lib/api-server/middlewares/with-organization'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
-import { listProjectMembers } from '@/services/projects'
+import { listOrganizationProjectMembers } from '@/services/organization/project/member'
 
 export const GET = withErrorHandler(withOrganization(async (_req, executor, context) => {
   const { id } = await context.params
-  const result = await listProjectMembers({ db }, executor, { projectId: id })
+  const result = await listOrganizationProjectMembers({ db }, executor, { projectId: id })
   return Response.json(result)
 }))

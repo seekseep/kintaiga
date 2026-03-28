@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
-import { LoginParametersSchema } from '@db/validation'
+import { LoginParametersSchema } from '@/services/auth/login'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'

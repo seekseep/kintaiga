@@ -1,5 +1,5 @@
 import { differenceInMinutes } from 'date-fns'
-import type { RoundingDirection } from '@/schemas/_helpers'
+import type { RoundingDirection } from '@/schemas/rounding-direction'
 
 /**
  * 分数を指定間隔で丸める

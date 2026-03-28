@@ -1,8 +1,8 @@
 import { z } from 'zod/v4'
-import { RoleSchema } from './_helpers'
+import { RoleSchema } from './role'
 
 export const ProjectMemberSchema = z.object({
-  assignmentId: z.string(),
+  projectAssignmentId: z.string(),
   userId: z.string(),
   name: z.string(),
   role: RoleSchema,

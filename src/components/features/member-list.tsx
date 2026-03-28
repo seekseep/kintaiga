@@ -9,7 +9,7 @@ import { ActivityControl, type ActivityControlHandle } from '@/components/activi
 import { AddMemberDialog } from '@/components/add-member-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, RefreshCw } from 'lucide-react'
-import type { User } from '@/api/users'
+import type { User } from '@/api/organization/members'
 import type { ProjectMember } from '@/schemas'
 
 type Props = {
@@ -122,7 +122,7 @@ export function MemberList({
         <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))' }}>
           {filteredMembers.map(member => (
             <MemberCard
-              key={member.assignmentId}
+              key={member.projectAssignmentId}
               member={member}
               projectId={projectId}
               projectName={projectName}

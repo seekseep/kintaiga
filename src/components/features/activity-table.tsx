@@ -31,7 +31,7 @@ import { InlineDateTimeEditor } from '@/components/features/inline-datetime-edit
 import { InlineTextEditor } from '@/components/features/inline-text-editor'
 import { ActivityCommandBar } from '@/components/features/activity-command-bar'
 import { useUpdateActivity, useDeleteActivity } from '@/hooks/api/activities'
-import type { ProjectActivity as Activity } from '@/api/activities'
+import type { ProjectActivity as Activity } from '@/api/organization/project/activitiy'
 
 type ActivityPreview = {
   startedAt: string
@@ -64,7 +64,7 @@ function DeleteButton({ activityId }: { activityId: string }) {
           <AlertDialogCancel>キャンセル</AlertDialogCancel>
           <AlertDialogAction
             onClick={() =>
-              mutation.mutate(activityId, {
+              mutation.mutate({ id: activityId }, {
                 onSuccess: () => toast.success('削除しました'),
                 onError: () => toast.error('削除に失敗しました'),
               })
@@ -92,7 +92,7 @@ export function ActivityTable({ activities, showUserColumn, minuteStep = 15, rou
   }, [])
 
   async function handleSave(activityId: string, field: string, value: string) {
-    await updateMutation.mutateAsync({ id: activityId, body: { [field]: value } })
+    await updateMutation.mutateAsync({ id: activityId, [field]: value })
   }
 
   const columns = useMemo<ColumnDef<Activity>[]>(() => {

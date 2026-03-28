@@ -2,13 +2,13 @@ import { z } from 'zod/v4'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { db } from '@/lib/api-server/db'
 import {
-  listActivities,
-  createActivity,
-  getActivity,
-  updateActivity,
-  deleteActivity,
-} from '@/services/activities'
-import { listUserProjectStatements } from '@/services/projects/listProjects'
+  listOrganizationProjectMemberActivities,
+  createOrganizationProjectMemberActivity,
+  getOrganizationProjectMemberActivity,
+  updateOrganizationProjectMemberActivity,
+  deleteOrganizationProjectMemberActivity,
+} from '@/services/organization/project/member/activity'
+import { listOrganizationProjectStatements } from '@/services/organization/project/statement/listOrganizationProjectStatements'
 import { organizations } from '@db/schema'
 import { eq } from 'drizzle-orm'
 import { HttpError } from '@/lib/api-server/errors'
@@ -36,7 +36,7 @@ export function createMcpServer(executor: OrganizationExecutor) {
     },
     async (args) => {
       try {
-        const result = await listActivities({ db }, executor, args)
+        const result = await listOrganizationProjectMemberActivities({ db }, executor, args)
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
       } catch (err) {
         return errorResult(err)
@@ -56,7 +56,7 @@ export function createMcpServer(executor: OrganizationExecutor) {
     },
     async (args) => {
       try {
-        const result = await createActivity({ db }, executor, args)
+        const result = await createOrganizationProjectMemberActivity({ db }, executor, args)
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
       } catch (err) {
         return errorResult(err)
@@ -72,7 +72,7 @@ export function createMcpServer(executor: OrganizationExecutor) {
     },
     async (args) => {
       try {
-        const result = await getActivity({ db }, executor, args)
+        const result = await getOrganizationProjectMemberActivity({ db }, executor, args)
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
       } catch (err) {
         return errorResult(err)
@@ -91,7 +91,7 @@ export function createMcpServer(executor: OrganizationExecutor) {
     },
     async (args) => {
       try {
-        const result = await updateActivity({ db }, executor, args)
+        const result = await updateOrganizationProjectMemberActivity({ db }, executor, args)
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
       } catch (err) {
         return errorResult(err)
@@ -107,7 +107,7 @@ export function createMcpServer(executor: OrganizationExecutor) {
     },
     async (args) => {
       try {
-        await deleteActivity({ db }, executor, args)
+        await deleteOrganizationProjectMemberActivity({ db }, executor, args)
         return { content: [{ type: 'text', text: 'アクティビティを削除しました' }] }
       } catch (err) {
         return errorResult(err)
@@ -122,7 +122,7 @@ export function createMcpServer(executor: OrganizationExecutor) {
     'kintaiga://organization/info',
     { description: '現在のトークンに紐づく組織の情報とユーザーの権限', mimeType: 'application/json' },
     async () => {
-      const [org] = await db.select({
+      const [organization] = await db.select({
         id: organizations.id,
         name: organizations.name,
         plan: organizations.plan,
@@ -131,7 +131,7 @@ export function createMcpServer(executor: OrganizationExecutor) {
         .limit(1)
 
       const text = JSON.stringify({
-        organization: org,
+        organization: organization,
         user: {
           id: executor.user.id,
           role: executor.user.role,
@@ -148,7 +148,7 @@ export function createMcpServer(executor: OrganizationExecutor) {
     'kintaiga://projects',
     { description: '組織内のプロジェクト一覧（アクティビティ作成時にprojectIdの参照用）', mimeType: 'application/json' },
     async () => {
-      const result = await listUserProjectStatements({ db }, executor, {})
+      const result = await listOrganizationProjectStatements({ db }, executor, {})
       const text = JSON.stringify(result, null, 2)
       return { contents: [{ uri: 'kintaiga://projects', text, mimeType: 'application/json' }] }
     },

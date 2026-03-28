@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
-import { UpdatePasswordParametersSchema } from '@db/validation'
+import { UpdatePasswordParametersSchema } from '@/services/me/updatePassword'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { toast } from 'sonner'
 import Link from 'next/link'

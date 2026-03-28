@@ -1,9 +1,9 @@
 'use client'
 
 import { Formik } from 'formik'
-import { useCreateAssignment } from '@/hooks/api/assignments'
+import { useCreateProjectMember } from '@/hooks/api/project-members'
 import { zodValidate } from '@/lib/form/zod-adapter'
-import type { User } from '@/api/users'
+import type { User } from '@/api/organization/members'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/form'
@@ -35,7 +35,7 @@ type Props = {
 }
 
 export function AddMemberDialog({ projectId, unassignedUsers, open, onOpenChange }: Props) {
-  const mutation = useCreateAssignment()
+  const mutation = useCreateProjectMember()
 
   return (
     <Formik

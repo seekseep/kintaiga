@@ -69,8 +69,8 @@ function makeTimestamp(date: Date, hour: number, minute = 0): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute)
 }
 
-type ActivityInsert = typeof schema.activities.$inferInsert
-type AssignmentInsert = typeof schema.assignments.$inferInsert
+type ActivityInsert = typeof schema.projectActivities.$inferInsert
+type AssignmentInsert = typeof schema.projectAssignments.$inferInsert
 
 // --- Supabase Auth ユーザー管理 ---
 
@@ -118,11 +118,11 @@ async function main() {
 
   // 3. DB リセット
   console.log('\n3. Resetting database...')
-  await db.delete(schema.activities)
-  await db.delete(schema.assignments)
+  await db.delete(schema.projectActivities)
+  await db.delete(schema.projectAssignments)
   await db.delete(schema.users)
   await db.delete(schema.projects)
-  await db.delete(schema.organizationMembers)
+  await db.delete(schema.organizationAssignments)
   await db.delete(schema.organizationConfigurations)
   await db.delete(schema.organizations)
   console.log('  Done.')
@@ -156,10 +156,10 @@ async function main() {
   console.log(`  Inserted organization: ${org.name} (${org.id})`)
 
   // Organization members
-  await db.insert(schema.organizationMembers).values([
-    { organizationId: org.id, userId: userId.yokoyama, organizationRole: 'owner' as const },
-    { organizationId: org.id, userId: userId.sakamoto, organizationRole: 'manager' as const },
-    { organizationId: org.id, userId: userId.masajima, organizationRole: 'member' as const },
+  await db.insert(schema.organizationAssignments).values([
+    { organizationId: org.id, userId: userId.yokoyama, role: 'owner' as const },
+    { organizationId: org.id, userId: userId.sakamoto, role: 'manager' as const },
+    { organizationId: org.id, userId: userId.masajima, role: 'worker' as const },
   ])
   console.log('  Inserted 3 organization members.')
 
@@ -177,10 +177,10 @@ async function main() {
   }).returning()
   console.log(`  Inserted organization: ${mococoOrg.name} (${mococoOrg.id})`)
 
-  await db.insert(schema.organizationMembers).values([
-    { organizationId: mococoOrg.id, userId: userId.yokoyama, organizationRole: 'owner' as const },
-    { organizationId: mococoOrg.id, userId: userId.sakamoto, organizationRole: 'manager' as const },
-    { organizationId: mococoOrg.id, userId: userId.masajima, organizationRole: 'member' as const },
+  await db.insert(schema.organizationAssignments).values([
+    { organizationId: mococoOrg.id, userId: userId.yokoyama, role: 'owner' as const },
+    { organizationId: mococoOrg.id, userId: userId.sakamoto, role: 'manager' as const },
+    { organizationId: mococoOrg.id, userId: userId.masajima, role: 'worker' as const },
   ])
   console.log('  Inserted 3 Mococo members.')
 
@@ -196,11 +196,11 @@ async function main() {
   }).returning()
   console.log(`  Inserted organization: ${nshaOrg.name} (${nshaOrg.id})`)
 
-  await db.insert(schema.organizationMembers).values([
-    { organizationId: nshaOrg.id, userId: userId.tanaka, organizationRole: 'owner' as const },
-    { organizationId: nshaOrg.id, userId: userId.kinoshita, organizationRole: 'manager' as const },
-    { organizationId: nshaOrg.id, userId: userId.suzuki, organizationRole: 'member' as const },
-    { organizationId: nshaOrg.id, userId: userId.yoshida, organizationRole: 'member' as const },
+  await db.insert(schema.organizationAssignments).values([
+    { organizationId: nshaOrg.id, userId: userId.tanaka, role: 'owner' as const },
+    { organizationId: nshaOrg.id, userId: userId.kinoshita, role: 'manager' as const },
+    { organizationId: nshaOrg.id, userId: userId.suzuki, role: 'worker' as const },
+    { organizationId: nshaOrg.id, userId: userId.yoshida, role: 'worker' as const },
   ])
   console.log('  Inserted 4 N社 members.')
 
@@ -266,7 +266,7 @@ async function main() {
   ]
 
   const allAssignmentValues = [...assignmentValues, ...nshaAssignmentValues]
-  const dbAssignments = await db.insert(schema.assignments).values(allAssignmentValues satisfies AssignmentInsert[]).returning()
+  const dbAssignments = await db.insert(schema.projectAssignments).values(allAssignmentValues satisfies AssignmentInsert[]).returning()
   console.log(`  Inserted ${dbAssignments.length} assignments.`)
 
   // 7. Activities 生成
@@ -445,7 +445,7 @@ async function main() {
   const BATCH_SIZE = 500
   for (let i = 0; i < activities.length; i += BATCH_SIZE) {
     const batch = activities.slice(i, i + BATCH_SIZE)
-    await db.insert(schema.activities).values(batch)
+    await db.insert(schema.projectActivities).values(batch)
     console.log(`  Inserted batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(activities.length / BATCH_SIZE)}`)
   }
 

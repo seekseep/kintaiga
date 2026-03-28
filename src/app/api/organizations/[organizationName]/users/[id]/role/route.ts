@@ -2,7 +2,7 @@ import { db } from '@/lib/api-server/db'
 import { supabase } from '@/lib/api-server/supabase'
 import { withOrganization } from '@/lib/api-server/middlewares/with-organization'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
-import { updateUserRole } from '@/services/users'
+import { updateUserRole } from '@/services/user'
 
 export const PATCH = withErrorHandler(withOrganization(async (req, executor, context) => {
   const { id } = await context.params

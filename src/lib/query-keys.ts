@@ -1,6 +1,6 @@
-import type { GetUserProjectStatementsParams } from '@/api/projects'
-import type { PaginationParams } from '@/api/types'
-import type { GetAssignmentsParams } from '@/api/assignments'
+import type { GetOrganizationUserProjectStatementsParameters } from '@/api/organization/project'
+import type { PaginationParameters } from '@/api/types'
+import type { ListOrganizationProjectMembersParameters } from '@/api/organization/project/member'
 
 export type ActivityFilters = {
   userId?: string
@@ -26,7 +26,7 @@ export const projectKeys = {
   all: (organizationName: string) => ['projects', organizationName] as const,
   lists: (organizationName: string) => [...projectKeys.all(organizationName), 'list'] as const,
   statements: (organizationName: string) => [...projectKeys.all(organizationName), 'statement'] as const,
-  statement: (organizationName: string, params?: GetUserProjectStatementsParams) => [...projectKeys.statements(organizationName), params] as const,
+  statement: (organizationName: string, parameters?: GetOrganizationUserProjectStatementsParameters) => [...projectKeys.statements(organizationName), parameters] as const,
   details: (organizationName: string) => [...projectKeys.all(organizationName), 'detail'] as const,
   detail: (organizationName: string, id: string) => [...projectKeys.details(organizationName), id] as const,
   config: (organizationName: string, id: string) => [...projectKeys.detail(organizationName, id), 'config'] as const,
@@ -45,17 +45,17 @@ export const activityKeys = {
 export const userKeys = {
   all: (organizationName: string) => ['users', organizationName] as const,
   lists: (organizationName: string) => [...userKeys.all(organizationName), 'list'] as const,
-  list: (organizationName: string, params?: PaginationParams) => [...userKeys.lists(organizationName), params] as const,
+  list: (organizationName: string, parameters?: PaginationParameters) => [...userKeys.lists(organizationName), parameters] as const,
   details: (organizationName: string) => [...userKeys.all(organizationName), 'detail'] as const,
   detail: (organizationName: string, id: string) => [...userKeys.details(organizationName), id] as const,
 }
 
-export const assignmentKeys = {
-  all: (organizationName: string) => ['assignments', organizationName] as const,
-  lists: (organizationName: string) => [...assignmentKeys.all(organizationName), 'list'] as const,
-  list: (organizationName: string, params?: GetAssignmentsParams) => [...assignmentKeys.lists(organizationName), params] as const,
-  details: (organizationName: string) => [...assignmentKeys.all(organizationName), 'detail'] as const,
-  detail: (organizationName: string, id: string) => [...assignmentKeys.details(organizationName), id] as const,
+export const projectMemberKeys = {
+  all: (organizationName: string) => ['projectMembers', organizationName] as const,
+  lists: (organizationName: string) => [...projectMemberKeys.all(organizationName), 'list'] as const,
+  list: (organizationName: string, parameters?: ListOrganizationProjectMembersParameters) => [...projectMemberKeys.lists(organizationName), parameters] as const,
+  details: (organizationName: string) => [...projectMemberKeys.all(organizationName), 'detail'] as const,
+  detail: (organizationName: string, id: string) => [...projectMemberKeys.details(organizationName), id] as const,
 }
 
 export const configurationKeys = {

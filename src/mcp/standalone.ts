@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { createMcpServer } from './server'
-import { resolveToken } from '@/services/tokens'
+import { resolveUserToken } from '@/services/user/tokens'
 import { db } from '@/lib/api-server/db'
 
 async function main() {
@@ -17,7 +17,7 @@ async function main() {
   }
 
   // Resolve token to get executor
-  const { executor } = await resolveToken({ db }, token)
+  const { executor } = await resolveUserToken({ db }, token)
 
   console.error(`Authenticated as user ${executor.user.id} in organization ${executor.organization.id} (role: ${executor.organization.role})`)
 

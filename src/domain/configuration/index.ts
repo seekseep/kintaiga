@@ -1,4 +1,5 @@
-import type { RoundingDirection, AggregationUnit } from '@/schemas/_helpers'
+import type { RoundingDirection } from '@/schemas/rounding-direction'
+import type { AggregationUnit } from '@/schemas/aggregation-unit'
 
 export const ROUNDING_INTERVALS = [1, 5, 10, 15, 20, 30, 60] as const
 export type RoundingInterval = (typeof ROUNDING_INTERVALS)[number]

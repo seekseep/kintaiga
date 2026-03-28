@@ -1,7 +1,7 @@
 import { db } from '@/lib/api-server/db'
 import { withOrganization } from '@/lib/api-server/middlewares/with-organization'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
-import { updateOrganizationMemberRole, removeOrganizationMember } from '@/services/organizations'
+import { updateOrganizationMemberRole, removeOrganizationMember } from '@/services/organization'
 
 export const PATCH = withErrorHandler(withOrganization(async (req, executor, context) => {
   const { userId } = await context.params

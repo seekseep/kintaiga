@@ -1,14 +1,14 @@
 import { useQuery, useMutation, useQueryClient, type UseMutationOptions } from '@tanstack/react-query'
 import {
-  getMyOrganizations,
+  listMyOrganizations,
   getOrganization,
   createOrganization,
-  getOrganizationMembers,
+  listOrganizationMembers,
   updateOrganization,
   deleteOrganization,
   type Organization,
-} from '@/api/organizations'
-import type { CreateOrganizationInput } from '@/services/organizations/createOrganization'
+} from '@/api/organization'
+import type { CreateOrganizationInput } from '@/services/organization/createOrganization'
 import { useOrganization } from '@/contexts/organization-context'
 import { meKeys, organizationKeys } from '@/lib/query-keys'
 
@@ -22,7 +22,7 @@ export function useOrganizationDetail(organizationName: string) {
 export function useMyOrganizations(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: meKeys.organizations(),
-    queryFn: getMyOrganizations,
+    queryFn: listMyOrganizations,
     ...options,
   })
 }
@@ -44,7 +44,7 @@ export function useCreateOrganization(
 export function useOrganizationMembers(organizationName: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: organizationKeys.members(organizationName),
-    queryFn: () => getOrganizationMembers(organizationName),
+    queryFn: () => listOrganizationMembers(organizationName),
     ...options,
   })
 }

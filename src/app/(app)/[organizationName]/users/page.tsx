@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useUsers } from '@/hooks/api/users'
-import type { OrganizationRole } from '@/schemas/_helpers'
+import type { OrganizationRole } from '@/schemas/organization-role'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -30,7 +30,7 @@ export default function UserListPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">ユーザー</h1>
         <Button asChild>
-          <Link href={`/${organizationName}/users/new`}><Plus className="mr-2 h-4 w-4" />メンバーを招待</Link>
+          <Link href={`/${organizationName}/users/invite`}><Plus className="mr-2 h-4 w-4" />メンバーを招待</Link>
         </Button>
       </div>
       {isLoading ? (

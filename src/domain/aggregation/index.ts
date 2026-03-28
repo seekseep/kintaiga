@@ -1,5 +1,5 @@
 import { startOfMonth, endOfMonth } from 'date-fns'
-import type { RoundingDirection } from '@/schemas/_helpers'
+import type { RoundingDirection } from '@/schemas/rounding-direction'
 import { roundMinutes, calcElapsedMinutes } from '@/domain/time'
 
 /**

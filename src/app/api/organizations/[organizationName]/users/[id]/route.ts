@@ -2,7 +2,7 @@ import { db } from '@/lib/api-server/db'
 import { supabase } from '@/lib/api-server/supabase'
 import { withOrganization } from '@/lib/api-server/middlewares/with-organization'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
-import { getUser, updateUser, archiveAndDeleteUser } from '@/services/users'
+import { getUser, updateUser, archiveAndDeleteUser } from '@/services/user'
 
 export const GET = withErrorHandler(withOrganization(async (_req, executor, context) => {
   const { id } = await context.params

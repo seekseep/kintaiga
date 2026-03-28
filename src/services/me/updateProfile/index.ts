@@ -4,7 +4,7 @@ import { users } from '@db/schema'
 import { ValidationError } from '@/lib/api-server/errors'
 import type { DbOrTx, UserExecutor } from '../../types'
 
-const UpdateProfileParametersSchema = z.object({
+export const UpdateProfileParametersSchema = z.object({
   name: z.string().optional(),
 })
 

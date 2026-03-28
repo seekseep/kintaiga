@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, type ReactNode } from 'react'
-import type { OrganizationRole, Plan } from '@/schemas/_helpers'
+import type { OrganizationRole } from '@/schemas/organization-role'
+import type { Plan } from '@/schemas/plan'
 
 export interface OrganizationValue {
   id: string

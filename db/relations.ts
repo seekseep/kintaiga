@@ -1,30 +1,30 @@
 import { relations } from 'drizzle-orm'
 import {
   organizations,
-  organizationMembers,
+  organizationAssignments,
   organizationConfigurations,
   projects,
   users,
-  assignments,
-  activities,
-  reports,
+  projectAssignments,
+  projectActivities,
+  projectActivityReports,
   personalAccessTokens,
 } from './schema'
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
-  members: many(organizationMembers),
+  organizationAssignments: many(organizationAssignments),
   projects: many(projects),
   organizationConfigurations: many(organizationConfigurations),
-  reports: many(reports),
+  projectActivityReports: many(projectActivityReports),
 }))
 
-export const organizationMembersRelations = relations(organizationMembers, ({ one }) => ({
+export const organizationAssignmentsRelations = relations(organizationAssignments, ({ one }) => ({
   organization: one(organizations, {
-    fields: [organizationMembers.organizationId],
+    fields: [organizationAssignments.organizationId],
     references: [organizations.id],
   }),
   user: one(users, {
-    fields: [organizationMembers.userId],
+    fields: [organizationAssignments.userId],
     references: [users.id],
   }),
 }))
@@ -34,34 +34,34 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
     fields: [projects.organizationId],
     references: [organizations.id],
   }),
-  assignments: many(assignments),
-  activities: many(activities),
+  projectAssignments: many(projectAssignments),
+  projectActivities: many(projectActivities),
 }))
 
 export const usersRelations = relations(users, ({ many }) => ({
-  organizationMembers: many(organizationMembers),
-  assignments: many(assignments),
-  activities: many(activities),
+  organizationAssignments: many(organizationAssignments),
+  projectAssignments: many(projectAssignments),
+  projectActivities: many(projectActivities),
 }))
 
-export const assignmentsRelations = relations(assignments, ({ one }) => ({
+export const projectAssignmentsRelations = relations(projectAssignments, ({ one }) => ({
   project: one(projects, {
-    fields: [assignments.projectId],
+    fields: [projectAssignments.projectId],
     references: [projects.id],
   }),
   user: one(users, {
-    fields: [assignments.userId],
+    fields: [projectAssignments.userId],
     references: [users.id],
   }),
 }))
 
-export const activitiesRelations = relations(activities, ({ one }) => ({
+export const projectActivitiesRelations = relations(projectActivities, ({ one }) => ({
   user: one(users, {
-    fields: [activities.userId],
+    fields: [projectActivities.userId],
     references: [users.id],
   }),
   project: one(projects, {
-    fields: [activities.projectId],
+    fields: [projectActivities.projectId],
     references: [projects.id],
   }),
 }))
@@ -84,13 +84,13 @@ export const personalAccessTokensRelations = relations(personalAccessTokens, ({ 
   }),
 }))
 
-export const reportsRelations = relations(reports, ({ one }) => ({
+export const projectActivityReportsRelations = relations(projectActivityReports, ({ one }) => ({
   organization: one(organizations, {
-    fields: [reports.organizationId],
+    fields: [projectActivityReports.organizationId],
     references: [organizations.id],
   }),
   user: one(users, {
-    fields: [reports.userId],
+    fields: [projectActivityReports.userId],
     references: [users.id],
   }),
 }))

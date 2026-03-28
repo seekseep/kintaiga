@@ -1,4 +1,4 @@
-import type { Plan } from '@/schemas/_helpers'
+import type { Plan } from '@/schemas/plan'
 
 const FREE_MEMBER_LIMIT = 3
 

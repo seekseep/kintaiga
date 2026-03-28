@@ -4,7 +4,7 @@ import { users } from '@db/schema'
 import { ValidationError, ConflictError } from '@/lib/api-server/errors'
 import type { DbOrTx, UserExecutor } from '../../types'
 
-const CreateProfileParametersSchema = z.object({
+export const CreateProfileParametersSchema = z.object({
   sub: z.string(),
   name: z.string(),
   email: z.string().nullable().optional(),

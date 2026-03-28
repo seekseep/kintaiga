@@ -14,23 +14,23 @@ const db = drizzle(client)
 
 async function resolveOrganization(identifier?: string) {
   if (identifier) {
-    const [org] = await db.select().from(organizations).where(eq(organizations.name, identifier)).limit(1)
-    if (!org) {
+    const [organization] = await db.select().from(organizations).where(eq(organizations.name, identifier)).limit(1)
+    if (!organization) {
       console.error(`Organization not found: ${identifier}`)
       process.exit(1)
     }
-    return org
+    return organization
   }
 
-  const allOrgs = await db.select().from(organizations)
-  if (allOrgs.length === 0) {
+  const allOrganizations = await db.select().from(organizations)
+  if (allOrganizations.length === 0) {
     console.error('No organizations found')
     process.exit(1)
   }
 
   return await select({
     message: '組織を選択:',
-    choices: allOrgs.map((o) => ({
+    choices: allOrganizations.map((o) => ({
       name: `${o.name} [${o.plan}]`,
       value: o,
     })),
@@ -56,25 +56,25 @@ async function resolvePlan(plan?: string, currentPlan?: string) {
 }
 
 program
-  .option('-o, --org <name>', 'Organization name')
+  .option('-o, --organization <name>', 'Organization name')
   .option('-p, --plan <plan>', `New plan (${PLANS.join(', ')})`)
   .action(async (options) => {
     try {
-      const org = await resolveOrganization(options.org)
-      console.log(`\n選択された組織: ${org.name} [現在のプラン: ${org.plan}]`)
+      const organization = await resolveOrganization(options.organization)
+      console.log(`\n選択された組織: ${organization.name} [現在のプラン: ${organization.plan}]`)
 
-      const newPlan = await resolvePlan(options.plan, org.plan)
+      const newPlan = await resolvePlan(options.plan, organization.plan)
 
-      if (newPlan === org.plan) {
+      if (newPlan === organization.plan) {
         console.log('プランは変更されていません。')
         process.exit(0)
       }
 
       await db.update(organizations)
         .set({ plan: newPlan, updatedAt: new Date() })
-        .where(eq(organizations.id, org.id))
+        .where(eq(organizations.id, organization.id))
 
-      console.log(`プランを更新しました: ${org.plan} -> ${newPlan}`)
+      console.log(`プランを更新しました: ${organization.plan} -> ${newPlan}`)
     } catch (error) {
       console.error('Error:', error)
       process.exit(1)

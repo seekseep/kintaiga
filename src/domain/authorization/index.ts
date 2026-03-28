@@ -37,23 +37,23 @@ export function canCreateActivityForUser(executor: { user: { role: string; id: s
 /**
  * 管理者専用の操作権限を判定する
  */
-export function isAdminUser(executor: { user: { role: string } }): boolean {
+export function canActAsAdmin(executor: { user: { role: string } }): boolean {
   return executor.user.role === 'admin'
 }
 
 // --- Organization-level authorization ---
 
 /**
- * 組織オーナーか判定する
+ * 組織オーナーとして操作できるか判定する
  */
-export function isOrganizationOwner(executor: OrganizationExecutor): boolean {
+export function canActAsOrganizationOwner(executor: OrganizationExecutor): boolean {
   return executor.user.role === 'admin' || executor.organization.role === 'owner'
 }
 
 /**
- * 組織マネージャー以上か判定する（owner or manager）
+ * 組織マネージャー以上として操作できるか判定する（owner or manager）
  */
-export function isOrganizationManagerOrAbove(executor: OrganizationExecutor): boolean {
+export function canActAsOrganizationManager(executor: OrganizationExecutor): boolean {
   return executor.user.role === 'admin' || executor.organization.role === 'owner' || executor.organization.role === 'manager'
 }
 
@@ -61,21 +61,21 @@ export function isOrganizationManagerOrAbove(executor: OrganizationExecutor): bo
  * 組織メンバーの管理権限を判定する（owner or manager）
  */
 export function canManageOrganizationMembers(executor: OrganizationExecutor): boolean {
-  return isOrganizationManagerOrAbove(executor)
+  return canActAsOrganizationManager(executor)
 }
 
 /**
  * 組織プロジェクトの管理権限を判定する（owner or manager）
  */
 export function canManageOrganizationProjects(executor: OrganizationExecutor): boolean {
-  return isOrganizationManagerOrAbove(executor)
+  return canActAsOrganizationManager(executor)
 }
 
 /**
  * レポート作成権限を判定する（owner/manager + premium）
  */
 export function canCreateReport(executor: OrganizationExecutor): boolean {
-  return isOrganizationManagerOrAbove(executor) && executor.organization.plan === 'premium'
+  return canActAsOrganizationManager(executor) && executor.organization.plan === 'premium'
 }
 
 /**

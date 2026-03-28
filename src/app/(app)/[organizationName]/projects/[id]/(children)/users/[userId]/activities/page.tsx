@@ -8,7 +8,7 @@ import { format, addMonths, addWeeks, startOfDay, endOfDay, startOfMonth, startO
 import { ja } from 'date-fns/locale'
 import { useProject, useProjectConfig } from '@/hooks/api/projects'
 import { useActivities, useUpdateActivity, useDeleteActivity } from '@/hooks/api/activities'
-import { useAssignments } from '@/hooks/api/assignments'
+import { useProjectMemberAssignments } from '@/hooks/api/project-members'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent } from '@/components/ui/card'
@@ -77,7 +77,7 @@ function DeleteButton({ activityId }: { activityId: string }) {
           <AlertDialogAction
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={() =>
-              mutation.mutate(activityId, {
+              mutation.mutate({ id: activityId }, {
                 onSuccess: () => toast.success('削除しました'),
                 onError: () => toast.error('削除に失敗しました'),
               })
@@ -102,7 +102,7 @@ function BulkDeleteButton({ selectedIds, onComplete }: { selectedIds: string[]; 
     let errorCount = 0
     for (const id of selectedIds) {
       try {
-        await mutation.mutateAsync(id)
+        await mutation.mutateAsync({ id })
         successCount++
       } catch {
         errorCount++
@@ -186,7 +186,7 @@ export default function ProjectUserActivitiesPage() {
     setPeriodEnd(next.end)
   }, [effectiveStart, effectiveEnd, periodUnit, periodCount])
 
-  const { data: assignmentData } = useAssignments({ userId, projectId })
+  const { data: assignmentData } = useProjectMemberAssignments({ userId, projectId })
   const allAssignments = assignmentData?.items ?? []
   const activeAssignment = allAssignments.find(a => {
     if (!a.endedAt) return true
@@ -234,7 +234,7 @@ export default function ProjectUserActivitiesPage() {
   const updateMutation = useUpdateActivity()
 
   async function handleSave(activityId: string, field: string, value: string) {
-    await updateMutation.mutateAsync({ id: activityId, body: { [field]: value } })
+    await updateMutation.mutateAsync({ id: activityId, [field]: value })
   }
 
   if (isLoading || config === undefined || project === undefined) return (

@@ -1,6 +1,6 @@
 import { type NextRequest } from 'next/server'
 import { eq, and } from 'drizzle-orm'
-import { organizations, organizationMembers } from '@db/schema'
+import { organizations, organizationAssignments } from '@db/schema'
 import { db } from '@/lib/api-server/db'
 import { ForbiddenError, NotFoundError } from '@/lib/api-server/errors'
 import { withUser, type RouteContext } from '@/lib/api-server/middlewares/with-user'
@@ -22,10 +22,10 @@ export function withOrganization(handler: OrganizationHandler) {
 
     if (!organization) throw new NotFoundError('組織が見つかりません')
 
-    const [membership] = await db.select().from(organizationMembers)
+    const [membership] = await db.select().from(organizationAssignments)
       .where(and(
-        eq(organizationMembers.organizationId, organization.id),
-        eq(organizationMembers.userId, executor.user.id),
+        eq(organizationAssignments.organizationId, organization.id),
+        eq(organizationAssignments.userId, executor.user.id),
       ))
       .limit(1)
 
@@ -38,7 +38,7 @@ export function withOrganization(handler: OrganizationHandler) {
       user: executor.user,
       organization: {
         id: organization.id,
-        role: membership?.organizationRole ?? 'member',
+        role: membership?.role ?? 'worker',
         plan: organization.plan,
       },
     }

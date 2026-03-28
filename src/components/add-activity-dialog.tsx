@@ -3,7 +3,7 @@
 import { Formik } from 'formik'
 import { useCreateActivity } from '@/hooks/api/activities'
 import { useProjectConfig } from '@/hooks/api/projects'
-import type { User } from '@/api/users'
+import type { User } from '@/api/organization/members'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormTextarea, FormField, FormDateTimePicker } from '@/components/form'

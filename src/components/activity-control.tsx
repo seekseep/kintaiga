@@ -7,7 +7,7 @@ import { ElapsedTime } from '@/components/elapsed-time'
 import { formatMinutes, formatHours } from '@/domain/time'
 import { filterActivitiesByMonth, calculateTotalMinutes, getMonthRange } from '@/domain/aggregation'
 import { canControlActivity } from '@/domain/authorization'
-import { useAssignments } from '@/hooks/api/assignments'
+import { useProjectMemberAssignments } from '@/hooks/api/project-members'
 import { StartActivityDialog } from '@/components/start-activity-dialog'
 import { EndActivityDialog } from '@/components/end-activity-dialog'
 import { useAuth } from '@/hooks/use-auth'
@@ -36,7 +36,7 @@ export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function
 
   const { data: config } = useProjectConfig(projectId)
 
-  const { data: assignmentData } = useAssignments({ userId, projectId, active: true })
+  const { data: assignmentData } = useProjectMemberAssignments({ userId, projectId, active: true })
   const targetMinutes = assignmentData?.items[0]?.targetMinutes ?? null
 
   const { data: ongoingData, isFetching: isFetchingOngoing, refetch: refetchOngoing } = useActivities({ userId, projectId, ongoing: true })

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { Formik } from 'formik'
-import { useProject, useUpdateProject } from '@/hooks/api/projects'
+import { useProject, useProjectConfig, useUpdateProjectConfig } from '@/hooks/api/projects'
 import { useConfiguration } from '@/hooks/api/configurations'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -42,12 +42,13 @@ export default function ProjectSettingsPage() {
   const router = useRouter()
 
   const { data: project, isLoading: loadingProject } = useProject(id)
+  const { data: projectConfig, isLoading: loadingProjectConfig } = useProjectConfig(id)
 
   const { data: globalConfig, isLoading: loadingConfig } = useConfiguration()
 
-  const mutation = useUpdateProject()
+  const mutation = useUpdateProjectConfig()
 
-  if (loadingProject || loadingConfig) return (
+  if (loadingProject || loadingProjectConfig || loadingConfig) return (
     <div className="mx-auto max-w-lg space-y-4">
       <Skeleton className="h-5 w-56" />
       <div className="rounded-xl ring-1 ring-foreground/10 bg-card py-4">
@@ -93,20 +94,18 @@ export default function ProjectSettingsPage() {
               <Formik
                 enableReinitialize
                 initialValues={{
-                  roundingInterval: project?.roundingInterval != null ? String(project.roundingInterval) : USE_GLOBAL,
-                  roundingDirection: project?.roundingDirection ?? USE_GLOBAL,
-                  aggregationUnit: project?.aggregationUnit ?? USE_GLOBAL,
-                  aggregationPeriod: project?.aggregationPeriod != null ? String(project.aggregationPeriod) : USE_GLOBAL,
+                  roundingInterval: projectConfig?.roundingInterval != null ? String(projectConfig.roundingInterval) : USE_GLOBAL,
+                  roundingDirection: projectConfig?.roundingDirection ?? USE_GLOBAL,
+                  aggregationUnit: projectConfig?.aggregationUnit ?? USE_GLOBAL,
+                  aggregationPeriod: projectConfig?.aggregationPeriod != null ? String(projectConfig.aggregationPeriod) : USE_GLOBAL,
                 }}
                 onSubmit={(values) => mutation.mutate(
                   {
                     id,
-                    body: {
-                      roundingInterval: values.roundingInterval === USE_GLOBAL ? null : Number(values.roundingInterval),
-                      roundingDirection: values.roundingDirection === USE_GLOBAL ? null : values.roundingDirection as 'ceil' | 'floor',
-                      aggregationUnit: values.aggregationUnit === USE_GLOBAL ? null : values.aggregationUnit as 'weekly' | 'monthly' | 'none',
-                      aggregationPeriod: values.aggregationPeriod === USE_GLOBAL ? null : Number(values.aggregationPeriod),
-                    },
+                    roundingInterval: values.roundingInterval === USE_GLOBAL ? null : Number(values.roundingInterval),
+                    roundingDirection: values.roundingDirection === USE_GLOBAL ? null : (values.roundingDirection as 'ceil' | 'floor'),
+                    aggregationUnit: values.aggregationUnit === USE_GLOBAL ? null : (values.aggregationUnit as 'weekly' | 'monthly' | 'none'),
+                    aggregationPeriod: values.aggregationPeriod === USE_GLOBAL ? null : Number(values.aggregationPeriod),
                   },
                   {
                     onSuccess: () => {
@@ -114,7 +113,7 @@ export default function ProjectSettingsPage() {
                       router.push(`/${organizationName}/projects/${id}`)
                     },
                     onError: () => toast.error('更新に失敗しました'),
-                  }
+                  },
                 )}
               >
                 {({ handleSubmit, values }) => (

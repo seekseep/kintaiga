@@ -1,5 +1,0 @@
-export { listAssignments } from './listAssignments'
-export { createAssignment } from './createAssignment'
-export { getAssignment } from './getAssignment'
-export { updateAssignment } from './updateAssignment'
-export { deleteAssignment } from './deleteAssignment'

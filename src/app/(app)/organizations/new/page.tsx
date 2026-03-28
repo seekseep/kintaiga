@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCreateOrganization } from '@/hooks/api/organizations'
+import { checkOrganizationName } from '@/api/organization'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,11 +18,15 @@ export default function NewOrganizationPage() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [displayName, setDisplayName] = useState('')
+  const [nameAvailable, setNameAvailable] = useState<boolean | null>(null)
+  const [nameCheckReason, setNameCheckReason] = useState<string | null>(null)
+  const [isCheckingName, setIsCheckingName] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   const { mutate, isPending } = useCreateOrganization({
-    onSuccess: (org) => {
+    onSuccess: (organization) => {
       toast.success('組織を作成しました')
-      router.push(`/${org.name}/projects`)
+      router.push(`/${organization.name}/projects`)
     },
     onError: (error: Error) => {
       toast.error(error.message || '組織の作成に失敗しました')
@@ -30,6 +35,34 @@ export default function NewOrganizationPage() {
 
   const isValidName = name.length >= 2 && name.length <= 63 && NAME_PATTERN.test(name) && !isReservedOrganizationName(name)
   const isValidDisplayName = displayName.length >= 1 && displayName.length <= 255
+
+  useEffect(() => {
+    if (!isValidName) {
+      setNameAvailable(null)
+      setNameCheckReason(null)
+      return
+    }
+
+    setIsCheckingName(true)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const result = await checkOrganizationName(name)
+        setNameAvailable(result.available)
+        setNameCheckReason(result.reason)
+      } catch {
+        setNameAvailable(null)
+        setNameCheckReason(null)
+      } finally {
+        setIsCheckingName(false)
+      }
+    }, 500)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [name, isValidName])
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
@@ -52,7 +85,7 @@ export default function NewOrganizationPage() {
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              if (isValidName && isValidDisplayName) mutate({ name, displayName })
+              if (isValidName && isValidDisplayName && nameAvailable) mutate({ name, displayName })
             }}
             className="space-y-4"
           >
@@ -83,13 +116,23 @@ export default function NewOrganizationPage() {
                    '英小文字、数字、ハイフンのみ使用できます'}
                 </p>
               )}
-              {isValidName && (
+              {isValidName && isCheckingName && (
+                <p className="text-sm text-muted-foreground">
+                  確認中...
+                </p>
+              )}
+              {isValidName && !isCheckingName && nameAvailable === false && (
+                <p className="text-sm text-destructive">
+                  {nameCheckReason || 'この組織IDは既に使用されています'}
+                </p>
+              )}
+              {isValidName && !isCheckingName && nameAvailable === true && (
                 <p className="text-sm text-muted-foreground">
                   URL: /{name}/projects
                 </p>
               )}
             </div>
-            <Button type="submit" disabled={!isValidName || !isValidDisplayName || isPending} className="w-full">
+            <Button type="submit" disabled={!isValidName || !isValidDisplayName || !nameAvailable || isPending} className="w-full">
               {isPending ? '作成中...' : '組織を作成'}
             </Button>
           </form>

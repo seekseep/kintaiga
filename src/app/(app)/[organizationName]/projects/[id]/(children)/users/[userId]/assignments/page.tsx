@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation'
 import { Trash2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAssignments, useCreateAssignment, useUpdateAssignment, useDeleteAssignment } from '@/hooks/api/assignments'
+import { useProjectMemberAssignments, useCreateProjectMember, useUpdateProjectMember, useDeleteProjectMember } from '@/hooks/api/project-members'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -22,7 +22,7 @@ import {
 import { InlineDateEditor } from '@/components/features/inline-date-editor'
 
 function DeleteAssignmentButton({ assignmentId, projectId }: { assignmentId: string; projectId: string }) {
-  const mutation = useDeleteAssignment()
+  const mutation = useDeleteProjectMember()
 
   return (
     <AlertDialog>
@@ -58,16 +58,16 @@ function DeleteAssignmentButton({ assignmentId, projectId }: { assignmentId: str
 export default function ProjectUserAssignmentsPage() {
   const { id: projectId, userId } = useParams<{ id: string; userId: string }>()
 
-  const { data: assignmentData, isLoading } = useAssignments({ userId, projectId })
+  const { data: assignmentData, isLoading } = useProjectMemberAssignments({ userId, projectId })
   const assignments = assignmentData?.items ?? []
 
-  const updateMutation = useUpdateAssignment()
-  const createMutation = useCreateAssignment()
+  const updateMutation = useUpdateProjectMember()
+  const createMutation = useCreateProjectMember()
 
   async function handleSave(assignmentId: string, field: string, value: string) {
     await updateMutation.mutateAsync({
       id: assignmentId,
-      body: { [field]: value },
+      [field]: value,
       projectId,
     })
   }

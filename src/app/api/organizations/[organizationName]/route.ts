@@ -3,15 +3,15 @@ import { organizations } from '@db/schema'
 import { db } from '@/lib/api-server/db'
 import { withOrganization } from '@/lib/api-server/middlewares/with-organization'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
-import { updateOrganization, deleteOrganization } from '@/services/organizations'
+import { updateOrganization, deleteOrganization } from '@/services/organization'
 
 export const GET = withErrorHandler(withOrganization(async (_req, executor) => {
-  const [org] = await db.select().from(organizations)
+  const [organization] = await db.select().from(organizations)
     .where(eq(organizations.id, executor.organization.id))
     .limit(1)
   return Response.json({
     organizationId: executor.organization.id,
-    organizationDisplayName: org?.displayName ?? '',
+    organizationDisplayName: organization?.displayName ?? '',
     organizationRole: executor.organization.role,
     organizationPlan: executor.organization.plan,
   })

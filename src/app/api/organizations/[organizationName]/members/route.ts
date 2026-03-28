@@ -1,7 +1,7 @@
 import { db } from '@/lib/api-server/db'
 import { withOrganization } from '@/lib/api-server/middlewares/with-organization'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
-import { listOrganizationMembers, addOrganizationMember } from '@/services/organizations'
+import { listOrganizationMembers, addOrganizationMember } from '@/services/organization'
 
 export const GET = withErrorHandler(withOrganization(async (_req, executor) => {
   const result = await listOrganizationMembers({ db }, executor)

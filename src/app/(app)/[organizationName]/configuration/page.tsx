@@ -38,7 +38,7 @@ export default function SettingsPage() {
             </div>
             <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
           </Link>
-          <Link href={`${orgPath}/configuration/work`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <Link href={`${orgPath}/configuration/activities`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
             <ClockIcon className="h-5 w-5 text-muted-foreground" />
             <span className="flex-1">稼働の設定</span>
             <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />

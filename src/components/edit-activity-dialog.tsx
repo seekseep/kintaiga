@@ -3,7 +3,7 @@
 import { Formik } from 'formik'
 import { useUpdateActivity, useDeleteActivity } from '@/hooks/api/activities'
 import { useProjectConfig } from '@/hooks/api/projects'
-import type { Activity } from '@/api/activities'
+import type { Activity } from '@/api/organization/project/activitiy'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -103,11 +103,9 @@ export function EditActivityDialog({ activity, open, onOpenChange }: Props) {
         saveMutation.mutate(
           {
             id: activity.id,
-            body: {
-              startedAt: new Date(values.startedAt).toISOString(),
-              endedAt: values.endedAt ? new Date(values.endedAt).toISOString() : null,
-              note: values.note || undefined,
-            },
+            startedAt: new Date(values.startedAt).toISOString(),
+            endedAt: values.endedAt ? new Date(values.endedAt).toISOString() : null,
+            note: values.note || undefined,
           },
           {
             onSuccess: () => {
@@ -171,7 +169,7 @@ export function EditActivityDialog({ activity, open, onOpenChange }: Props) {
               <Button
                 variant="destructive"
                 onClick={() =>
-                  deleteMutation.mutate(activity.id, {
+                  deleteMutation.mutate({ id: activity.id }, {
                     onSuccess: () => {
                       toast.success('削除しました')
                       onOpenChange(false)

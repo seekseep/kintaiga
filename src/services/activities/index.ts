@@ -1,5 +1,0 @@
-export { listActivities } from './listActivities'
-export { createActivity } from './createActivity'
-export { getActivity } from './getActivity'
-export { updateActivity } from './updateActivity'
-export { deleteActivity } from './deleteActivity'

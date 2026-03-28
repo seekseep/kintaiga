@@ -5,7 +5,7 @@ import { InternalError, ValidationError } from '@/lib/api-server/errors'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DbOrTx, UserExecutor } from '../../types'
 
-const UpdateIconParametersSchema = z.object({
+export const UpdateIconParametersSchema = z.object({
   icon: z.string(),
 })
 

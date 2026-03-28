@@ -33,8 +33,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { session, user, isLoading, needsInitialization, signOut } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
-  const params = useParams<{ organizationName?: string }>()
-  const organizationName = params?.organizationName
+  const routeParameters = useParams<{ organizationName?: string }>()
+  const organizationName = routeParameters?.organizationName
 
   const { data: organizations } = useMyOrganizations({ enabled: !!user })
   const organizationItems = organizations?.items ?? []
@@ -90,11 +90,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
-                {organizationItems.map((org) => (
-                  <DropdownMenuItem key={org.id} asChild>
-                    <Link href={`/${org.name}/projects`}>
+                {organizationItems.map((organization) => (
+                  <DropdownMenuItem key={organization.id} asChild>
+                    <Link href={`/${organization.name}/projects`}>
                       <Building2 className="h-4 w-4" />
-                      {org.displayName}
+                      {organization.displayName}
                     </Link>
                   </DropdownMenuItem>
                 ))}

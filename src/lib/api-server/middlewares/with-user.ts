@@ -1,7 +1,7 @@
 import { type NextRequest } from 'next/server'
 import { jwtVerify, createRemoteJWKSet } from 'jose'
 import { UnauthorizedError } from '@/lib/api-server/errors'
-import type { Role } from '@/schemas/_helpers'
+import type { Role } from '@/schemas/role'
 import type { UserExecutor } from '@/services/types'
 
 const jwks = createRemoteJWKSet(

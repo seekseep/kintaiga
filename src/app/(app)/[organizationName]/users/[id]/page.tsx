@@ -79,13 +79,6 @@ export default function UserDetailPage() {
       </div>
 
       <div className="divide-y rounded-md border">
-        <Link href={`/${organizationName}/users/${id}/name`} className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
-          <div>
-            <p className="text-sm text-muted-foreground">名前</p>
-            <p>{user.name}</p>
-          </div>
-          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
-        </Link>
         <Link href={`/${organizationName}/users/${id}/role`} className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
           <div>
             <p className="text-sm text-muted-foreground">ロール</p>

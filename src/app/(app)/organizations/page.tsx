@@ -9,13 +9,13 @@ import { Building2, Plus, Crown, Shield, User } from 'lucide-react'
 const roleIcons = {
   owner: Crown,
   manager: Shield,
-  member: User,
+  worker: User,
 }
 
 const roleLabels = {
   owner: 'オーナー',
   manager: 'マネージャー',
-  member: 'メンバー',
+  worker: 'メンバー',
 }
 
 export default function OrganizationsPage() {
@@ -54,19 +54,19 @@ export default function OrganizationsPage() {
       )}
 
       <div className="grid gap-4">
-        {organizationItems.map((org) => {
-          const RoleIcon = roleIcons[org.organizationRole]
+        {organizationItems.map((organization) => {
+          const RoleIcon = roleIcons[organization.organizationRole]
           return (
-            <Link key={org.id} href={`/${org.name}/projects`}>
+            <Link key={organization.id} href={`/${organization.name}/projects`}>
               <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
                 <CardHeader className="flex flex-row items-center gap-4">
                   <Building2 className="h-8 w-8 text-muted-foreground" />
                   <div className="flex-1">
-                    <CardTitle>{org.displayName}</CardTitle>
+                    <CardTitle>{organization.displayName}</CardTitle>
                     <CardDescription className="flex items-center gap-1">
                       <RoleIcon className="h-3 w-3" />
-                      {roleLabels[org.organizationRole]}
-                      {org.plan === 'premium' && (
+                      {roleLabels[organization.organizationRole]}
+                      {organization.plan === 'premium' && (
                         <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">Premium</span>
                       )}
                     </CardDescription>

@@ -2,7 +2,7 @@ import { db } from '@/lib/api-server/db'
 import { withUser } from '@/lib/api-server/middlewares/with-user'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
 import { eq } from 'drizzle-orm'
-import { organizationMembers, organizations } from '@db/schema'
+import { organizationAssignments, organizations } from '@db/schema'
 
 export const GET = withErrorHandler(withUser(async (_req, executor) => {
   const rows = await db.select({
@@ -10,11 +10,11 @@ export const GET = withErrorHandler(withUser(async (_req, executor) => {
     name: organizations.name,
     displayName: organizations.displayName,
     plan: organizations.plan,
-    organizationRole: organizationMembers.organizationRole,
+    organizationRole: organizationAssignments.role,
     createdAt: organizations.createdAt,
   })
-    .from(organizationMembers)
-    .innerJoin(organizations, eq(organizationMembers.organizationId, organizations.id))
-    .where(eq(organizationMembers.userId, executor.user.id))
+    .from(organizationAssignments)
+    .innerJoin(organizations, eq(organizationAssignments.organizationId, organizations.id))
+    .where(eq(organizationAssignments.userId, executor.user.id))
   return Response.json({ items: rows })
 }))

@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import { Formik } from 'formik'
 import { useAuth } from '@/hooks/use-auth'
 import { useRegisterMe } from '@/hooks/api/me'
-import { CreateProfileParametersSchema } from '@db/validation'
+import { CreateProfileParametersSchema } from '@/services/me/createProfile'
 import { zodValidate } from '@/lib/form/zod-adapter'
+
+const RegisterFormSchema = CreateProfileParametersSchema.omit({ sub: true })
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'
@@ -48,7 +50,7 @@ export default function InitializePage() {
         <CardContent>
           <Formik
             initialValues={{ name: '' }}
-            validate={zodValidate(CreateProfileParametersSchema)}
+            validate={zodValidate(RegisterFormSchema)}
             onSubmit={(values) => mutation.mutate(values, {
               onSuccess: async () => {
                 await refreshUser()

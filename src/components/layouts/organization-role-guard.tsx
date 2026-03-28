@@ -2,7 +2,7 @@
 
 import { useOrganization } from '@/contexts/organization-context'
 import { NotFound } from '@/components/not-found'
-import type { OrganizationRole } from '@/schemas/_helpers'
+import type { OrganizationRole } from '@/schemas/organization-role'
 
 interface OrganizationRoleGuardProps {
   allowedRoles: OrganizationRole[]
