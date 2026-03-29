@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useEffect, useState, useCallback, useRef } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
@@ -25,8 +25,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [needsInitialization, setNeedsInitialization] = useState(false)
+  const fetchingRef = useRef(false)
 
   const fetchUser = useCallback(async () => {
+    if (fetchingRef.current) return
+    fetchingRef.current = true
     try {
       const u = await getMe()
       setUser(u)
@@ -36,27 +39,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null)
         setNeedsInitialization(true)
       }
+    } finally {
+      fetchingRef.current = false
     }
   }, [])
 
   useEffect(() => {
-    ;(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       if (session) {
-        try { await fetchUser() } finally { setIsLoading(false) }
-      } else {
-        setIsLoading(false)
-      }
-    })()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      if (session) {
-        fetchUser()
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+          try { await fetchUser() } finally { setIsLoading(false) }
+        }
       } else {
         setUser(null)
         setNeedsInitialization(false)
+        setIsLoading(false)
       }
     })
 
