@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
+import { useMutation } from '@tanstack/react-query'
+import type { AuthError } from '@supabase/supabase-js'
 import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
 import { zodValidate } from '@/lib/form/zod-adapter'
@@ -14,10 +15,19 @@ const ResetPasswordSchema = z.object({
   email: z.email(),
 })
 
-export default function ResetPasswordPage() {
-  const [sent, setSent] = useState(false)
+type ResetPasswordValues = z.infer<typeof ResetPasswordSchema>
 
-  if (sent) {
+export default function ResetPasswordPage() {
+  const mutation = useMutation<void, AuthError, ResetPasswordValues>({
+    mutationFn: async (values) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: `${window.location.origin}/me/password`,
+      })
+      if (error) throw error
+    },
+  })
+
+  if (mutation.isSuccess) {
     return (
       <div className="space-y-4 text-center">
         <p>パスワードリセットメールを送信しました。</p>
@@ -30,24 +40,14 @@ export default function ResetPasswordPage() {
     <Formik
       initialValues={{ email: '' }}
       validate={zodValidate(ResetPasswordSchema)}
-      onSubmit={async (values, { setStatus }) => {
-        setStatus(undefined)
-        const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-          redirectTo: `${window.location.origin}/me/password`,
-        })
-        if (error) {
-          setStatus(getAuthErrorMessage(error))
-        } else {
-          setSent(true)
-        }
-      }}
+      onSubmit={(values) => mutation.mutate(values)}
     >
-      {({ handleSubmit, isSubmitting, status }) => (
+      {({ handleSubmit }) => (
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
           <FormInput name="email" label="メールアドレス" type="email" />
-          {status && <p className="text-sm text-destructive">{status}</p>}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? '送信中...' : 'リセットメールを送信'}
+          {mutation.error && <p className="text-sm text-destructive">{getAuthErrorMessage(mutation.error)}</p>}
+          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            {mutation.isPending ? '送信中...' : 'リセットメールを送信'}
           </Button>
           <div className="text-center text-sm">
             <Link href="/login" className="text-muted-foreground hover:underline">ログインへ戻る</Link>
