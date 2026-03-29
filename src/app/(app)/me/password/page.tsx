@@ -5,6 +5,7 @@ import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
 import { UpdatePasswordParametersSchema } from '@/services/me/updatePassword'
 import { zodValidate } from '@/lib/form/zod-adapter'
+import { getAuthErrorMessage } from '@/lib/supabase-auth-errors'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
@@ -61,7 +62,7 @@ export default function EditPasswordPage() {
               const { error } = await supabase.auth.updateUser({ password: values.newPassword })
               setSubmitting(false)
               if (error) {
-                setStatus(error.message)
+                setStatus(getAuthErrorMessage(error))
                 toast.error('変更に失敗しました')
               } else {
                 toast.success('パスワードを変更しました')

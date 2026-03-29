@@ -5,6 +5,7 @@ import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
 import { LoginParametersSchema } from '@/services/auth/login'
 import { zodValidate } from '@/lib/form/zod-adapter'
+import { getAuthErrorMessage } from '@/lib/supabase-auth-errors'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'
 
@@ -16,7 +17,7 @@ export default function LoginPage() {
       onSubmit={async (values, { setStatus }) => {
         setStatus(undefined)
         const { error } = await supabase.auth.signInWithPassword(values)
-        if (error) setStatus(error.message)
+        if (error) setStatus(getAuthErrorMessage(error))
       }}
     >
       {({ handleSubmit, isSubmitting, status }) => (

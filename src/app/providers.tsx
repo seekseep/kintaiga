@@ -1,5 +1,6 @@
 'use client'
 
+import '@/lib/zod-locale'
 import { useState } from 'react'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'

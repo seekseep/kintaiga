@@ -5,6 +5,7 @@ import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
 import { UpdateEmailParametersSchema } from '@/services/me/updateEmail'
 import { zodValidate } from '@/lib/form/zod-adapter'
+import { getAuthErrorMessage } from '@/lib/supabase-auth-errors'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
@@ -41,7 +42,7 @@ export default function EditEmailPage() {
               const { error } = await supabase.auth.updateUser({ email: values.email })
               setSubmitting(false)
               if (error) {
-                setStatus(error.message)
+                setStatus(getAuthErrorMessage(error))
                 toast.error('変更に失敗しました')
               } else {
                 toast.success('確認メールを送信しました。新しいメールアドレスで確認してください。')

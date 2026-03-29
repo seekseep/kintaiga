@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
 import { zodValidate } from '@/lib/form/zod-adapter'
+import { getAuthErrorMessage } from '@/lib/supabase-auth-errors'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'
 import { z } from 'zod/v4'
@@ -35,7 +36,7 @@ export default function ResetPasswordPage() {
           redirectTo: `${window.location.origin}/me/password`,
         })
         if (error) {
-          setStatus(error.message)
+          setStatus(getAuthErrorMessage(error))
         } else {
           setSent(true)
         }
