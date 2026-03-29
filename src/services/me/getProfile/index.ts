@@ -6,10 +6,12 @@ import type { DbOrTx, UserExecutor } from '../../types'
 export async function getProfile(
   dependencies: { db: DbOrTx },
   executor: UserExecutor | null,
+  sub?: string,
 ) {
-  if (!executor) throw new NotFoundError()
+  const userId = executor?.user.id ?? sub
+  if (!userId) throw new NotFoundError()
   const { db } = dependencies
-  const [user] = await db.select().from(users).where(eq(users.id, executor.user.id))
+  const [user] = await db.select().from(users).where(eq(users.id, userId))
   if (!user) throw new NotFoundError()
   return user
 }

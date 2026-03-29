@@ -3,8 +3,8 @@ import { withUser } from '@/lib/api-server/middlewares/with-user'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
 import { getProfile, createProfile, updateProfile } from '@/services/me'
 
-export const GET = withErrorHandler(withUser(async (_req, executor, _sub, _email) => {
-  const profile = await getProfile({ db }, executor)
+export const GET = withErrorHandler(withUser(async (_req, executor, sub, _email) => {
+  const profile = await getProfile({ db }, executor, sub)
   return Response.json(profile)
 }, { allowUnregistered: true }))
 
