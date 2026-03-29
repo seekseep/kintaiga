@@ -11,7 +11,7 @@ import { FormInput } from '@/components/form'
 import { z } from 'zod/v4'
 
 const ResetPasswordSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
 })
 
 export default function ResetPasswordPage() {

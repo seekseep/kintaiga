@@ -50,7 +50,8 @@
       "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/projects/[id]/\\\\\\(project\\\\\\)/)",
       "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/configuration/)",
       "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/)",
-      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src -type f -path \"*/\\(auth\\)/*\")"
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src -type f -path \"*/\\(auth\\)/*\")",
+      "Bash(pnpm list:*)"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens",

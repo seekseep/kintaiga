@@ -11,7 +11,7 @@ import { FormInput } from '@/components/form'
 import { z } from 'zod/v4'
 
 const SignupSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(6),
 })
 

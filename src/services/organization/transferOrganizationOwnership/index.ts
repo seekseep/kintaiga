@@ -6,7 +6,7 @@ import { canTransferOwnership } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const TransferOrganizationOwnershipParametersSchema = z.object({
-  newOwnerUserId: z.string().uuid(),
+  newOwnerUserId: z.uuid(),
 })
 
 export type TransferOrganizationOwnershipInput = z.input<typeof TransferOrganizationOwnershipParametersSchema>

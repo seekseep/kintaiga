@@ -8,7 +8,7 @@ import { OrganizationRoleSchema } from '@/schemas/organization-role'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 
 const AddOrganizationMemberParametersSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   role: OrganizationRoleSchema.exclude(['owner']).optional().default('worker'),
 })
 

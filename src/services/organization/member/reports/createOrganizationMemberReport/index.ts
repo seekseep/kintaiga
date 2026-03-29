@@ -6,7 +6,7 @@ import { canCreateReport } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../../../types'
 
 const CreateOrganizationMemberReportParametersSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.uuid(),
   name: z.string().min(1).max(255),
   startDate: z.iso.datetime({ local: true }),
   endDate: z.iso.datetime({ local: true }),

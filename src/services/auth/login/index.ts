@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 
 export const LoginParametersSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(1),
 })
 

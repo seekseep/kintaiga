@@ -7,7 +7,7 @@ import { OrganizationRoleSchema } from '@/schemas/organization-role'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 
 const UpdateOrganizationMemberRoleParametersSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.uuid(),
   role: OrganizationRoleSchema.exclude(['owner']),
 })
 

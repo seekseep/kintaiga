@@ -6,7 +6,7 @@ import { canManageOrganizationMembers } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 
 const RemoveOrganizationMemberParametersSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.uuid(),
 })
 
 export type RemoveOrganizationMemberInput = z.input<typeof RemoveOrganizationMemberParametersSchema>
