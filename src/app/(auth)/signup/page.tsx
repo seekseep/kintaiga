@@ -16,12 +16,13 @@ const SignupSchema = z.object({
 })
 
 export default function SignupPage() {
-  const [sent, setSent] = useState(false)
+  const [sentEmail, setSentEmail] = useState<string | null>(null)
 
-  if (sent) {
+  if (sentEmail) {
     return (
       <div className="space-y-4 text-center">
         <p>確認メールを送信しました。</p>
+        <p className="text-sm font-medium">{sentEmail}</p>
         <p className="text-sm text-muted-foreground">メール内のリンクをクリックして登録を完了してください。</p>
         <Link href="/login" className="text-sm hover:underline">ログインへ戻る</Link>
       </div>
@@ -41,7 +42,7 @@ export default function SignupPage() {
         if (error) {
           setStatus(getAuthErrorMessage(error))
         } else {
-          setSent(true)
+          setSentEmail(values.email)
         }
       }}
     >
