@@ -33,7 +33,10 @@ export default function SignupPage() {
       validate={zodValidate(SignupSchema)}
       onSubmit={async (values, { setStatus }) => {
         setStatus(undefined)
-        const { error } = await supabase.auth.signUp(values)
+        const { error } = await supabase.auth.signUp({
+          ...values,
+          options: { emailRedirectTo: window.location.origin },
+        })
         if (error) {
           setStatus(error.message)
         } else {

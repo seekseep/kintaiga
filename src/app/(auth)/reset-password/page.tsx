@@ -31,7 +31,9 @@ export default function ResetPasswordPage() {
       validate={zodValidate(ResetPasswordSchema)}
       onSubmit={async (values, { setStatus }) => {
         setStatus(undefined)
-        const { error } = await supabase.auth.resetPasswordForEmail(values.email)
+        const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+          redirectTo: `${window.location.origin}/me/password`,
+        })
         if (error) {
           setStatus(error.message)
         } else {
