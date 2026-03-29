@@ -1,15 +1,19 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
 import { LoginParametersSchema } from '@/services/auth/login'
 import { zodValidate } from '@/lib/form/zod-adapter'
-import { getAuthErrorMessage } from '@/lib/supabase-auth-errors'
+import { getAuthErrorMessage, getAuthErrorMessageByCode } from '@/lib/supabase-auth-errors'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'
 
 export default function LoginPage() {
+  const searchParams = useSearchParams()
+  const authError = searchParams.get('auth_error')
+
   return (
     <Formik
       initialValues={{ email: '', password: '' }}
@@ -22,6 +26,9 @@ export default function LoginPage() {
     >
       {({ handleSubmit, isSubmitting, status }) => (
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
+          {authError && !status && (
+            <p className="text-sm text-destructive">{getAuthErrorMessageByCode(authError)}</p>
+          )}
           <FormInput name="email" label="メールアドレス" type="email" />
           <FormInput name="password" label="パスワード" type="password" />
           {status && <p className="text-sm text-destructive">{status}</p>}

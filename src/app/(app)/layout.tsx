@@ -41,7 +41,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !session) {
-      router.replace('/login')
+      // Supabase がハッシュフラグメントでエラーを返す場合がある
+      // 例: /#error=access_denied&error_code=otp_expired&error_description=...
+      const hash = window.location.hash.substring(1)
+      const params = new URLSearchParams(hash)
+      const errorCode = params.get('error_code')
+      if (errorCode) {
+        router.replace(`/login?auth_error=${encodeURIComponent(errorCode)}`)
+      } else {
+        router.replace('/login')
+      }
     }
   }, [isLoading, session, router])
 

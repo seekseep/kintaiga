@@ -26,3 +26,7 @@ export function getAuthErrorMessage(error: AuthError): string {
   }
   return 'エラーが発生しました。もう一度お試しください'
 }
+
+export function getAuthErrorMessageByCode(code: string): string {
+  return authErrorMessages[code] ?? 'エラーが発生しました。もう一度お試しください'
+}

@@ -36,7 +36,7 @@ export default function SignupPage() {
         setStatus(undefined)
         const { error } = await supabase.auth.signUp({
           ...values,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: `${window.location.origin}/login` },
         })
         if (error) {
           setStatus(getAuthErrorMessage(error))
