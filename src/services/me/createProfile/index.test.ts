@@ -4,11 +4,19 @@ import { createProfile } from './'
 import { createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'
 
+const mockSupabase = {
+  auth: {
+    admin: {
+      updateUserById: async () => ({ data: {}, error: null }),
+    },
+  },
+} as any
+
 describe('createProfile', () => {
   it('未登録ユーザーがプロフィールを作成できる', async () => {
     const newUser = { id: 'sub-id', name: 'New User', role: 'general' as const, iconUrl: null, createdAt: new Date(), updatedAt: new Date() }
     const db = createMockDb({ insertResult: [newUser] })
-    const result = await createProfile({ db: db as unknown as DbOrTx }, null, { sub: 'sub-id', name: 'New User' })
+    const result = await createProfile({ db: db as unknown as DbOrTx, supabase: mockSupabase }, null, { sub: 'sub-id', name: 'New User' })
     expect(result).toMatchObject({ id: 'sub-id', name: 'New User' })
   })
 
@@ -16,14 +24,14 @@ describe('createProfile', () => {
     const existingUser = { id: 'sub-id', name: 'Existing', role: 'general' as const, iconUrl: null, createdAt: new Date(), updatedAt: new Date() }
     const db = createMockDb({ selectResult: [existingUser] })
     await expect(
-      createProfile({ db: db as unknown as DbOrTx }, null, { sub: 'sub-id', name: 'Duplicate' })
+      createProfile({ db: db as unknown as DbOrTx, supabase: mockSupabase }, null, { sub: 'sub-id', name: 'Duplicate' })
     ).rejects.toThrow(ConflictError)
   })
 
   it('不正なパラメータは ValidationError', async () => {
     const db = createMockDb()
     await expect(
-      createProfile({ db: db as unknown as DbOrTx }, null, { sub: 123 } as unknown as { sub: string; name: string })
+      createProfile({ db: db as unknown as DbOrTx, supabase: mockSupabase }, null, { sub: 123 } as unknown as { sub: string; name: string })
     ).rejects.toThrow(ValidationError)
   })
 })

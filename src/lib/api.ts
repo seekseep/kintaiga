@@ -31,7 +31,8 @@ api.interceptors.response.use(
     const originalRequest = error.config
     if (!originalRequest) return Promise.reject(error)
 
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !(originalRequest as unknown as Record<string, unknown>)._retried) {
+      (originalRequest as unknown as Record<string, unknown>)._retried = true
       const { data: { session }, error: refreshError } = await supabase.auth.refreshSession()
       if (refreshError || !session) {
         return Promise.reject(new ApiError(401, 'Session expired'))

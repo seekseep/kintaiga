@@ -44,6 +44,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    // セッションをリフレッシュして最新のJWT（app_metadata.role含む）を取得
+    const { data: { session } } = await supabase.auth.refreshSession()
+    if (session) {
+      setSession(session)
+    }
+    fetchingRef.current = false // fetchUserのガードをリセット
+    await fetchUser()
+  }, [fetchUser])
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
@@ -69,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [queryClient])
 
   return (
-    <AuthContext.Provider value={{ session, user, isLoading, needsInitialization, signOut, refreshUser: fetchUser }}>
+    <AuthContext.Provider value={{ session, user, isLoading, needsInitialization, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )
