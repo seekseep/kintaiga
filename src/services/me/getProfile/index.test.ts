@@ -13,8 +13,9 @@ describe('getProfile', () => {
     expect(result).toMatchObject({ id: executor.user.id })
   })
 
-  it('executor が null の場合は NotFoundError', async () => {
-    const db = createMockDb()
-    await expect(getProfile({ db: db as unknown as DbOrTx }, null)).rejects.toThrow(NotFoundError)
+  it('ユーザーがDBに存在しない場合は NotFoundError', async () => {
+    const executor = createUserExecutor()
+    const db = createMockDb({ selectResult: [] })
+    await expect(getProfile({ db: db as unknown as DbOrTx }, executor)).rejects.toThrow(NotFoundError)
   })
 })

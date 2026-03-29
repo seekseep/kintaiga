@@ -4,8 +4,8 @@ import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handle
 import { eq } from 'drizzle-orm'
 import { organizationAssignments, organizations } from '@db/schema'
 
-export const GET = withErrorHandler(withUser(async (_req, executor, sub) => {
-  const userId = executor?.user.id ?? sub
+export const GET = withErrorHandler(withUser(async (_req, executor) => {
+  const userId = executor.user.id
   const rows = await db.select({
     id: organizations.id,
     name: organizations.name,
@@ -18,4 +18,4 @@ export const GET = withErrorHandler(withUser(async (_req, executor, sub) => {
     .innerJoin(organizations, eq(organizationAssignments.organizationId, organizations.id))
     .where(eq(organizationAssignments.userId, userId))
   return Response.json({ items: rows })
-}, { allowUnregistered: true }))
+}))

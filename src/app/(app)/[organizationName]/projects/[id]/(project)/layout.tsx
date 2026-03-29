@@ -1,7 +1,6 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import { useAuth } from '@/hooks/use-auth'
+import { useParams, usePathname } from 'next/navigation'
 import { useOrganization } from '@/contexts/organization-context'
 import { useProject } from '@/hooks/api/projects'
 import Link from 'next/link'
@@ -11,9 +10,22 @@ import { ProjectHeader } from '@/components/features/project-header'
 
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {
   const { id, organizationName } = useParams<{ id: string; organizationName: string }>()
-  const { user: currentUser } = useAuth()
   const { role: organizationRole } = useOrganization()
   const isAdmin = organizationRole === 'owner' || organizationRole === 'manager'
+  const pathname = usePathname()
+
+  const basePath = `/${organizationName}/projects/${id}`
+  const settingsPath = `${basePath}/settings`
+  const isSettings = pathname.startsWith(settingsPath)
+  const settingsSubPage = isSettings ? pathname.slice(settingsPath.length).replace(/^\//, '') : null
+
+  const settingsSubPageLabels: Record<string, string> = {
+    name: 'プロジェクト名の変更',
+    description: '説明の変更',
+    activities: '稼働の設定',
+    delete: 'プロジェクトの削除',
+  }
+  const settingsSubPageLabel = settingsSubPage ? settingsSubPageLabels[settingsSubPage] : null
 
   const { data: project, isLoading } = useProject(id)
 
@@ -32,8 +44,6 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
   )
   if (!project) return <p className="text-center text-muted-foreground">プロジェクトが見つかりません</p>
 
-  const basePath = `/${organizationName}/projects/${id}`
-
   return (
     <div className="space-y-6">
       <Breadcrumb>
@@ -42,13 +52,39 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
             <BreadcrumbLink asChild><Link href={`/${organizationName}/projects`}>プロジェクト</Link></BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{project.name}</BreadcrumbPage>
-          </BreadcrumbItem>
+          {isSettings ? (
+            <>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild><Link href={basePath}>{project.name}</Link></BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              {settingsSubPageLabel ? (
+                <>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild><Link href={settingsPath}>設定</Link></BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{settingsSubPageLabel}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </>
+              ) : (
+                <BreadcrumbItem>
+                  <BreadcrumbPage>設定</BreadcrumbPage>
+                </BreadcrumbItem>
+              )}
+            </>
+          ) : (
+            <BreadcrumbItem>
+              <BreadcrumbPage>{project.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          )}
         </BreadcrumbList>
       </Breadcrumb>
 
-      <ProjectHeader project={project} projectId={id} basePath={basePath} editable={isAdmin} />
+      {!isSettings && (
+        <ProjectHeader project={project} projectId={id} basePath={basePath} editable={isAdmin} />
+      )}
 
       {children}
     </div>

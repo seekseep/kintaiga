@@ -16,7 +16,7 @@ export type CreateProfileParameters = z.output<typeof CreateProfileParametersSch
 
 export async function createProfile(
   dependencies: { db: DbOrTx; supabase: SupabaseClient },
-  _executor: UserExecutor | null,
+  _executor: UserExecutor,
   input: CreateProfileInput,
 ) {
   const result = CreateProfileParametersSchema.safeParse(input)

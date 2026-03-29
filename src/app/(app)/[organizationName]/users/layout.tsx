@@ -1,12 +1,12 @@
 'use client'
 
-import { useAuth } from '@/hooks/use-auth'
+import { useOrganization } from '@/contexts/organization-context'
 import { NotFound } from '@/components/not-found'
 
 export default function UsersLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth()
+  const { role } = useOrganization()
 
-  if (user?.role !== 'admin') {
+  if (role !== 'owner' && role !== 'manager') {
     return <NotFound />
   }
 

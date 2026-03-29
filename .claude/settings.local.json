@@ -37,7 +37,19 @@
       "Bash(find src/services src/domain/authorization -name '*.test.ts' -exec sed -i '' 's/isAdminUser/canActAsAdmin/g; s/isOrganizationManagerOrAbove/canActAsOrganizationManager/g; s/isOrganizationOwner/canActAsOrganizationOwner/g' {} +)",
       "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))",
       "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/users/[id]/)",
-      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/services/reports -type f -name *.ts -o -name *.tsx)"
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/services/reports -type f -name *.ts -o -name *.tsx)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/)",
+      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/*/configuration/)",
+      "Bash(head -50 \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(app\\)/[organizationName]/configuration/page.tsx\")",
+      "Bash(cat \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(app\\)/[organizationName]/configuration/activities/page.tsx\")",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/configuration -name \"layout.tsx\")",
+      "Bash(head -100 \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(app\\)/[organizationName]/configuration/display-name/page.tsx\")",
+      "Bash(ls \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(app\\)/[organizationName]/projects/[id]/\\(project\\)/\")",
+      "Bash(pnpm next:*)",
+      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/projects/[id]/\\\\\\(project\\\\\\)/)",
+      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/configuration/)",
+      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/)"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens",

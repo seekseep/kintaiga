@@ -20,10 +20,14 @@ export default function ProjectsPage() {
   const isManagerOrAbove = organizationRole === 'owner' || organizationRole === 'manager'
   const [filter, setFilter] = useState<ProjectFilter>('joined')
 
-  const listFilter = isManagerOrAbove && filter === 'all' ? undefined : 'joined' as const
-  const { data: projectsData, isLoading } = useUserProjectStatements({ filter: listFilter })
+  const { data: joinedData, isLoading: isLoadingJoined } = useUserProjectStatements({ filter: 'joined' })
+  const { data: allData, isLoading: isLoadingAll } = useUserProjectStatements(
+    { filter: undefined },
+    { enabled: isManagerOrAbove },
+  )
 
-  const statements = projectsData?.items ?? []
+  const statements = (filter === 'all' ? allData?.items : joinedData?.items) ?? []
+  const isLoading = filter === 'all' ? isLoadingAll : isLoadingJoined
 
   const emptyMessage = filter === 'all'
     ? 'プロジェクトはありません'
@@ -51,7 +55,12 @@ export default function ProjectsPage() {
       </div>
 
       {isManagerOrAbove && (
-        <ProjectFilterTabs filter={filter} onFilterChange={setFilter} />
+        <ProjectFilterTabs
+          filter={filter}
+          onFilterChange={setFilter}
+          joinedCount={joinedData?.count}
+          allCount={allData?.count}
+        />
       )}
 
       {isLoading ? (

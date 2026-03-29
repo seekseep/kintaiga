@@ -16,20 +16,26 @@ export function withOrganization(handler: OrganizationHandler) {
   return withUser(async (req: NextRequest, executor: UserExecutor, context: RouteContext) => {
     const { organizationName } = await context.params
 
-    const [organization] = await db.select().from(organizations)
+    const [result] = await db
+      .select({
+        id: organizations.id,
+        plan: organizations.plan,
+        memberRole: organizationAssignments.role,
+      })
+      .from(organizations)
+      .leftJoin(
+        organizationAssignments,
+        and(
+          eq(organizationAssignments.organizationId, organizations.id),
+          eq(organizationAssignments.userId, executor.user.id),
+        ),
+      )
       .where(eq(organizations.name, organizationName))
       .limit(1)
 
-    if (!organization) throw new NotFoundError('組織が見つかりません')
+    if (!result) throw new NotFoundError('組織が見つかりません')
 
-    const [membership] = await db.select().from(organizationAssignments)
-      .where(and(
-        eq(organizationAssignments.organizationId, organization.id),
-        eq(organizationAssignments.userId, executor.user.id),
-      ))
-      .limit(1)
-
-    if (!membership && executor.user.role !== 'admin') {
+    if (!result.memberRole && executor.user.role !== 'admin') {
       throw new ForbiddenError('この組織のメンバーではありません')
     }
 
@@ -37,9 +43,9 @@ export function withOrganization(handler: OrganizationHandler) {
       type: 'organization',
       user: executor.user,
       organization: {
-        id: organization.id,
-        role: membership?.role ?? 'worker',
-        plan: organization.plan,
+        id: result.id,
+        role: result.memberRole ?? 'worker',
+        plan: result.plan,
       },
     }
 

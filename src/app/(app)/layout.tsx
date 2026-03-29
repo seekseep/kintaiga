@@ -72,6 +72,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   const organizationPrefix = organizationName ? `/${organizationName}` : ''
+  const currentOrganization = organizationItems.find(o => o.name === organizationName)
+  const isOwnerOrManager = currentOrganization?.organizationRole === 'owner' || currentOrganization?.organizationRole === 'manager'
 
   return (
     <SidebarProvider>
@@ -129,22 +131,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/users`)}>
-                    <Link href={`${organizationPrefix}/users`}>
-                      <Users />
-                      <span>ユーザー</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/configuration`)}>
-                    <Link href={`${organizationPrefix}/configuration`}>
-                      <Settings />
-                      <span>設定</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {isOwnerOrManager && (
+                  <>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/users`)}>
+                        <Link href={`${organizationPrefix}/users`}>
+                          <Users />
+                          <span>ユーザー</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/configuration`)}>
+                        <Link href={`${organizationPrefix}/configuration`}>
+                          <Settings />
+                          <span>設定</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </>
+                )}
               </>
             )}
             {!organizationName && (
