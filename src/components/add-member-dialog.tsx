@@ -21,10 +21,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { DatePicker } from '@/components/ui/date-picker'
 import { z } from 'zod/v4'
 
 const schema = z.object({
   userId: z.string().min(1),
+  startedAt: z.date({ message: '開始日を指定してください' }),
+  endedAt: z.date().nullable(),
 })
 
 type Props = {
@@ -39,10 +42,15 @@ export function AddMemberDialog({ projectId, unassignedUsers, open, onOpenChange
 
   return (
     <Formik
-      initialValues={{ userId: '' }}
+      initialValues={{ userId: '', startedAt: new Date() as Date, endedAt: null as Date | null }}
       validate={zodValidate(schema)}
       onSubmit={(values, { resetForm }) => {
-        mutation.mutate({ projectId, userId: values.userId, startedAt: new Date().toISOString() }, {
+        mutation.mutate({
+          projectId,
+          userId: values.userId,
+          startedAt: values.startedAt.toISOString(),
+          endedAt: values.endedAt ? values.endedAt.toISOString() : null,
+        }, {
           onSuccess: () => {
             toast.success('メンバーを追加しました')
             onOpenChange(false)
@@ -52,7 +60,7 @@ export function AddMemberDialog({ projectId, unassignedUsers, open, onOpenChange
         })
       }}
     >
-      {({ handleSubmit, resetForm, values }) => (
+      {({ handleSubmit, resetForm, values, setFieldValue }) => (
         <Dialog
           open={open}
           onOpenChange={(value) => {
@@ -83,6 +91,24 @@ export function AddMemberDialog({ projectId, unassignedUsers, open, onOpenChange
                   )}
                 </FormField>
               )}
+              <FormField<Date> name="startedAt" label="開始日">
+                {({ helpers }) => (
+                  <DatePicker
+                    value={values.startedAt}
+                    onValueChange={(date) => helpers.setValue(date ?? new Date())}
+                    placeholder="開始日を選択"
+                  />
+                )}
+              </FormField>
+              <FormField<Date | null> name="endedAt" label="終了日">
+                {({ helpers }) => (
+                  <DatePicker
+                    value={values.endedAt ?? undefined}
+                    onValueChange={(date) => helpers.setValue(date ?? null)}
+                    placeholder="指定なし"
+                  />
+                )}
+              </FormField>
             </div>
             <DialogFooter>
               <Button
