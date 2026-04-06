@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { ElapsedTime, calcElapsedMinutes } from '@/components/elapsed-time'
-import { formatMinutes } from '@/domain/time'
+import { formatMinutes } from '@/domain/utils/time'
 import { InlineDateTimeEditor } from '@/components/features/inline-datetime-editor'
 import { InlineTextEditor } from '@/components/features/inline-text-editor'
 import { ActivityDialog } from '@/components/activity-dialog'

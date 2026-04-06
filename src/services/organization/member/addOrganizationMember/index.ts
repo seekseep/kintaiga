@@ -3,7 +3,7 @@ import { organizationAssignments, users } from '@db/schema'
 import { eq, and } from 'drizzle-orm'
 import { ValidationError, ForbiddenError, ConflictError, BadRequestError, NotFoundError } from '@/lib/api-server/errors'
 import { canManageOrganizationMembers } from '@/domain/authorization'
-import { canAddMember } from '@/domain/organization-limits'
+import { canAddMember } from '@/domain/organization/limits'
 import { OrganizationRoleSchema } from '@/schemas/organization-role'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 

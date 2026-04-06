@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { formatElapsed } from '@/domain/time'
+import { formatElapsed } from '@/domain/utils/time'
 
-export { calcElapsedMinutes, formatElapsed } from '@/domain/time'
+export { calcElapsedMinutes, formatElapsed } from '@/domain/utils/time'
 
 export function ElapsedTime({ startedAt, endedAt }: { startedAt: string; endedAt: string | null }) {
   const [display, setDisplay] = useState(() => formatElapsed(startedAt, endedAt))

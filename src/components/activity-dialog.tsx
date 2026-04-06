@@ -15,8 +15,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { roundDate } from '@/domain/time'
-import { toLocalDatetimeString } from '@/domain/date-utils'
+import { roundDate } from '@/domain/utils/time'
+import { toLocalDatetimeString } from '@/domain/utils/date'
 import type { ProjectAssignment } from '@/schemas'
 
 type BaseProps = {

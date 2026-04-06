@@ -3,7 +3,7 @@ import { withUser } from '@/lib/api-server/middlewares/with-user'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
 import { eq } from 'drizzle-orm'
 import { organizations } from '@db/schema'
-import { isReservedOrganizationName } from '@/domain/organization-name'
+import { isReservedOrganizationName } from '@/domain/organization/name'
 
 export const GET = withErrorHandler(withUser(async (req) => {
   const { searchParams } = new URL(req.url)

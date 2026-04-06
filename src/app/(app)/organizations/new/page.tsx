@@ -12,7 +12,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/co
 import { toast } from 'sonner'
 
 const NAME_PATTERN = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/
-import { isReservedOrganizationName } from '@/domain/organization-name'
+import { isReservedOrganizationName } from '@/domain/organization/name'
 
 export default function NewOrganizationPage() {
   const router = useRouter()

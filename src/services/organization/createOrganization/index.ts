@@ -2,7 +2,7 @@ import { z } from 'zod/v4'
 import { organizations, organizationAssignments, organizationConfigurations } from '@db/schema'
 import { ValidationError, ConflictError } from '@/lib/api-server/errors'
 import { eq } from 'drizzle-orm'
-import { isReservedOrganizationName } from '@/domain/organization-name'
+import { isReservedOrganizationName } from '@/domain/organization/name'
 import type { DbOrTx, UserExecutor } from '../../types'
 
 const OrganizationNameSchema = z.string()

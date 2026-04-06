@@ -5,7 +5,7 @@ import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server
 import { canManageOrganizationProjects } from '@/domain/authorization'
 import { RoundingDirectionSchema } from '@/schemas/rounding-direction'
 import { AggregationUnitSchema } from '@/schemas/aggregation-unit'
-import { ROUNDING_INTERVALS } from '@/domain/configuration'
+import { ROUNDING_INTERVALS } from '@/domain/project/configuration'
 import type { DbOrTx, OrganizationExecutor } from '../../../../types'
 
 export const UpdateOrganizationProjectConfigurationParametersSchema = z.object({

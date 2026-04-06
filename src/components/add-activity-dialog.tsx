@@ -22,7 +22,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
-import { toLocalDatetimeString } from '@/domain/date-utils'
+import { toLocalDatetimeString } from '@/domain/utils/date'
 
 type Props = {
   projectId: string

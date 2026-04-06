@@ -44,6 +44,6 @@ export type { Member } from './member'
 export { MemberSchema } from './member'
 
 /** @deprecated Use Member instead */
-export type User = Member
+export type { Member as User } from './member'
 /** @deprecated Use MemberSchema instead */
 export { MemberSchema as UserSchema } from './member'

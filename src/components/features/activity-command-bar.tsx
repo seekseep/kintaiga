@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useUpdateActivity, useDeleteActivity } from '@/hooks/api/activities'
-import { parseCommand, computePreview } from '@/domain/activity-command'
+import { parseCommand, computePreview } from '@/domain/activity/command'
 import type { ProjectActivity as Activity } from '@/api/organization/project/activitiy'
 
 type ActivityPreview = {

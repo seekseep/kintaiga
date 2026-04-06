@@ -1,6 +1,6 @@
 import { startOfMonth, endOfMonth } from 'date-fns'
 import type { RoundingDirection } from '@/schemas/rounding-direction'
-import { roundMinutes, calcElapsedMinutes } from '@/domain/time'
+import { roundMinutes, calcElapsedMinutes } from '@/domain/utils/time'
 
 /**
  * 指定日の属する月の範囲を返す

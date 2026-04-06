@@ -17,9 +17,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
-import { roundDate } from '@/domain/time'
-import { toLocalDatetimeString, isoToLocalDatetimeString } from '@/domain/date-utils'
-import { validateActivityDates } from '@/domain/activity-rules'
+import { roundDate } from '@/domain/utils/time'
+import { toLocalDatetimeString, isoToLocalDatetimeString } from '@/domain/utils/date'
+import { validateActivityDates } from '@/domain/activity/rules'
 
 
 function nowRounded(interval: number, direction: 'ceil' | 'floor') {
