@@ -10,5 +10,5 @@ export const PATCH = withErrorHandler(withOrganization(async (req, executor, con
   const { userId } = await resolveUserIdFromMemberId(db, executor.organization.id, memberId)
   const body = await req.json()
   const result = await updateUserRole({ db, supabase }, executor, { id: userId, ...body })
-  return Response.json(result)
+  return Response.json({ ...result, id: memberId, userId })
 }))

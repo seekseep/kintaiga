@@ -10,7 +10,7 @@ export const GET = withErrorHandler(withOrganization(async (_req, executor, cont
   const { memberId } = await context.params
   const { userId } = await resolveUserIdFromMemberId(db, executor.organization.id, memberId)
   const target = await getUser({ db }, executor, { id: userId })
-  return Response.json(target)
+  return Response.json({ ...target, id: memberId, userId })
 }))
 
 export const PATCH = withErrorHandler(withOrganization(async (req, executor, context) => {
@@ -18,7 +18,7 @@ export const PATCH = withErrorHandler(withOrganization(async (req, executor, con
   const { userId } = await resolveUserIdFromMemberId(db, executor.organization.id, memberId)
   const body = await req.json()
   const updated = await updateUser({ db }, executor, { id: userId, ...body })
-  return Response.json(updated)
+  return Response.json({ ...updated, id: memberId, userId })
 }))
 
 export const DELETE = withErrorHandler(withOrganization(async (_req, executor, context) => {

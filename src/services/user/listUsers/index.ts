@@ -25,7 +25,8 @@ export async function listUsers(
   const { db } = dependencies
   const [items, [{ count }]] = await Promise.all([
     db.select({
-      id: users.id,
+      id: organizationAssignments.id,
+      userId: users.id,
       name: users.name,
       iconUrl: users.iconUrl,
       createdAt: users.createdAt,

@@ -1,8 +1,7 @@
 'use client'
 
 import { useParams, usePathname, useRouter } from 'next/navigation'
-import { useProject } from '@/hooks/api/projects'
-import { useMember } from '@/hooks/api/members'
+import { useProject, useProjectMembers } from '@/hooks/api/projects'
 import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,7 +12,8 @@ export default function MemberLayout({ children }: { children: React.ReactNode }
   const router = useRouter()
 
   const { data: project } = useProject(projectId)
-  const { data: member } = useMember(memberId)
+  const { data: membersData } = useProjectMembers(projectId)
+  const member = membersData?.items?.find(m => m.userId === memberId)
 
   const basePath = `/${organizationName}/projects/${projectId}/members/${memberId}`
   const activeTab = pathname.includes('/assignments') ? 'assignments' : 'activities'
