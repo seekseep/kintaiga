@@ -40,5 +40,10 @@ export type { Configuration, ProjectConfig } from './configuration'
 export { paginatedResponseSchema, PaginationParametersSchema } from './pagination'
 export type { PaginatedResponse, PaginationParameters } from './pagination'
 
-export type { User } from './user'
-export { UserSchema } from './user'
+export type { Member } from './member'
+export { MemberSchema } from './member'
+
+/** @deprecated Use Member instead */
+export type User = Member
+/** @deprecated Use MemberSchema instead */
+export { MemberSchema as UserSchema } from './member'

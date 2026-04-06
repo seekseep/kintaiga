@@ -43,9 +43,10 @@ export async function createOrganizationProjectMember(
   organizationName: string,
   body: CreateProjectMemberInput
 ) {
+  const { projectId, ...rest } = body
   const { data } = await api.post<ProjectAssignment>(
-    `/organizations/${organizationName}/assignments`,
-    body
+    `/organizations/${organizationName}/projects/${projectId}/members`,
+    rest
   )
   return data
 }
@@ -63,9 +64,9 @@ export async function updateOrganizationProjectMember(
 
 export async function deleteOrganizationProjectMember(
   organizationName: string,
-  { id: projectMemberId }: DeleteProjectMemberInput
+  { id: projectMemberId, projectId }: DeleteProjectMemberInput & { projectId: string }
 ) {
   await api.delete(
-    `/organizations/${organizationName}/assignments/${projectMemberId}`
+    `/organizations/${organizationName}/projects/${projectId}/members/${projectMemberId}`
   )
 }

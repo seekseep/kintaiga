@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { useOrganization } from '@/contexts/organization-context'
 import { useProject, useProjectMembers } from '@/hooks/api/projects'
-import { useUsers } from '@/hooks/api/users'
+import { useMembers } from '@/hooks/api/members'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MemberList } from '@/components/features/member-list'
 
@@ -18,10 +18,10 @@ export default function ProjectDetailPage() {
 
   const { data: membersData, isLoading: loadingMembers } = useProjectMembers(id)
 
-  const { data: allUsersData, isLoading: loadingUsers } = useUsers()
+  const { data: allMembersData, isLoading: loadingAllMembers } = useMembers()
 
   const members = membersData?.items ?? []
-  const allUsers = allUsersData?.items ?? []
+  const allMembers = allMembersData?.items ?? []
 
   const assignedUserIds = new Set(members.map(m => m.userId))
   const sortedMembers = [...members].sort((a, b) => {
@@ -29,9 +29,9 @@ export default function ProjectDetailPage() {
     if (b.userId === currentUser?.id) return 1
     return 0
   })
-  const unassignedUsers = allUsers.filter(u => !assignedUserIds.has(u.id))
+  const unassignedMembers = allMembers.filter(u => !assignedUserIds.has(u.id))
 
-  const loading = loadingMembers || loadingUsers
+  const loading = loadingMembers || loadingAllMembers
 
   if (loading) return (
     <div className="space-y-6">
@@ -66,7 +66,7 @@ export default function ProjectDetailPage() {
           projectId={id}
           projectName={project.name}
           members={sortedMembers}
-          unassignedUsers={unassignedUsers}
+          unassignedUsers={unassignedMembers}
           canManageMembers={isAdmin}
         />
       )}

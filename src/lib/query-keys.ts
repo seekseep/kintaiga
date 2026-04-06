@@ -17,6 +17,7 @@ export const meKeys = {
   all: ['me'] as const,
   profile: () => [...meKeys.all, 'profile'] as const,
   organizations: () => [...meKeys.all, 'organizations'] as const,
+  tokens: () => [...meKeys.all, 'tokens'] as const,
 }
 
 export const organizationKeys = {
@@ -45,12 +46,12 @@ export const activityKeys = {
   detail: (organizationName: string, id: string) => [...activityKeys.details(organizationName), id] as const,
 }
 
-export const userKeys = {
-  all: (organizationName: string) => [...organizationRootKey(organizationName), 'users'] as const,
-  lists: (organizationName: string) => [...userKeys.all(organizationName), 'list'] as const,
-  list: (organizationName: string, parameters?: PaginationParameters) => [...userKeys.lists(organizationName), parameters] as const,
-  details: (organizationName: string) => [...userKeys.all(organizationName), 'detail'] as const,
-  detail: (organizationName: string, id: string) => [...userKeys.details(organizationName), id] as const,
+export const memberKeys = {
+  all: (organizationName: string) => [...organizationRootKey(organizationName), 'members'] as const,
+  lists: (organizationName: string) => [...memberKeys.all(organizationName), 'list'] as const,
+  list: (organizationName: string, parameters?: PaginationParameters) => [...memberKeys.lists(organizationName), parameters] as const,
+  details: (organizationName: string) => [...memberKeys.all(organizationName), 'detail'] as const,
+  detail: (organizationName: string, id: string) => [...memberKeys.details(organizationName), id] as const,
 }
 
 export const projectMemberKeys = {

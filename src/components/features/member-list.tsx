@@ -9,14 +9,14 @@ import { ActivityControl, type ActivityControlHandle } from '@/components/activi
 import { AddMemberDialog } from '@/components/add-member-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, RefreshCw } from 'lucide-react'
-import type { User } from '@/api/organization/members'
+import type { Member } from '@/api/organization/members'
 import type { ProjectMember } from '@/schemas'
 
 type Props = {
   projectId: string
   projectName: string
   members: ProjectMember[]
-  unassignedUsers: User[]
+  unassignedUsers: Member[]
   canManageMembers: boolean
 }
 
@@ -42,7 +42,7 @@ function MemberCard({
     <Card>
       <CardHeader className="py-3">
         <div className="flex items-center justify-between">
-          <Link href={`/projects/${projectId}/users/${member.userId}/activities`} className="flex items-center gap-3 no-underline">
+          <Link href={`/projects/${projectId}/members/${member.userId}/activities`} className="flex items-center gap-3 no-underline">
             <Avatar className="h-8 w-8">
               <AvatarImage src={member.iconUrl ?? undefined} />
               <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
@@ -91,8 +91,9 @@ export function MemberList({
   const [showAddMember, setShowAddMember] = useState(false)
   const [filter, setFilter] = useState<'active' | 'all'>('active')
 
+  const activeMembers = members.filter(m => m.active)
   const filteredMembers = filter === 'active'
-    ? members.filter(m => m.active)
+    ? activeMembers
     : members
 
   return (
@@ -108,8 +109,8 @@ export function MemberList({
       </div>
       <Tabs value={filter} onValueChange={(v) => setFilter(v as 'active' | 'all')}>
         <TabsList>
-          <TabsTrigger value="active">アクティブ</TabsTrigger>
-          <TabsTrigger value="all">すべて</TabsTrigger>
+          <TabsTrigger value="active">アクティブ（{activeMembers.length}）</TabsTrigger>
+          <TabsTrigger value="all">すべて（{members.length}）</TabsTrigger>
         </TabsList>
       </Tabs>
       {filteredMembers.length === 0 ? (

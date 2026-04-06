@@ -3,7 +3,7 @@
 import { endOfDay } from 'date-fns'
 import { useActivities } from '@/hooks/api/activities'
 import { useUserProjectStatements } from '@/hooks/api/projects'
-import { useUsers } from '@/hooks/api/users'
+import { useMembers } from '@/hooks/api/members'
 import { useAuth } from '@/hooks/use-auth'
 import { useOrganization } from '@/contexts/organization-context'
 import { useActivityFiltersSearchParameters } from '@/hooks/use-activity-filters-search-parameters'
@@ -27,7 +27,7 @@ export default function ActivitiesPage() {
 
   const { data: projectsData } = useUserProjectStatements({ limit: 100 })
 
-  const { data: usersData } = useUsers({ limit: 100 }, { enabled: isAdmin })
+  const { data: membersData } = useMembers({ limit: 100 }, { enabled: isAdmin })
 
   const { data: activitiesData, isLoading, isFetching, refetch } = useActivities({
     userId: userFilter === 'all' ? undefined : userFilter,
@@ -37,7 +37,7 @@ export default function ActivitiesPage() {
   })
 
   const myProjects = projectsData?.items ?? []
-  const users = usersData?.items ?? []
+  const users = membersData?.items ?? []
   const activities = activitiesData?.items ?? []
 
   const userOptions = [

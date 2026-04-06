@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 import { eq, and, or, count as countFn, isNull, gte, lt, type SQL } from 'drizzle-orm'
-import { projectAssignments } from '@db/schema'
+import { projectAssignments, users } from '@db/schema'
 import { ValidationError } from '@/lib/api-server/errors'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import type { DbOrTx, OrganizationExecutor } from '../../../../types'
@@ -42,10 +42,33 @@ export async function listOrganizationProjectMembers(
 
   const where = conditions.length ? and(...conditions) : undefined
 
-  const [items, [{ count }]] = await Promise.all([
-    db.select().from(projectAssignments).where(where).limit(parameters.limit).offset(parameters.offset),
+  const now = new Date()
+
+  const [rows, [{ count }]] = await Promise.all([
+    db.select({
+      projectAssignmentId: projectAssignments.id,
+      userId: projectAssignments.userId,
+      name: users.name,
+      role: users.role,
+      iconUrl: users.iconUrl,
+      targetMinutes: projectAssignments.targetMinutes,
+      startedAt: projectAssignments.startedAt,
+      endedAt: projectAssignments.endedAt,
+    })
+      .from(projectAssignments)
+      .innerJoin(users, eq(projectAssignments.userId, users.id))
+      .where(where)
+      .limit(parameters.limit)
+      .offset(parameters.offset),
     db.select({ count: countFn() }).from(projectAssignments).where(where),
   ])
+
+  const items = rows.map(row => ({
+    ...row,
+    startedAt: row.startedAt.toISOString(),
+    endedAt: row.endedAt ? row.endedAt.toISOString() : null,
+    active: !row.endedAt || row.endedAt >= now,
+  }))
 
   return { items, count, limit: parameters.limit, offset: parameters.offset }
 }

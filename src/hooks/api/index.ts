@@ -1,6 +1,6 @@
 export * from './activities'
 export * from './projects'
-export * from './users'
+export * from './members'
 export * from './project-members'
 export * from './me'
 export * from './configurations'

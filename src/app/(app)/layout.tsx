@@ -143,10 +143,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 {isOwnerOrManager && (
                   <>
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/users`)}>
-                        <Link href={`${organizationPrefix}/users`}>
+                      <SidebarMenuButton asChild isActive={pathname.startsWith(`${organizationPrefix}/members`)}>
+                        <Link href={`${organizationPrefix}/members`}>
                           <Users />
-                          <span>ユーザー</span>
+                          <span>メンバー</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

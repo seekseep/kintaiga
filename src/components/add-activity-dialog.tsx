@@ -3,7 +3,7 @@
 import { Formik } from 'formik'
 import { useCreateActivity } from '@/hooks/api/activities'
 import { useProjectConfig } from '@/hooks/api/projects'
-import type { User } from '@/api/organization/members'
+import type { Member } from '@/api/organization/members'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormTextarea, FormField, FormDateTimePicker } from '@/components/form'
@@ -26,12 +26,12 @@ import { toLocalDatetimeString } from '@/domain/date-utils'
 
 type Props = {
   projectId: string
-  assignedUsers: User[]
+  assignedMembers: Member[]
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function AddActivityDialog({ projectId, assignedUsers, open, onOpenChange }: Props) {
+export function AddActivityDialog({ projectId, assignedMembers, open, onOpenChange }: Props) {
   const { data: config } = useProjectConfig(projectId)
 
   const mutation = useCreateActivity()
@@ -79,7 +79,7 @@ export function AddActivityDialog({ projectId, assignedUsers, open, onOpenChange
                       <SelectValue placeholder="ユーザーを選択" />
                     </SelectTrigger>
                     <SelectContent>
-                      {assignedUsers.map(u => (
+                      {assignedMembers.map(u => (
                         <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
                       ))}
                     </SelectContent>

@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
-import { UserIcon, ImageIcon, MailIcon, LockIcon, LogOutIcon, Trash2Icon, ChevronRightIcon } from 'lucide-react'
+import { UserIcon, ImageIcon, MailIcon, LockIcon, LogOutIcon, Trash2Icon, ChevronRightIcon, KeyIcon } from 'lucide-react'
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth()
@@ -51,6 +51,11 @@ export default function ProfilePage() {
         <Link href="/me/password" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
           <LockIcon className="h-5 w-5 text-muted-foreground" />
           <span className="flex-1">パスワードを変更</span>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+        <Link href="/me/tokens" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <KeyIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="flex-1">アクセストークン</span>
           <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
         </Link>
       </div>

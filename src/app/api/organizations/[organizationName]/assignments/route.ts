@@ -3,7 +3,7 @@ import { withOrganization } from '@/lib/api-server/middlewares/with-organization
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
 import { getSearchParameters } from '@/lib/api-server/search-parameters'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
-import { listOrganizationProjectMembers, addOrganizationProjectMember } from '@/services/organization/project/member'
+import { listOrganizationProjectMembers } from '@/services/organization/project/member'
 
 export const GET = withErrorHandler(withOrganization(async (req, executor) => {
   const parameters = getSearchParameters(req, [
@@ -15,10 +15,4 @@ export const GET = withErrorHandler(withOrganization(async (req, executor) => {
   ] as const)
   const result = await listOrganizationProjectMembers({ db }, executor, parameters)
   return Response.json(result)
-}))
-
-export const POST = withErrorHandler(withOrganization(async (req, executor) => {
-  const body = await req.json()
-  const created = await addOrganizationProjectMember({ db }, executor, body)
-  return Response.json(created, { status: 201 })
 }))

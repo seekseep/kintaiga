@@ -51,14 +51,31 @@
       "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/configuration/)",
       "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/)",
       "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src -type f -path \"*/\\(auth\\)/*\")",
-      "Bash(pnpm list:*)"
+      "Bash(pnpm list:*)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/projects/layout.tsx)",
+      "Bash(ls -R /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/*/users/)",
+      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga -type f -name *.prisma)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga -type f -path *api/organization*activity*)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/activities -type f)",
+      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/members/)",
+      "Bash(ls -R /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/projects/[id]/\\\\\\(children\\\\\\)/users/)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/activities -type f -name \"*.ts\")",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/activities/[id] -type f -name \"*.ts\")"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens",
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/configuration",
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/configuration/work",
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/users/new",
-      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/users/[id]/name"
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/users/[id]/name",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/members/[userId]",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/members/[memberId]",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/users",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/users",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/members/[id]",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/projects/[id]/(children)/users",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/(app)/[organizationName]/projects/[id]/(children)/members/[userId]"
     ]
   }
 }

@@ -5,14 +5,14 @@ import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../.
 import type { DbOrTx } from '../../../../types'
 
 const assignmentRow = {
-  id: 'asgn-1',
-  projectId: 'proj-1',
+  projectAssignmentId: 'asgn-1',
   userId: 'user-1',
+  name: 'Test User',
+  role: 'general' as const,
+  iconUrl: null,
+  targetMinutes: null,
   startedAt: new Date('2024-01-01'),
   endedAt: null,
-  targetMinutes: null,
-  createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01'),
 }
 
 describe('listOrganizationProjectMembers', () => {

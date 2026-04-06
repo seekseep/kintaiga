@@ -52,7 +52,7 @@ export function useDeleteProjectMember() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ projectId, ...input }: DeleteProjectMemberInput & { projectId: string }) =>
-      deleteOrganizationProjectMember(organizationName, input),
+      deleteOrganizationProjectMember(organizationName, { ...input, projectId }),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })

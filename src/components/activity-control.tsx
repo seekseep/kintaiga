@@ -8,8 +8,7 @@ import { formatMinutes, formatHours } from '@/domain/time'
 import { filterActivitiesByMonth, calculateTotalMinutes, getMonthRange } from '@/domain/aggregation'
 import { canControlActivity } from '@/domain/authorization'
 import { useProjectMemberAssignments } from '@/hooks/api/project-members'
-import { StartActivityDialog } from '@/components/start-activity-dialog'
-import { EndActivityDialog } from '@/components/end-activity-dialog'
+import { ActivityDialog } from '@/components/activity-dialog'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Square, Play } from 'lucide-react'
@@ -160,7 +159,8 @@ export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function
 
       {canControl && (
         <>
-          <StartActivityDialog
+          <ActivityDialog
+            mode="start"
             projectId={projectId}
             projectName={projectName}
             userId={userId}
@@ -169,10 +169,12 @@ export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function
           />
 
           {ongoingActivity && (
-            <EndActivityDialog
+            <ActivityDialog
+              mode="end"
               activityId={ongoingActivity.id}
               projectId={projectId}
               projectName={projectName}
+              defaultStartedAt={ongoingActivity.startedAt}
               open={endOpen}
               onOpenChange={setEndOpen}
             />

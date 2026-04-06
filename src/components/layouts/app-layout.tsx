@@ -84,7 +84,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     ]
     if (user?.role === 'admin') {
       items.push(
-        { href: '/users', icon: Users, label: 'ユーザー', isActive: (p) => p.startsWith('/users') },
+        { href: '/members', icon: Users, label: 'メンバー', isActive: (p) => p.startsWith('/members') },
         { href: '/projects', icon: FolderOpen, label: 'プロジェクト', isActive: (p) => p.startsWith('/projects') },
       )
     }

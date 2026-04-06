@@ -3,7 +3,7 @@
 import { Formik } from 'formik'
 import { useCreateProjectMember } from '@/hooks/api/project-members'
 import { zodValidate } from '@/lib/form/zod-adapter'
-import type { User } from '@/api/organization/members'
+import type { Member } from '@/api/organization/members'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/form'
@@ -32,7 +32,7 @@ const schema = z.object({
 
 type Props = {
   projectId: string
-  unassignedUsers: User[]
+  unassignedUsers: Member[]
   open: boolean
   onOpenChange: (open: boolean) => void
 }
