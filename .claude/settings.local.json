@@ -61,7 +61,12 @@
       "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/members/)",
       "Bash(ls -R /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/projects/[id]/\\\\\\(children\\\\\\)/users/)",
       "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/activities -type f -name \"*.ts\")",
-      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/activities/[id] -type f -name \"*.ts\")"
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/activities/[id] -type f -name \"*.ts\")",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/components -type f -name *.tsx)",
+      "Bash(grep -n \"isLoading\\\\|isFetching\" /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/members/page.tsx)",
+      "Bash(grep -n \"isLoading\\\\|isFetching\" /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/projects/page.tsx)",
+      "Bash(find src/hooks/api/configurations* src/api)",
+      "Bash(find src/api/organization/configuration* -type f)"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens",
