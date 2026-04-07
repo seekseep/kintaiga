@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import { Formik } from 'formik'
 import { useAuth } from '@/hooks/use-auth'
 import { useUploadMyIcon } from '@/hooks/api/me'
-import { UpdateIconParametersSchema } from '@/services/me/updateIcon'
+import { UpdateUserIconParametersSchema } from '@/services/user/updateUserIcon'
 import { zodValidate } from '@/lib/form/zod-adapter'
+
+const UpdateIconSchema = UpdateUserIconParametersSchema.omit({ userId: true })
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
@@ -41,7 +43,7 @@ export default function EditIconPage() {
         <CardContent>
           <Formik
             initialValues={{ icon: '' }}
-            validate={zodValidate(UpdateIconParametersSchema)}
+            validate={zodValidate(UpdateIconSchema)}
             onSubmit={(values) => mutation.mutate(values, {
               onSuccess: async () => {
                 await refreshUser()

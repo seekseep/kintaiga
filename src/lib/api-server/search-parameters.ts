@@ -1,7 +1,13 @@
+import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
+
 type ParameterDefinition =
   | { key: string; type: 'string'; defaultValue?: string }
   | { key: string; type: 'number'; defaultValue?: number }
   | { key: string; type: 'boolean'; defaultValue?: boolean }
+
+export const limitParameter = { key: 'limit', type: 'number', defaultValue: DEFAULT_LIMIT } as const
+export const offsetParameter = { key: 'offset', type: 'number', defaultValue: DEFAULT_OFFSET } as const
+export const paginationParameters = [limitParameter, offsetParameter] as const
 
 type InferParameterType<T extends ParameterDefinition> =
   T extends { type: 'string'; defaultValue: string } ? string :

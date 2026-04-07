@@ -23,6 +23,8 @@ export function useMyOrganizations(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: meKeys.organizations(),
     queryFn: listMyOrganizations,
+    staleTime: 0,
+    refetchOnMount: 'always',
     ...options,
   })
 }

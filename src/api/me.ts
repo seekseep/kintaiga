@@ -1,13 +1,12 @@
 import { api } from '@/lib/api'
-import type { User } from './organization/members'
-import type { CreateProfileInput } from '@/services/me/createProfile'
-import type { UpdateProfileInput } from '@/services/me/updateProfile'
-import type { UpdateIconInput } from '@/services/me/updateIcon'
+import type { User } from '@/schemas'
+import type { CreateUserInput } from '@/services/user/createUser'
+import type { UpdateUserInput } from '@/services/user/updateUser'
+import type { UpdateUserIconInput } from '@/services/user/updateUserIcon'
 
-export type { CreateProfileInput } from '@/services/me/createProfile'
-export type { UpdateProfileInput } from '@/services/me/updateProfile'
-export type { UpdateIconInput } from '@/services/me/updateIcon'
-export type RegisterMeBody = Omit<CreateProfileInput, 'sub'>
+export type RegisterMeBody = Omit<CreateUserInput, 'userId'>
+export type UpdateMeBody = Omit<UpdateUserInput, 'id'>
+export type UploadMyIconBody = Omit<UpdateUserIconInput, 'userId'>
 
 export async function getMe() {
   const r = await api.get<User>('/me')
@@ -19,17 +18,17 @@ export async function registerMe(body: RegisterMeBody) {
   return r.data
 }
 
-export async function updateMe(body: UpdateProfileInput) {
+export async function updateMe(body: UpdateMeBody) {
   const r = await api.patch<User>('/me', body)
   return r.data
 }
 
-export async function uploadMyIcon(body: UpdateIconInput) {
+export async function uploadMyIcon(body: UploadMyIconBody) {
   const r = await api.post<User>('/me/icon', body)
   return r.data
 }
 
 export async function withdrawMe() {
-  const r = await api.post('/me/withdraw')
+  const r = await api.delete('/me')
   return r.data
 }

@@ -8,9 +8,11 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/co
 import { UserIcon, ImageIcon, MailIcon, LockIcon, LogOutIcon, Trash2Icon, ChevronRightIcon, KeyIcon } from 'lucide-react'
 
 export default function ProfilePage() {
-  const { user, signOut } = useAuth()
+  const { user, session, signOut } = useAuth()
 
   if (!user) return null
+
+  const email = user.email ?? session?.user.email ?? null
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
@@ -28,14 +30,17 @@ export default function ProfilePage() {
         </Avatar>
         <div>
           <p className="text-lg font-medium">{user.name}</p>
-          {user.email && <p className="text-sm text-muted-foreground">{user.email}</p>}
+          {email && <p className="text-sm text-muted-foreground">{email}</p>}
           <Badge variant="secondary">{user.role === 'admin' ? '管理者' : '一般'}</Badge>
         </div>
       </div>
       <div className="divide-y rounded-md border">
         <Link href="/me/name" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
           <UserIcon className="h-5 w-5 text-muted-foreground" />
-          <span className="flex-1">名前を変更</span>
+          <div className="flex-1">
+            <div>名前</div>
+            <div className="text-sm text-muted-foreground">{user.name}</div>
+          </div>
           <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
         </Link>
         <Link href="/me/icon" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
@@ -45,7 +50,10 @@ export default function ProfilePage() {
         </Link>
         <Link href="/me/email" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
           <MailIcon className="h-5 w-5 text-muted-foreground" />
-          <span className="flex-1">メールアドレスを変更</span>
+          <div className="flex-1">
+            <div>メールアドレス</div>
+            {email && <div className="text-sm text-muted-foreground">{email}</div>}
+          </div>
           <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
         </Link>
         <Link href="/me/password" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">

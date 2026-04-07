@@ -12,7 +12,7 @@ import type { RemoveOrganizationProjectMemberInput as DeleteProjectMemberInput }
 import { projectMemberKeys, projectKeys } from '@/lib/query-keys'
 import { useOrganization } from '@/contexts/organization-context'
 
-export function useProjectMemberAssignments(parameters?: ListOrganizationProjectMembersParameters, options?: { enabled?: boolean }) {
+export function useProjectMemberAssignments(parameters: ListOrganizationProjectMembersParameters, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectMemberKeys.list(organizationName, parameters),
@@ -39,7 +39,7 @@ export function useUpdateProjectMember() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ projectId, ...input }: UpdateProjectMemberInput & { projectId: string }) =>
-      updateOrganizationProjectMember(organizationName, input),
+      updateOrganizationProjectMember(organizationName, projectId, input),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })

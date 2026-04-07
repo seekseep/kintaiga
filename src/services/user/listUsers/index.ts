@@ -28,6 +28,7 @@ export async function listUsers(
       id: organizationAssignments.id,
       userId: users.id,
       name: users.name,
+      email: users.email,
       iconUrl: users.iconUrl,
       createdAt: users.createdAt,
       updatedAt: users.updatedAt,

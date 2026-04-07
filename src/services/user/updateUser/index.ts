@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 import { users } from '@db/schema'
 import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
 import { canModifyUser } from '@/domain/authorization'
-import type { DbOrTx, OrganizationExecutor } from '../../types'
+import type { DbOrTx, AuthorizedExecutor } from '../../types'
 
 export const UpdateUserParametersSchema = z.object({
   id: z.string(),
@@ -15,7 +15,7 @@ export type UpdateUserParameters = z.output<typeof UpdateUserParametersSchema>
 
 export async function updateUser(
   dependencies: { db: DbOrTx },
-  executor: OrganizationExecutor,
+  executor: AuthorizedExecutor,
   input: UpdateUserInput,
 ) {
   const result = UpdateUserParametersSchema.safeParse(input)

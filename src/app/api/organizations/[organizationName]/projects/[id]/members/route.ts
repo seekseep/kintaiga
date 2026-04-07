@@ -1,11 +1,17 @@
 import { db } from '@/lib/api-server/db'
 import { withOrganization } from '@/lib/api-server/middlewares/with-organization'
 import { withErrorHandler } from '@/lib/api-server/middlewares/with-error-handler'
+import { getSearchParameters, paginationParameters } from '@/lib/api-server/search-parameters'
 import { listOrganizationProjectMembers, addOrganizationProjectMember } from '@/services/organization/project/member'
 
-export const GET = withErrorHandler(withOrganization(async (_req, executor, context) => {
+export const GET = withErrorHandler(withOrganization(async (req, executor, context) => {
   const { id } = await context.params
-  const result = await listOrganizationProjectMembers({ db }, executor, { projectId: id })
+  const parameters = getSearchParameters(req, [
+    { key: 'userId', type: 'string' },
+    { key: 'active', type: 'string' },
+    ...paginationParameters,
+  ] as const)
+  const result = await listOrganizationProjectMembers({ db }, executor, { projectId: id, ...parameters })
   return Response.json(result)
 }))
 

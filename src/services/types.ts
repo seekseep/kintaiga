@@ -23,3 +23,5 @@ export type SystemExecutor = {
 }
 
 export type Executor = UserExecutor | OrganizationExecutor | SystemExecutor
+
+export type AuthorizedExecutor = UserExecutor | OrganizationExecutor

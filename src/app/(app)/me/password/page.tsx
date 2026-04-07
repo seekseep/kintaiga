@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
-import { UpdatePasswordParametersSchema } from '@/services/me/updatePassword'
+import { UpdateUserPasswordParametersSchema } from '@/services/user/updateUserPassword'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { getAuthErrorMessage } from '@/lib/supabase-auth-errors'
 import { toast } from 'sonner'
@@ -36,7 +36,7 @@ export default function EditPasswordPage() {
         <CardContent>
           <Formik
             initialValues={{ currentPassword: '', newPassword: '' }}
-            validate={zodValidate(UpdatePasswordParametersSchema)}
+            validate={zodValidate(UpdateUserPasswordParametersSchema)}
             onSubmit={async (values, { setSubmitting, setStatus }) => {
               setStatus(null)
 

@@ -1,5 +1,6 @@
 export { createOrganization } from './createOrganization'
 export { getOrganizationByName } from './getOrganizationByName'
+export { checkOrganizationName } from './checkOrganizationName'
 export { updateOrganization } from './updateOrganization'
 export { transferOrganizationOwnership } from './transferOrganizationOwnership'
 export { deleteOrganization } from './deleteOrganization'

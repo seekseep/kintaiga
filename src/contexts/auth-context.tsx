@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { getMe } from '@/api/me'
 import { ApiError } from '@/lib/api'
-import type { User } from '@/api/organization/members'
+import type { User } from '@/schemas'
 
 export type { User }
 
@@ -13,6 +13,7 @@ export type AuthContextValue = {
   user: User | null
   isLoading: boolean
   needsInitialization: boolean
+  error: Error | null
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [needsInitialization, setNeedsInitialization] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
   const fetchingRef = useRef(false)
 
   const fetchUser = useCallback(async () => {
@@ -34,10 +36,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const u = await getMe()
       setUser(u)
       setNeedsInitialization(false)
+      setError(null)
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) {
         setUser(null)
         setNeedsInitialization(true)
+        setError(null)
+      } else {
+        console.error('Failed to fetch user', e)
+        setUser(null)
+        setNeedsInitialization(false)
+        setError(e instanceof Error ? e : new Error(String(e)))
       }
     } finally {
       fetchingRef.current = false
@@ -79,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [queryClient])
 
   return (
-    <AuthContext.Provider value={{ session, user, isLoading, needsInitialization, signOut, refreshUser }}>
+    <AuthContext.Provider value={{ session, user, isLoading, needsInitialization, error, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

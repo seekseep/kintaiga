@@ -2,7 +2,7 @@ import { z } from 'zod/v4'
 import { eq, and } from 'drizzle-orm'
 import { personalAccessTokens } from '@db/schema'
 import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
-import type { DbOrTx, OrganizationExecutor } from '../../../types'
+import type { DbOrTx, AuthorizedExecutor } from '../../../types'
 
 const RevokeUserTokenParametersSchema = z.object({
   id: z.string(),
@@ -12,7 +12,7 @@ export type RevokeUserTokenInput = z.input<typeof RevokeUserTokenParametersSchem
 
 export async function revokeUserToken(
   dependencies: { db: DbOrTx },
-  executor: OrganizationExecutor,
+  executor: AuthorizedExecutor,
   input: RevokeUserTokenInput,
 ) {
   const result = RevokeUserTokenParametersSchema.safeParse(input)

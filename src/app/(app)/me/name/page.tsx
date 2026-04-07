@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation'
 import { Formik } from 'formik'
 import { useAuth } from '@/hooks/use-auth'
 import { useUpdateMe } from '@/hooks/api/me'
-import { UpdateProfileParametersSchema } from '@/services/me/updateProfile'
+import { UpdateUserParametersSchema } from '@/services/user/updateUser'
 import { zodValidate } from '@/lib/form/zod-adapter'
+
+const UpdateNameSchema = UpdateUserParametersSchema.omit({ id: true })
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
@@ -39,7 +41,7 @@ export default function EditNamePage() {
         <CardContent>
           <Formik
             initialValues={{ name: user?.name ?? '' }}
-            validate={zodValidate(UpdateProfileParametersSchema)}
+            validate={zodValidate(UpdateNameSchema)}
             onSubmit={(values) => mutation.mutate(values, {
               onSuccess: async () => {
                 await refreshUser()

@@ -3,35 +3,45 @@
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useMembers } from '@/hooks/api/members'
-import type { OrganizationRole } from '@/schemas/organization-role'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
-import { Plus } from 'lucide-react'
+import { Plus, RefreshCw } from 'lucide-react'
 
 export default function UserListPage() {
   const { organizationName } = useParams<{ organizationName: string }>()
-  const { data: membersData, isLoading } = useMembers()
+  const { data: membersData, isLoading, isFetching, refetch } = useMembers()
 
-  const members = (membersData?.items ?? []) as unknown as ({ id: string; name: string; iconUrl: string | null; organizationRole: OrganizationRole })[]
+  const members = membersData?.items ?? []
 
   return (
     <div className="space-y-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbPage>ユーザー</BreadcrumbPage>
+            <BreadcrumbPage>メンバー</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">ユーザー</h1>
-        <Button asChild>
-          <Link href={`/${organizationName}/members/invite`}><Plus className="mr-2 h-4 w-4" />メンバーを招待</Link>
-        </Button>
+        <h1 className="text-2xl font-bold">メンバー</h1>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            aria-label="再読み込み"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button asChild>
+            <Link href={`/${organizationName}/members/invite`}><Plus className="mr-2 h-4 w-4" />メンバーを招待</Link>
+          </Button>
+        </div>
       </div>
       {isLoading ? (
         <div className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
@@ -55,7 +65,7 @@ export default function UserListPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ユーザー</TableHead>
+              <TableHead>メンバー</TableHead>
               <TableHead>権限</TableHead>
             </TableRow>
           </TableHeader>
@@ -68,7 +78,10 @@ export default function UserListPage() {
                       <AvatarImage src={u.iconUrl ?? undefined} />
                       <AvatarFallback>{u.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    {u.name}
+                    <div className="flex flex-col">
+                      <span>{u.name}</span>
+                      <span className="text-xs text-muted-foreground">{u.email ?? '—'}</span>
+                    </div>
                   </Link>
                 </TableCell>
                 <TableCell>

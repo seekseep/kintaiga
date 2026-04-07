@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useMyOrganizations } from '@/hooks/api/organizations'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Building2, Plus, Crown, Shield, User } from 'lucide-react'
+import { Building2, Plus, Crown, Shield, User, RefreshCw } from 'lucide-react'
 
 const roleIcons = {
   owner: Crown,
@@ -19,7 +19,7 @@ const roleLabels = {
 }
 
 export default function OrganizationsPage() {
-  const { data: organizations, isLoading } = useMyOrganizations()
+  const { data: organizations, isLoading, isFetching, refetch } = useMyOrganizations()
   const organizationItems = organizations?.items ?? []
 
   if (isLoading) {
@@ -34,12 +34,23 @@ export default function OrganizationsPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">組織一覧</h1>
-        <Button asChild>
-          <Link href="/organizations/new">
-            <Plus className="mr-2 h-4 w-4" />
-            組織を作成
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            aria-label="再読み込み"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button asChild>
+            <Link href="/organizations/new">
+              <Plus className="mr-2 h-4 w-4" />
+              組織を作成
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {organizationItems.length === 0 && (

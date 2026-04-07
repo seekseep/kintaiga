@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation'
 import { Formik } from 'formik'
 import { useAuth } from '@/hooks/use-auth'
 import { useRegisterMe } from '@/hooks/api/me'
-import { CreateProfileParametersSchema } from '@/services/me/createProfile'
+import { CreateUserParametersSchema } from '@/services/user/createUser'
 import { zodValidate } from '@/lib/form/zod-adapter'
 
-const RegisterFormSchema = CreateProfileParametersSchema.omit({ sub: true })
+const RegisterFormSchema = CreateUserParametersSchema.omit({ userId: true })
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'

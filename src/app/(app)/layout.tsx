@@ -30,7 +30,7 @@ import { useMyOrganizations } from '@/hooks/api/organizations'
 import { FolderOpen, Clock, Users, User, LogOut, Settings, Building2, ChevronsUpDown, Plus } from 'lucide-react'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { session, user, isLoading, needsInitialization, signOut } = useAuth()
+  const { session, user, isLoading, needsInitialization, error, signOut, refreshUser } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const routeParameters = useParams<{ organizationName?: string }>()
@@ -73,6 +73,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
+    if (error) {
+      return (
+        <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-4">
+          <img src="/favicon.png" alt="キンタイガ" className="h-24 w-24 opacity-50" />
+          <p className="text-sm text-muted-foreground">ユーザー情報の取得に失敗しました</p>
+          <p className="text-xs text-muted-foreground">{error.message}</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => refreshUser()}
+              className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
+            >
+              再試行
+            </button>
+            <button
+              type="button"
+              onClick={() => signOut().then(() => router.replace('/login'))}
+              className="rounded-md border px-4 py-2 text-sm hover:bg-accent"
+            >
+              ログアウト
+            </button>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="flex min-h-svh items-center justify-center">
         <img src="/favicon.png" alt="キンタイガ" className="animate-pulse h-24 w-24" />

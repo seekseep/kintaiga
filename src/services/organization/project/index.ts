@@ -1,6 +1,7 @@
 export { createOrganizationProject } from './createOrganizationProject'
 export { deleteOrganizationProject } from './deleteOrganizationProject'
 export { getOrganizationProject } from './getOrganizationProject'
+export { getOrganizationProjectByName } from './getOrganizationProjectByName'
 export { updateOrganizationProject } from './updateOrganizationProject'
 export * from './statement'
 export * from './configuration'

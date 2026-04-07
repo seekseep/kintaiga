@@ -1,7 +1,10 @@
 import { api } from '@/lib/api'
-import type { CreateMyTokenInput } from '@/services/me/createMyToken'
 
-export type { CreateMyTokenInput } from '@/services/me/createMyToken'
+export interface CreateMyTokenInput {
+  name: string
+  organizationName: string
+  expiresAt?: string | null
+}
 
 export interface MyToken {
   id: string

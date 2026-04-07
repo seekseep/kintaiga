@@ -47,14 +47,14 @@ export default function MemberDetailPage() {
       </div>
     </div>
   )
-  if (!member) return <p className="text-center text-muted-foreground">ユーザーが見つかりません</p>
+  if (!member) return <p className="text-center text-muted-foreground">メンバーが見つかりません</p>
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href={`/${organizationName}/members`}>ユーザー</Link></BreadcrumbLink>
+            <BreadcrumbLink asChild><Link href={`/${organizationName}/members`}>メンバー</Link></BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -96,7 +96,7 @@ export default function MemberDetailPage() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>本当に削除しますか？</AlertDialogTitle>
-              <AlertDialogDescription>このユーザーに関連するデータも削除されます。</AlertDialogDescription>
+              <AlertDialogDescription>このメンバーに関連するデータも削除されます。</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>キャンセル</AlertDialogCancel>

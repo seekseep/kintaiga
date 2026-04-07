@@ -38,13 +38,32 @@
       "Bash(wc:*)",
       "Bash(sort:*)",
       "Bash(uniq:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga -path */db/schema* -type f)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/api/organization* -type f)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/lib/api-server/errors* -type f)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/assignments -type f)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/projects -type f)",
+      "Bash(pnpm exec:*)",
+      "Bash(pnpm update:*)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/hooks -type f -name *.ts*)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga/src/api -type f -name *.ts*)",
+      "Bash(pnpm sql:*)",
+      "Bash(/tmp/check_tables.sql:*)",
+      "Read(//tmp/**)",
+      "Bash(pnpm db:generate)",
+      "Bash(pnpm db:migrate)",
+      "Bash(/tmp/verify_constraint.sql:*)"
     ],
     "deny": [
       "Read(.env*)",
       "Read(**/.env*)",
       "Bash(git commit:*)",
       "Bash(git push:*)"
+    ],
+    "additionalDirectories": [
+      "/tmp",
+      "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens"
     ]
   }
 }

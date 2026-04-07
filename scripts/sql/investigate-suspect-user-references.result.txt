@@ -1,0 +1,68 @@
+[
+  {
+    "user_id": "702ad4c5-dafb-4d63-9278-78b644d3a72d",
+    "email": "sakamoto@mococo.tech",
+    "name": "坂本 憲史",
+    "in_auth": true,
+    "org_assignments": "1",
+    "proj_assignments": "1",
+    "activities": "0",
+    "pats": "0",
+    "reports": "0"
+  },
+  {
+    "user_id": "ba83e346-b86d-40ec-b7ad-f856d5e702fe",
+    "email": "sakamoto@mococo.tech",
+    "name": "坂本",
+    "in_auth": false,
+    "org_assignments": "0",
+    "proj_assignments": "0",
+    "activities": "0",
+    "pats": "0",
+    "reports": "0"
+  },
+  {
+    "user_id": "aadc8ab1-5746-44fd-a4f5-20a9fcbb037b",
+    "email": "seekseep+2@gmail.com",
+    "name": "yokoyama",
+    "in_auth": false,
+    "org_assignments": "1",
+    "proj_assignments": "0",
+    "activities": "0",
+    "pats": "0",
+    "reports": "0"
+  },
+  {
+    "user_id": "d8b37408-f817-4679-b8d1-164644cc513e",
+    "email": "seekseep+2@gmail.com",
+    "name": "よこやま２",
+    "in_auth": true,
+    "org_assignments": "0",
+    "proj_assignments": "0",
+    "activities": "0",
+    "pats": "0",
+    "reports": "0"
+  },
+  {
+    "user_id": "b6c76ab4-f457-4689-a749-38b362af7570",
+    "email": null,
+    "name": "テスト",
+    "in_auth": false,
+    "org_assignments": "1",
+    "proj_assignments": "0",
+    "activities": "0",
+    "pats": "0",
+    "reports": "0"
+  },
+  {
+    "user_id": "d92aab28-feb4-498c-954a-a6b02a98402b",
+    "email": null,
+    "name": "よこやま",
+    "in_auth": false,
+    "org_assignments": "1",
+    "proj_assignments": "1",
+    "activities": "1",
+    "pats": "0",
+    "reports": "0"
+  }
+]

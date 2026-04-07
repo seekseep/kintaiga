@@ -77,7 +77,7 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => [
-  index('users_email_idx').on(table.email),
+  unique('users_email_unique').on(table.email),
 ])
 
 export const projectAssignments = pgTable('project_assignments', {

@@ -1,11 +1,15 @@
 import { type NextRequest } from 'next/server'
-import { eq, and, isNull, inArray } from 'drizzle-orm'
 import { db } from '@/lib/api-server/db'
-import { projects, projectAssignments, projectActivities, users } from '@db/schema'
 import { resolveUserToken } from '@/services/user/tokens'
+import { getUser } from '@/services/user'
+import {
+  getOrganizationProjectByName,
+  listOrganizationProjectStatements,
+} from '@/services/organization/project'
 import { createOrganizationProjectMemberActivity } from '@/services/organization/project/member/activity/createOrganizationProjectMemberActivity'
 import { updateOrganizationProjectMemberActivity } from '@/services/organization/project/member/activity/updateOrganizationProjectMemberActivity'
-import { HttpError } from '@/lib/api-server/errors'
+import { listOrganizationProjectMemberActivities } from '@/services/organization/project/member/activity/listOrganizationProjectMemberActivities'
+import { HttpError, NotFoundError } from '@/lib/api-server/errors'
 import type { OrganizationExecutor } from '@/services/types'
 
 function mattermostResponse(text: string) {
@@ -26,49 +30,24 @@ async function authenticate(req: NextRequest): Promise<OrganizationExecutor> {
 }
 
 async function findProject(executor: OrganizationExecutor, projectName: string) {
-  const [project] = await db.select({
-    id: projects.id,
-    name: projects.name,
-  }).from(projects)
-    .where(and(
-      eq(projects.organizationId, executor.organization.id),
-      eq(projects.name, projectName),
-    ))
-    .limit(1)
-  return project ?? null
+  try {
+    return await getOrganizationProjectByName({ db }, executor, projectName)
+  } catch (err) {
+    if (err instanceof NotFoundError) return null
+    throw err
+  }
 }
 
 async function listAssignedProjects(executor: OrganizationExecutor) {
-  const items = await db.select({
-    id: projects.id,
-    name: projects.name,
-  }).from(projects)
-    .innerJoin(projectAssignments, and(
-      eq(projectAssignments.projectId, projects.id),
-      eq(projectAssignments.userId, executor.user.id),
-    ))
-    .where(eq(projects.organizationId, executor.organization.id))
-  return items
+  const { items } = await listOrganizationProjectStatements({ db }, executor, { filter: 'joined' })
+  return items.map((project) => ({ id: project.id, name: project.name }))
 }
 
 async function getOngoingActivities(executor: OrganizationExecutor) {
-  const organizationProjects = db.select({ id: projects.id }).from(projects)
-    .where(eq(projects.organizationId, executor.organization.id))
-
-  const items = await db.select({
-    id: projectActivities.id,
-    projectId: projectActivities.projectId,
-    startedAt: projectActivities.startedAt,
-    note: projectActivities.note,
-    projectName: projects.name,
-  }).from(projectActivities)
-    .leftJoin(projects, eq(projectActivities.projectId, projects.id))
-    .where(and(
-      eq(projectActivities.userId, executor.user.id),
-      isNull(projectActivities.endedAt),
-      inArray(projectActivities.projectId, organizationProjects),
-    ))
-
+  const { items } = await listOrganizationProjectMemberActivities({ db }, executor, {
+    ongoing: true,
+    userId: executor.user.id,
+  })
   return items
 }
 
@@ -78,6 +57,15 @@ function formatDuration(start: Date, end: Date): string {
   const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
   if (hours > 0) return `${hours}時間${minutes}分`
   return `${minutes}分`
+}
+
+async function getExecutorUserName(executor: OrganizationExecutor): Promise<string> {
+  try {
+    const user = await getUser({ db }, executor, { id: executor.user.id })
+    return user.name ?? 'ユーザー'
+  } catch {
+    return 'ユーザー'
+  }
 }
 
 async function handleStart(executor: OrganizationExecutor, args: string) {
@@ -106,16 +94,14 @@ async function handleStart(executor: OrganizationExecutor, args: string) {
 
   const note = parts.slice(1).join(' ') || null
 
-  const created = await createOrganizationProjectMemberActivity({ db }, executor, {
+  await createOrganizationProjectMemberActivity({ db }, executor, {
     projectId: project.id,
     note,
   })
 
-  const [user] = await db.select({ name: users.name }).from(users)
-    .where(eq(users.id, executor.user.id)).limit(1)
-
+  const userName = await getExecutorUserName(executor)
   const noteText = note ? `\nメモ: ${note}` : ''
-  return mattermostPublicResponse(`**${user?.name ?? 'ユーザー'}** が **${project.name}** の稼働を開始しました :clock1:${noteText}`)
+  return mattermostPublicResponse(`**${userName}** が **${project.name}** の稼働を開始しました :clock1:${noteText}`)
 }
 
 async function handleStop(executor: OrganizationExecutor, args: string) {
@@ -141,10 +127,8 @@ async function handleStop(executor: OrganizationExecutor, args: string) {
     results.push(`**${activity.projectName}** (${duration})`)
   }
 
-  const [user] = await db.select({ name: users.name }).from(users)
-    .where(eq(users.id, executor.user.id)).limit(1)
-
-  return mattermostPublicResponse(`**${user?.name ?? 'ユーザー'}** が稼働を終了しました :checkered_flag:\n${results.join('\n')}`)
+  const userName = await getExecutorUserName(executor)
+  return mattermostPublicResponse(`**${userName}** が稼働を終了しました :checkered_flag:\n${results.join('\n')}`)
 }
 
 async function handleStatus(executor: OrganizationExecutor) {

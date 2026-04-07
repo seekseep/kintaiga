@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { Formik } from 'formik'
 import { supabase } from '@/lib/supabase'
-import { UpdateEmailParametersSchema } from '@/services/me/updateEmail'
+import { useAuth } from '@/hooks/use-auth'
+import { UpdateUserEmailParametersSchema } from '@/services/user/updateUserEmail'
 import { zodValidate } from '@/lib/form/zod-adapter'
 import { getAuthErrorMessage } from '@/lib/supabase-auth-errors'
 import { toast } from 'sonner'
@@ -15,6 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function EditEmailPage() {
   const router = useRouter()
+  const { user, session } = useAuth()
+  const currentEmail = user?.email ?? session?.user.email ?? null
 
   return (
     <div className="mx-auto max-w-lg space-y-4">
@@ -33,10 +36,14 @@ export default function EditEmailPage() {
         <CardHeader>
           <CardTitle>メールアドレスの変更</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div>
+            <p className="text-sm text-muted-foreground">現在のメールアドレス</p>
+            <p className="text-sm">{currentEmail ?? '未設定'}</p>
+          </div>
           <Formik
             initialValues={{ email: '' }}
-            validate={zodValidate(UpdateEmailParametersSchema)}
+            validate={zodValidate(UpdateUserEmailParametersSchema)}
             onSubmit={async (values, { setSubmitting, setStatus }) => {
               setStatus(null)
               const { error } = await supabase.auth.updateUser({ email: values.email })
