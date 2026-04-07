@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 import { eq, and } from 'drizzle-orm'
-import { projects, projectConfigurations } from '@db/schema'
+import { projects } from '@db/schema'
 import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
 import type { DbOrTx, OrganizationExecutor } from '../../../../types'
 
@@ -27,15 +27,10 @@ export async function getOrganizationProjectConfiguration(
   ).limit(1)
   if (!project) throw new NotFoundError()
 
-  const [config] = await db.select().from(projectConfigurations).where(
-    eq(projectConfigurations.projectId, parameters.id)
-  ).limit(1)
-  if (!config) throw new NotFoundError('Configuration not found')
-
   return {
-    roundingInterval: config.roundingInterval,
-    roundingDirection: config.roundingDirection,
-    aggregationUnit: config.aggregationUnit,
-    aggregationPeriod: config.aggregationPeriod,
+    roundingInterval: project.roundingInterval,
+    roundingDirection: project.roundingDirection,
+    aggregationUnit: project.aggregationUnit,
+    aggregationPeriod: project.aggregationPeriod,
   }
 }

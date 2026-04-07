@@ -51,22 +51,15 @@ export const projects = pgTable('projects', {
   organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
+  roundingInterval: integer('rounding_interval'),
+  roundingDirection: roundingDirectionEnum('rounding_direction'),
+  aggregationUnit: aggregationUnitEnum('aggregation_unit'),
+  aggregationPeriod: integer('aggregation_period'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => [
   index('projects_organization_id_idx').on(table.organizationId),
 ])
-
-export const projectConfigurations = pgTable('project_configurations', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
-  roundingInterval: integer('rounding_interval').notNull().default(15),
-  roundingDirection: roundingDirectionEnum('rounding_direction').notNull().default('ceil'),
-  aggregationUnit: aggregationUnitEnum('aggregation_unit').notNull().default('monthly'),
-  aggregationPeriod: integer('aggregation_period').notNull().default(1),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey(),

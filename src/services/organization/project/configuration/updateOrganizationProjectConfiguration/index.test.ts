@@ -4,9 +4,21 @@ import { updateOrganizationProjectConfiguration } from '.'
 import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../../../testing/helpers'
 import type { DbOrTx } from '../../../../types'
 
-const projectRow = { id: 'proj-1', organizationId: 'organization-1' }
-const configRow = { id: 'config-1', roundingInterval: 15, roundingDirection: 'ceil', aggregationUnit: 'monthly', aggregationPeriod: 1 }
-const updatedRow = { roundingInterval: 30, roundingDirection: 'floor', aggregationUnit: 'weekly', aggregationPeriod: 2 }
+const projectRow = {
+  id: 'proj-1',
+  organizationId: 'organization-1',
+  roundingInterval: null,
+  roundingDirection: null,
+  aggregationUnit: null,
+  aggregationPeriod: null,
+}
+const updatedRow = {
+  id: 'proj-1',
+  roundingInterval: 30,
+  roundingDirection: 'floor',
+  aggregationUnit: 'weekly',
+  aggregationPeriod: 2,
+}
 
 function createChain(resolvedValue: unknown) {
   const methods = {
@@ -25,33 +37,70 @@ function createChain(resolvedValue: unknown) {
   return chain
 }
 
-function createMockDbFor(projectRows: unknown[], configRows: unknown[], updateRows: unknown[]) {
-  let selectCallCount = 0
+function createMockDbFor(projectRows: unknown[], updateRows: unknown[]) {
+  const setSpy = vi.fn()
   return {
-    select: vi.fn(() => {
-      selectCallCount++
-      if (selectCallCount % 2 === 1) return createChain(projectRows)
-      return createChain(configRows)
-    }),
-    update: vi.fn(() => createChain(updateRows)),
-    insert: vi.fn(() => createChain([])),
-    delete: vi.fn(() => createChain([])),
+    db: {
+      select: vi.fn(() => createChain(projectRows)),
+      update: vi.fn(() => {
+        const chain = createChain(updateRows)
+        chain.set.mockImplementation((values: unknown) => {
+          setSpy(values)
+          return chain
+        })
+        return chain
+      }),
+      insert: vi.fn(() => createChain([])),
+      delete: vi.fn(() => createChain([])),
+    },
+    setSpy,
   }
 }
 
 describe('updateOrganizationProjectConfiguration', () => {
   it('設定を更新できる', async () => {
-    const db = createMockDbFor([projectRow], [configRow], [updatedRow])
+    const { db } = createMockDbFor([projectRow], [updatedRow])
     const result = await updateOrganizationProjectConfiguration(
       { db: db as unknown as DbOrTx },
       createOwnerExecutor(),
       { id: 'proj-1', roundingInterval: 30, roundingDirection: 'floor', aggregationUnit: 'weekly', aggregationPeriod: 2 },
     )
-    expect(result).toMatchObject({ roundingInterval: 30 })
+    expect(result).toEqual({
+      roundingInterval: 30,
+      roundingDirection: 'floor',
+      aggregationUnit: 'weekly',
+      aggregationPeriod: 2,
+    })
+  })
+
+  it('null を渡すとカラムを null にクリアする', async () => {
+    const { db, setSpy } = createMockDbFor([{ ...projectRow, roundingInterval: 15 }], [{ ...updatedRow, roundingInterval: null }])
+    await updateOrganizationProjectConfiguration(
+      { db: db as unknown as DbOrTx },
+      createOwnerExecutor(),
+      { id: 'proj-1', roundingInterval: null },
+    )
+    const setArg = setSpy.mock.calls[0][0]
+    expect(setArg).toHaveProperty('roundingInterval', null)
+    expect(setArg).not.toHaveProperty('roundingDirection')
+  })
+
+  it('未指定のキーは更新しない', async () => {
+    const { db, setSpy } = createMockDbFor([projectRow], [updatedRow])
+    await updateOrganizationProjectConfiguration(
+      { db: db as unknown as DbOrTx },
+      createOwnerExecutor(),
+      { id: 'proj-1', roundingInterval: 30 },
+    )
+    const setArg = setSpy.mock.calls[0][0]
+    expect(setArg).toHaveProperty('roundingInterval', 30)
+    expect(setArg).not.toHaveProperty('roundingDirection')
+    expect(setArg).not.toHaveProperty('aggregationUnit')
+    expect(setArg).not.toHaveProperty('aggregationPeriod')
   })
 
   it('プロジェクトが存在しない場合は NotFoundError', async () => {
-    const db = createMockDbFor([], [], [])
+    const { db } = createMockDbFor([], [])
     await expect(
       updateOrganizationProjectConfiguration(
         { db: db as unknown as DbOrTx },
@@ -61,19 +110,8 @@ describe('updateOrganizationProjectConfiguration', () => {
     ).rejects.toThrow(NotFoundError)
   })
 
-  it('設定行が存在しない場合は NotFoundError', async () => {
-    const db = createMockDbFor([projectRow], [], [])
-    await expect(
-      updateOrganizationProjectConfiguration(
-        { db: db as unknown as DbOrTx },
-        createOwnerExecutor(),
-        { id: 'proj-1' },
-      ),
-    ).rejects.toThrow(NotFoundError)
-  })
-
   it('権限がなければ ForbiddenError', async () => {
-    const db = createMockDbFor([projectRow], [configRow], [updatedRow])
+    const { db } = createMockDbFor([projectRow], [updatedRow])
     await expect(
       updateOrganizationProjectConfiguration(
         { db: db as unknown as DbOrTx },
