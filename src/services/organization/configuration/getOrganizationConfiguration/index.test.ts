@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { getOrganizationConfiguration } from '.'
+import { DEFAULT_GLOBAL_CONFIG } from '@/domain/project/configuration'
 import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../../testing/helpers'
 import type { DbOrTx } from '../../../types'
 
@@ -25,25 +26,9 @@ describe('getOrganizationConfiguration', () => {
     expect(result).toMatchObject({ roundingInterval: 15 })
   })
 
-  it('設定が存在しない場合は新規作成する', async () => {
-    const newConfig = { ...existingConfig, id: 'new-config' }
-    const selectChain = Object.assign(
-      Promise.resolve([]),
-      {
-        from: () => selectChain,
-        where: () => selectChain,
-        limit: () => selectChain,
-      },
-    )
-    const insertChain = {
-      values: () => insertChain,
-      returning: () => Promise.resolve([newConfig]),
-    }
-    const db = {
-      select: () => selectChain,
-      insert: () => insertChain,
-    }
+  it('設定が存在しない場合はデフォルト定数を返す', async () => {
+    const db = createMockDb({ selectResult: [] })
     const result = await getOrganizationConfiguration({ db: db as unknown as DbOrTx }, createOwnerExecutor())
-    expect(result).toMatchObject({ id: 'new-config' })
+    expect(result).toMatchObject(DEFAULT_GLOBAL_CONFIG)
   })
 })

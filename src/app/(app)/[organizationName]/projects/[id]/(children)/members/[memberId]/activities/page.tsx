@@ -271,8 +271,8 @@ export default function ProjectUserActivitiesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {hasPeriod && (
             <>
               <Button variant="ghost" size="icon" onClick={handlePrev}>
@@ -290,7 +290,7 @@ export default function ProjectUserActivitiesPage() {
               <Button variant="ghost" size="icon" onClick={handleNext}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
-              <span className="text-sm text-muted-foreground ml-2">
+              <span className="text-sm text-muted-foreground ml-2 whitespace-nowrap">
                 合計: <span className="font-medium text-foreground">{formatMinutes(totalMinutes)}</span>
               </span>
             </>

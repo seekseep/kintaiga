@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { organizationConfigurations } from '@db/schema'
+import { DEFAULT_GLOBAL_CONFIG } from '@/domain/project/configuration'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 
 export async function getOrganizationConfiguration(
@@ -10,12 +11,15 @@ export async function getOrganizationConfiguration(
   const configRows = await db.select().from(organizationConfigurations)
     .where(eq(organizationConfigurations.organizationId, executor.organization.id))
     .limit(1)
-  let config = configRows[0]
+  const config = configRows[0]
   if (!config) {
-    const [created] = await db.insert(organizationConfigurations).values({
+    return {
+      id: null,
       organizationId: executor.organization.id,
-    }).returning()
-    config = created
+      ...DEFAULT_GLOBAL_CONFIG,
+      createdAt: null,
+      updatedAt: null,
+    }
   }
   return config
 }

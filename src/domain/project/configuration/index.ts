@@ -18,6 +18,13 @@ type GlobalConfig = {
   aggregationPeriod: number
 }
 
+export const DEFAULT_GLOBAL_CONFIG: GlobalConfig = {
+  roundingInterval: 15,
+  roundingDirection: 'ceil',
+  aggregationUnit: 'monthly',
+  aggregationPeriod: 1,
+}
+
 type ProjectOverrides = {
   roundingInterval: number | null
   roundingDirection: RoundingDirection | null

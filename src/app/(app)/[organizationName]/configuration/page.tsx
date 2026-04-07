@@ -5,7 +5,7 @@ import { useOrganization } from '@/contexts/organization-context'
 import { useOrganizationPath } from '@/hooks/use-organization-path'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
 import { OrganizationRoleGuard } from '@/components/layouts/organization-role-guard'
-import { BuildingIcon, ClockIcon, Trash2Icon, ChevronRightIcon, TypeIcon } from 'lucide-react'
+import { BuildingIcon, ClockIcon, Trash2Icon, ChevronRightIcon, TypeIcon, DownloadIcon, UploadIcon } from 'lucide-react'
 
 export default function SettingsPage() {
   const { name: organizationName, displayName } = useOrganization()
@@ -41,6 +41,16 @@ export default function SettingsPage() {
           <Link href={`${orgPath}/configuration/activities`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
             <ClockIcon className="h-5 w-5 text-muted-foreground" />
             <span className="flex-1">稼働の設定</span>
+            <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+          </Link>
+          <Link href={`${orgPath}/configuration/export`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+            <DownloadIcon className="h-5 w-5 text-muted-foreground" />
+            <span className="flex-1">データのエクスポート</span>
+            <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+          </Link>
+          <Link href={`${orgPath}/configuration/import`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+            <UploadIcon className="h-5 w-5 text-muted-foreground" />
+            <span className="flex-1">データのインポート</span>
             <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
           </Link>
         </div>
