@@ -56,7 +56,7 @@ export default function UserListPage() {
           <TableHeader>
             <TableRow>
               <TableHead>ユーザー</TableHead>
-              <TableHead>ロール</TableHead>
+              <TableHead>権限</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

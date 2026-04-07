@@ -49,7 +49,7 @@
 | listOrganizationMembers | OrganizationExecutor | なし | 組織メンバー一覧を取得 |
 | addOrganizationMember | OrganizationExecutor | `canManageOrganizationMembers` | メールアドレスでユーザーを組織に追加 |
 | removeOrganizationMember | OrganizationExecutor | `canManageOrganizationMembers` | 組織からメンバーを除外（owner は除外不可） |
-| updateOrganizationMemberRole | OrganizationExecutor | `canActAsOrganizationOwner` | メンバーの組織ロールを変更 |
+| updateOrganizationMemberRole | OrganizationExecutor | `canActAsOrganizationOwner` | メンバーの組織権限を変更 |
 | transferOwnership | OrganizationExecutor | `canTransferOwnership` | 組織のオーナーを別メンバーに移譲 |
 
 ### ユーザー管理（users）
@@ -60,7 +60,7 @@
 | getUser | OrganizationExecutor | なし | ユーザー詳細を取得 |
 | createUser | OrganizationExecutor | `canActAsAdmin` | ユーザーを新規作成（system admin のみ） |
 | updateUser | OrganizationExecutor | `canModifyUser` | ユーザー情報（名前）を更新（admin / 本人） |
-| updateUserRole | OrganizationExecutor | `canActAsAdmin` | ユーザーのシステムロールを変更（system admin のみ） |
+| updateUserRole | OrganizationExecutor | `canActAsAdmin` | ユーザーのシステム権限を変更（system admin のみ） |
 | archiveAndDeleteUser | OrganizationExecutor | `canModifyUser` | ユーザーをアーカイブ・削除（admin / 本人） |
 
 ### プロジェクト（projects）

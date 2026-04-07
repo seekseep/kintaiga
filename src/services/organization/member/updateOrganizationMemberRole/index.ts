@@ -33,7 +33,7 @@ export async function updateOrganizationMemberRole(
     .limit(1)
 
   if (!member) throw new NotFoundError('メンバーが見つかりません')
-  if (member.role === 'owner') throw new BadRequestError('オーナーのロールは変更できません。オーナー移譲を使用してください')
+  if (member.role === 'owner') throw new BadRequestError('オーナーの権限は変更できません。オーナー移譲を使用してください')
 
   const [updated] = await db.update(organizationAssignments)
     .set({ role: parameters.role })

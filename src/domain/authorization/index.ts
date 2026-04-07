@@ -20,7 +20,7 @@ export function canModifyUser(executor: { user: { role: string; id: string } }, 
 }
 
 /**
- * ロール変更権限を判定する（管理者のみ）
+ * 権限変更権限を判定する（管理者のみ）
  */
 export function canChangeRole(executor: { user: { role: string } }): boolean {
   return executor.user.role === 'admin'

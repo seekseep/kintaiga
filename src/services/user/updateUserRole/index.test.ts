@@ -27,7 +27,7 @@ const updatedUser = {
 }
 
 describe('updateUserRole', () => {
-  it('管理者はロールを変更できる', async () => {
+  it('管理者は権限を変更できる', async () => {
     const supabase = createMockSupabase()
     const db = createMockDb({ updateResult: [updatedUser] })
     const result = await updateUserRole(
@@ -41,7 +41,7 @@ describe('updateUserRole', () => {
     })
   })
 
-  it('一般ユーザーはロールを変更できない', async () => {
+  it('一般ユーザーは権限を変更できない', async () => {
     const supabase = createMockSupabase()
     const db = createMockDb()
     await expect(
@@ -57,7 +57,7 @@ describe('updateUserRole', () => {
     ).rejects.toThrow(NotFoundError)
   })
 
-  it('不正なロールは ValidationError', async () => {
+  it('不正な権限は ValidationError', async () => {
     const supabase = createMockSupabase()
     const db = createMockDb()
     await expect(

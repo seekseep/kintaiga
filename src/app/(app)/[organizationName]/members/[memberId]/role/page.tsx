@@ -49,13 +49,13 @@ export default function EditMemberRolePage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>ロール編集</BreadcrumbPage>
+            <BreadcrumbPage>権限編集</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <Card>
         <CardHeader>
-          <CardTitle>ロールの変更</CardTitle>
+          <CardTitle>権限の変更</CardTitle>
         </CardHeader>
         <CardContent>
           <Formik
@@ -65,7 +65,7 @@ export default function EditMemberRolePage() {
               { id: memberId, role: values.role as 'manager' | 'worker' },
               {
                 onSuccess: () => {
-                  toast.success('ロールを変更しました')
+                  toast.success('権限を変更しました')
                   router.push(`/${organizationName}/members/${memberId}`)
                 },
                 onError: () => toast.error('変更に失敗しました'),
@@ -74,7 +74,7 @@ export default function EditMemberRolePage() {
           >
             {({ handleSubmit }) => (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
-                <FormField name="role" label="ロール">
+                <FormField name="role" label="権限">
                   {({ field, helpers }) => (
                     <Select value={field.value} onValueChange={(v) => helpers.setValue(v)}>
                       <SelectTrigger>

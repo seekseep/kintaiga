@@ -58,7 +58,7 @@ describe('canCreateActivityForUser', () => {
 })
 
 describe('canActAsAdmin', () => {
-  it('ロール判定', () => {
+  it('権限判定', () => {
     expect(canActAsAdmin({ user: { role: 'admin' } })).toBe(true)
     expect(canActAsAdmin({ user: { role: 'general' } })).toBe(false)
   })

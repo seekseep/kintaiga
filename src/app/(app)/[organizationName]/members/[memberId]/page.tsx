@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { useMember, useDeleteMember } from '@/hooks/api/members'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 
 import { Skeleton } from '@/components/ui/skeleton'
@@ -72,17 +71,14 @@ export default function MemberDetailPage() {
         <div>
           <p className="text-lg font-medium">{member.name}</p>
           {member.email && <p className="text-sm text-muted-foreground">{member.email}</p>}
-          <Badge variant={member.organizationRole === 'owner' ? 'default' : member.organizationRole === 'manager' ? 'default' : 'secondary'}>
-            {member.organizationRole === 'owner' ? 'オーナー' : member.organizationRole === 'manager' ? 'マネージャー' : 'ワーカー'}
-          </Badge>
         </div>
       </div>
 
       <div className="divide-y rounded-md border">
         <Link href={`/${organizationName}/members/${memberId}/role`} className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
           <div>
-            <p className="text-sm text-muted-foreground">ロール</p>
-            <p>{member.organizationRole === 'owner' ? 'オーナー' : member.organizationRole === 'manager' ? 'マネージャー' : 'ワーカー'}</p>
+            <p className="text-sm text-muted-foreground">権限</p>
+            <p>{member.organizationRole === 'owner' ? 'オーナー' : member.organizationRole === 'manager' ? 'マネージャー' : '作業者'}</p>
           </div>
           <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
         </Link>
@@ -93,7 +89,7 @@ export default function MemberDetailPage() {
           <AlertDialogTrigger asChild>
             <button className="flex w-full items-center gap-3 px-4 py-3 hover:bg-destructive/5 transition-colors text-destructive">
               <Trash2Icon className="h-5 w-5" />
-              <span className="flex-1 text-left">ユーザーを削除</span>
+              <span className="flex-1 text-left">組織からメンバーを削除</span>
               <ChevronRightIcon className="h-5 w-5" />
             </button>
           </AlertDialogTrigger>

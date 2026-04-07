@@ -69,7 +69,7 @@ export async function createProject(
 
 二層の認可モデルを採用している:
 
-| レベル | ロール | 型 |
+| レベル | 権限 | 型 |
 |---|---|---|
 | システム | `admin`, `general` | `Executor` |
 | 組織 | `owner`, `manager`, `member` | `OrganizationExecutor` |

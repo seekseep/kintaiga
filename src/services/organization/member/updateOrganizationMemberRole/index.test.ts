@@ -9,7 +9,7 @@ const ownerMember = { ...workerMember, role: 'owner' }
 const updatedMember = { ...workerMember, role: 'manager' }
 
 describe('updateOrganizationMemberRole', () => {
-  it('オーナーがメンバーのロールを更新できる', async () => {
+  it('オーナーがメンバーの権限を更新できる', async () => {
     const db = createMockDb({ selectResult: [workerMember], updateResult: [updatedMember] })
     const result = await updateOrganizationMemberRole(
       { db: db as unknown as DbOrTx },
@@ -19,7 +19,7 @@ describe('updateOrganizationMemberRole', () => {
     expect(result).toMatchObject({ role: 'manager' })
   })
 
-  it('一般メンバーはロールを更新できない', async () => {
+  it('一般メンバーは権限を更新できない', async () => {
     const db = createMockDb()
     await expect(
       updateOrganizationMemberRole(
@@ -41,7 +41,7 @@ describe('updateOrganizationMemberRole', () => {
     ).rejects.toThrow(NotFoundError)
   })
 
-  it('オーナーのロールは変更できない', async () => {
+  it('オーナーの権限は変更できない', async () => {
     const db = createMockDb({ selectResult: [ownerMember] })
     await expect(
       updateOrganizationMemberRole(
