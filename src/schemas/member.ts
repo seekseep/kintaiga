@@ -4,6 +4,7 @@ import { OrganizationRoleSchema } from './organization-role'
 
 export const MemberSchema = z.object({
   id: z.string(),
+  userId: z.string(),
   email: z.string().nullable(),
   name: z.string(),
   role: RoleSchema,

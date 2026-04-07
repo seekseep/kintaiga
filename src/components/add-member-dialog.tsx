@@ -84,7 +84,7 @@ export function AddMemberDialog({ projectId, unassignedUsers, open, onOpenChange
                       </SelectTrigger>
                       <SelectContent>
                         {unassignedUsers.map(u => (
-                          <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                          <SelectItem key={u.id} value={u.userId}>{u.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

@@ -30,6 +30,7 @@ export function useCreateProjectMember() {
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })
+      queryClient.invalidateQueries({ queryKey: projectKeys.members(organizationName, projectId) })
     },
   })
 }

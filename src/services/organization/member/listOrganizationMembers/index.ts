@@ -27,6 +27,7 @@ export async function listOrganizationMembers(
   const [items, [{ count }]] = await Promise.all([
     db.select({
       id: organizationAssignments.id,
+      userId: users.id,
       email: users.email,
       name: users.name,
       role: users.role,

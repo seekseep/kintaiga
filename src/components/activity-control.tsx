@@ -6,10 +6,11 @@ import { useProjectConfig } from '@/hooks/api/projects'
 import { ElapsedTime } from '@/components/elapsed-time'
 import { formatMinutes, formatHours } from '@/domain/utils/time'
 import { filterActivitiesByMonth, calculateTotalMinutes, getMonthRange } from '@/domain/activity/aggregation'
-import { canControlActivity } from '@/domain/authorization'
+import { canControlActivityInOrganization } from '@/domain/authorization'
 import { useProjectMemberAssignments } from '@/hooks/api/project-members'
 import { ActivityDialog } from '@/components/activity-dialog'
 import { useAuth } from '@/hooks/use-auth'
+import { useOrganization } from '@/contexts/organization-context'
 import { Button } from '@/components/ui/button'
 import { Square, Play } from 'lucide-react'
 import { format } from 'date-fns'
@@ -27,7 +28,17 @@ export type ActivityControlHandle = {
 
 export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function ActivityControl({ userId, projectId, projectName }, ref) {
   const { user: currentUser } = useAuth()
-  const canControl = currentUser ? canControlActivity(currentUser, { userId }) : false
+  const { id: organizationId, role: organizationRole, plan } = useOrganization()
+  const canControl = currentUser
+    ? canControlActivityInOrganization(
+        {
+          type: 'organization',
+          user: { id: currentUser.id, role: currentUser.role },
+          organization: { id: organizationId, role: organizationRole, plan },
+        },
+        { userId },
+      )
+    : false
 
   const [startOpen, setStartOpen] = useState(false)
   const [endOpen, setEndOpen] = useState(false)

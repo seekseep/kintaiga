@@ -29,7 +29,7 @@ export default function ProjectDetailPage() {
     if (b.userId === currentUser?.id) return 1
     return 0
   })
-  const unassignedMembers = allMembers.filter(u => !assignedUserIds.has(u.id))
+  const unassignedMembers = allMembers.filter(u => !assignedUserIds.has(u.userId))
 
   const loading = loadingMembers || loadingAllMembers
 
