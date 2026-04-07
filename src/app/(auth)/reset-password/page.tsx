@@ -21,7 +21,7 @@ export default function ResetPasswordPage() {
   const mutation = useMutation<void, AuthError, ResetPasswordValues>({
     mutationFn: async (values) => {
       const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: `${window.location.origin}/me/password`,
+        redirectTo: `${window.location.origin}/update-password`,
       })
       if (error) throw error
     },
