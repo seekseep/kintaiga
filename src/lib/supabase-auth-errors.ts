@@ -24,6 +24,10 @@ export function getAuthErrorMessage(error: AuthError): string {
   if (error.code && error.code in authErrorMessages) {
     return authErrorMessages[error.code]
   }
+  const details = [error.code, error.message].filter(Boolean).join(': ')
+  if (details) {
+    return `エラーが発生しました: ${details}`
+  }
   return 'エラーが発生しました。もう一度お試しください'
 }
 
