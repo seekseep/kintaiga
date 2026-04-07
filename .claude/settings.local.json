@@ -66,7 +66,14 @@
       "Bash(grep -n \"isLoading\\\\|isFetching\" /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/members/page.tsx)",
       "Bash(grep -n \"isLoading\\\\|isFetching\" /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/[organizationName]/projects/page.tsx)",
       "Bash(find src/hooks/api/configurations* src/api)",
-      "Bash(find src/api/organization/configuration* -type f)"
+      "Bash(find src/api/organization/configuration* -type f)",
+      "Bash(echo \"SELECT oc.* FROM organization_configurations oc JOIN organizations o ON o.id = oc.organization_id WHERE o.name = ''''comococo'''';\")",
+      "Bash(curl -s -i http://localhost:3000/api/organizations/comococo/configuration)",
+      "Bash(ps -p 70247 -o command=)",
+      "Read(//proc/70247/**)",
+      "Bash(echo \"SELECT * FROM organizations WHERE id::text LIKE ''''97d77275%'''' OR name LIKE ''''97d77275%'''';\")",
+      "Bash(echo \"SELECT id, name FROM projects WHERE id::text LIKE ''''97d77275%'''';\")",
+      "Bash(echo \"SELECT o.name as org_name, p.id as project_id, p.name FROM projects p JOIN organizations o ON o.id = p.organization_id WHERE p.id = ''''97d77275-04fe-4c3d-93ad-ea9c62186020'''';\")"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens",
