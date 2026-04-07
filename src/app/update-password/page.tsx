@@ -29,7 +29,7 @@ export default function UpdatePasswordPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setHasSession(!!session)
     })
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    void supabase.auth.getSession().then(({ data: { session } }) => {
       setHasSession((current) => current ?? !!session)
     })
     return () => subscription.unsubscribe()
