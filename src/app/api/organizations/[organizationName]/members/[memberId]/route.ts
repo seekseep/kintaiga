@@ -8,9 +8,9 @@ import { updateOrganizationMemberRole, removeOrganizationMember } from '@/servic
 
 export const GET = withErrorHandler(withOrganization(async (_req, executor, context) => {
   const { memberId } = await context.params
-  const { userId } = await resolveUserIdFromMemberId(db, executor.organization.id, memberId)
+  const { userId, role: organizationRole } = await resolveUserIdFromMemberId(db, executor.organization.id, memberId)
   const target = await getUser({ db }, executor, { id: userId })
-  return Response.json({ ...target, id: memberId, userId })
+  return Response.json({ ...target, id: memberId, userId, organizationRole })
 }))
 
 export const PATCH = withErrorHandler(withOrganization(async (req, executor, context) => {

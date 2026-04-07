@@ -58,7 +58,7 @@ export function useUpdateUserRole() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, role }: { id: string; role: 'admin' | 'general' }) => updateOrganizationMemberRole(organizationName, id, { role }),
+    mutationFn: ({ id, role }: { id: string; role: 'manager' | 'worker' }) => updateOrganizationMemberRole(organizationName, id, { role }),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: memberKeys.detail(organizationName, id) })
       queryClient.invalidateQueries({ queryKey: memberKeys.lists(organizationName) })

@@ -72,8 +72,8 @@ export default function MemberDetailPage() {
         <div>
           <p className="text-lg font-medium">{member.name}</p>
           {member.email && <p className="text-sm text-muted-foreground">{member.email}</p>}
-          <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
-            {member.role === 'admin' ? '管理者' : '一般'}
+          <Badge variant={member.organizationRole === 'owner' ? 'default' : member.organizationRole === 'manager' ? 'default' : 'secondary'}>
+            {member.organizationRole === 'owner' ? 'オーナー' : member.organizationRole === 'manager' ? 'マネージャー' : 'ワーカー'}
           </Badge>
         </div>
       </div>
@@ -82,7 +82,7 @@ export default function MemberDetailPage() {
         <Link href={`/${organizationName}/members/${memberId}/role`} className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
           <div>
             <p className="text-sm text-muted-foreground">ロール</p>
-            <p>{member.role === 'admin' ? '管理者' : '一般'}</p>
+            <p>{member.organizationRole === 'owner' ? 'オーナー' : member.organizationRole === 'manager' ? 'マネージャー' : 'ワーカー'}</p>
           </div>
           <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
         </Link>

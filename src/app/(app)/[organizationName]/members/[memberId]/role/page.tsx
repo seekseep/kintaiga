@@ -60,9 +60,9 @@ export default function EditMemberRolePage() {
         <CardContent>
           <Formik
             enableReinitialize
-            initialValues={{ role: member?.role ?? 'general' }}
+            initialValues={{ role: member?.organizationRole ?? 'worker' }}
             onSubmit={(values) => mutation.mutate(
-              { id: memberId, role: values.role as 'admin' | 'general' },
+              { id: memberId, role: values.role as 'manager' | 'worker' },
               {
                 onSuccess: () => {
                   toast.success('ロールを変更しました')
@@ -81,8 +81,8 @@ export default function EditMemberRolePage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="general">一般</SelectItem>
-                        <SelectItem value="admin">管理者</SelectItem>
+                        <SelectItem value="worker">作業者</SelectItem>
+                        <SelectItem value="manager">マネージャー</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

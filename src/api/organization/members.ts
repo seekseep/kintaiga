@@ -58,7 +58,7 @@ export async function updateOrganizationMember(
 export async function updateOrganizationMemberRole(
   organizationName: string,
   memberId: string,
-  body: { role: 'admin' | 'general' }
+  body: { role: 'manager' | 'worker' }
 ) {
   const { data } = await api.patch<Member>(
     `/organizations/${organizationName}/members/${memberId}/role`,
