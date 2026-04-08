@@ -36,11 +36,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         persister,
         maxAge: 24 * 60 * 60 * 1000,
         dehydrateOptions: {
-          shouldDehydrateQuery: (query) => {
-            if (query.state.status !== 'success') return false
-            const key = query.queryKey[0] as string
-            return ['me', 'projects', 'users', 'configuration'].includes(key)
-          },
+          shouldDehydrateQuery: (query) => query.state.status === 'success',
         },
       }}
     >
