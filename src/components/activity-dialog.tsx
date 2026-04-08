@@ -135,13 +135,12 @@ export function ActivityDialog(props: Props) {
 
   const assignments = props.mode === 'start' ? (props.assignments ?? []) : []
 
-  return (
+  const formikTree = (
     <Formik
       initialValues={getInitialValues()}
       onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
     >
       {({ handleSubmit: formikSubmit, resetForm, setValues }) => (
-        <>
         <Dialog
           open={open}
           onOpenChange={(value) => {
@@ -183,17 +182,22 @@ export function ActivityDialog(props: Props) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        {props.mode === 'start' && (
-          <BulkActivityDialog
-            projectId={projectId}
-            projectName={projectName}
-            userId={props.userId}
-            open={bulkOpen}
-            onOpenChange={setBulkOpen}
-          />
-        )}
-        </>
       )}
     </Formik>
+  )
+
+  if (props.mode !== 'start') return formikTree
+
+  return (
+    <>
+      {formikTree}
+      <BulkActivityDialog
+        projectId={projectId}
+        projectName={projectName}
+        userId={props.userId}
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+      />
+    </>
   )
 }

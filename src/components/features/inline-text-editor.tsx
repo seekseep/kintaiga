@@ -21,6 +21,7 @@ export function InlineTextEditor({
   const [isSaving, setIsSaving] = useState(false)
   const [localValue, setLocalValue] = useState(value ?? '')
   const inputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const originalValue = value ?? ''
 
   useEffect(() => {
@@ -50,14 +51,16 @@ export function InlineTextEditor({
   }, [localValue, originalValue, onSave])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      save()
-    } else if (e.key === 'Escape') {
+    if (e.key === 'Escape') {
       setLocalValue(originalValue)
       setIsEditing(false)
     }
-  }, [save, originalValue])
+  }, [originalValue])
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault()
+    save()
+  }, [save])
 
   if (isSaving) {
     return (
@@ -71,16 +74,16 @@ export function InlineTextEditor({
 
   if (isEditing) {
     return (
-      <div className="min-w-32" onClick={(e) => e.stopPropagation()}>
+      <form ref={formRef} className="min-w-32" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
         <Input
           ref={inputRef}
           value={localValue}
           onChange={(e) => setLocalValue(e.target.value)}
-          onBlur={save}
+          onBlur={() => formRef.current?.requestSubmit()}
           onKeyDown={handleKeyDown}
           className="h-8"
         />
-      </div>
+      </form>
     )
   }
 
