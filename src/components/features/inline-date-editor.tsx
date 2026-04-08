@@ -15,6 +15,7 @@ type Props = {
   onSave: (iso: string) => Promise<void>
   allowNull?: boolean
   nullLabel?: string
+  readOnly?: boolean
 }
 
 export function InlineDateEditor({
@@ -22,6 +23,7 @@ export function InlineDateEditor({
   onSave,
   allowNull = false,
   nullLabel = '進行中',
+  readOnly = false,
 }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -31,10 +33,10 @@ export function InlineDateEditor({
   const originalValue = value
 
   const handleClick = useCallback(() => {
-    if (isSaving) return
+    if (isSaving || readOnly) return
     setLocalValue(value ? new Date(value) : undefined)
     setIsEditing(true)
-  }, [value, isSaving])
+  }, [value, isSaving, readOnly])
 
   const handleSelect = useCallback(async (date: Date | undefined) => {
     setLocalValue(date)
@@ -95,6 +97,18 @@ export function InlineDateEditor({
             />
           </PopoverContent>
         </Popover>
+      </div>
+    )
+  }
+
+  if (readOnly) {
+    return (
+      <div className="w-40 h-9 flex items-center px-4 text-sm">
+        <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+        {value
+          ? format(new Date(value), 'yyyy/MM/dd', { locale: ja })
+          : <Badge variant="default">{nullLabel}</Badge>
+        }
       </div>
     )
   }

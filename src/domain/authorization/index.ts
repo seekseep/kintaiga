@@ -94,3 +94,12 @@ export function canControlActivityInOrganization(executor: OrganizationExecutor,
   if (executor.organization.role === 'owner' || executor.organization.role === 'manager') return true
   return executor.user.id === activity.userId
 }
+
+/**
+ * 組織内で指定メンバーの稼働を閲覧できるかを判定する
+ * owner/manager は全員、worker は自分のみ
+ */
+export function canViewMemberActivitiesInOrganization(executor: OrganizationExecutor, targetUserId: string): boolean {
+  if (canActAsOrganizationManager(executor)) return true
+  return executor.user.id === targetUserId
+}

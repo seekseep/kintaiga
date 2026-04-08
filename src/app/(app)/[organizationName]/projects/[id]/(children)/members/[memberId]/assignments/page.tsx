@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation'
 import { Trash2, Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import { useOrganization } from '@/contexts/organization-context'
 import { useProjectMemberAssignments, useCreateProjectMember, useUpdateProjectMember, useDeleteProjectMember } from '@/hooks/api/project-members'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
@@ -57,6 +58,8 @@ function DeleteAssignmentButton({ assignmentId, projectId }: { assignmentId: str
 
 export default function ProjectUserAssignmentsPage() {
   const { id: projectId, memberId: userId } = useParams<{ id: string; memberId: string }>()
+  const { role: organizationRole } = useOrganization()
+  const canManage = organizationRole === 'owner' || organizationRole === 'manager'
 
   const { data: assignmentData, isLoading } = useProjectMemberAssignments({ userId, projectId })
   const assignments = assignmentData?.items ?? []
@@ -103,12 +106,14 @@ export default function ProjectUserAssignmentsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <Button variant="outline" size="sm" onClick={handleCreate} disabled={createMutation.isPending}>
-          <Plus className="mr-1 h-4 w-4" />
-          追加
-        </Button>
-      </div>
+      {canManage && (
+        <div className="flex items-center justify-end">
+          <Button variant="outline" size="sm" onClick={handleCreate} disabled={createMutation.isPending}>
+            <Plus className="mr-1 h-4 w-4" />
+            追加
+          </Button>
+        </div>
+      )}
 
       {assignments.length === 0 ? (
         <Card>
@@ -122,7 +127,7 @@ export default function ProjectUserAssignmentsPage() {
             <TableRow>
               <TableHead className="whitespace-nowrap w-0">開始日</TableHead>
               <TableHead className="whitespace-nowrap w-0">終了日</TableHead>
-              <TableHead className="w-0" />
+              {canManage && <TableHead className="w-0" />}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -132,6 +137,7 @@ export default function ProjectUserAssignmentsPage() {
                   <InlineDateEditor
                     value={assignment.startedAt}
                     onSave={(iso) => handleSave(assignment.id, 'startedAt', iso)}
+                    readOnly={!canManage}
                   />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
@@ -140,11 +146,14 @@ export default function ProjectUserAssignmentsPage() {
                     onSave={(iso) => handleSave(assignment.id, 'endedAt', iso)}
                     allowNull
                     nullLabel="未定"
+                    readOnly={!canManage}
                   />
                 </TableCell>
-                <TableCell>
-                  <DeleteAssignmentButton assignmentId={assignment.id} projectId={projectId} />
-                </TableCell>
+                {canManage && (
+                  <TableCell>
+                    <DeleteAssignmentButton assignmentId={assignment.id} projectId={projectId} />
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

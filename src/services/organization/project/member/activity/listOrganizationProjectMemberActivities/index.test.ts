@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ValidationError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
 import { listOrganizationProjectMemberActivities } from '.'
 import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../../../../testing/helpers'
 import type { DbOrTx } from '../../../../../types'
@@ -76,6 +76,17 @@ describe('listOrganizationProjectMemberActivities', () => {
       { limit: 10, offset: 0, startDate: '2024-01-01', endDate: '2024-12-31' },
     )
     expect(result).toHaveProperty('items')
+  })
+
+  it('一般ユーザーが他人の userId を指定すると ForbiddenError', async () => {
+    const db = createMockDb({ selectResult: [activityRow] })
+    await expect(
+      listOrganizationProjectMemberActivities(
+        { db: db as unknown as DbOrTx },
+        createMemberExecutor(),
+        { limit: 10, offset: 0, userId: 'someone-else' },
+      )
+    ).rejects.toThrow(ForbiddenError)
   })
 
   it('不正なパラメータは ValidationError', async () => {

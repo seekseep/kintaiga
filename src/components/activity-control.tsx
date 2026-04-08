@@ -49,9 +49,9 @@ export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function
   const { data: assignmentData } = useProjectMemberAssignments({ userId, projectId, active: true })
   const targetMinutes = assignmentData?.items[0]?.targetMinutes ?? null
 
-  const { data: ongoingData, isFetching: isFetchingOngoing, refetch: refetchOngoing } = useActivities({ userId, projectId, ongoing: true })
+  const { data: ongoingData, isFetching: isFetchingOngoing, refetch: refetchOngoing } = useActivities({ userId, projectId, ongoing: true }, { enabled: canControl })
 
-  const { data: allData, isFetching: isFetchingAll, refetch: refetchAll } = useActivities({ userId, projectId })
+  const { data: allData, isFetching: isFetchingAll, refetch: refetchAll } = useActivities({ userId, projectId }, { enabled: canControl })
 
   const isFetchingActivities = isFetchingOngoing || isFetchingAll
   const refetchActivities = () => { refetchOngoing(); refetchAll() }
@@ -95,9 +95,9 @@ export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function
       })()
     : '全期間'
 
-  const totalHours = formatHours(totalMinutes)
+  const totalHours = canControl ? formatHours(totalMinutes) : '--'
   const targetHours = targetMinutes != null ? formatHours(targetMinutes) : null
-  const isOver = targetMinutes != null && totalMinutes > targetMinutes
+  const isOver = canControl && targetMinutes != null && totalMinutes > targetMinutes
 
   return (
     <div className="space-y-1">

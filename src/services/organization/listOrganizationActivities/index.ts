@@ -1,9 +1,9 @@
 import { z } from 'zod/v4'
 import { eq, and, isNull, count as countFn, desc, gte, lte, inArray, type SQL } from 'drizzle-orm'
 import { projectActivities, projects, users } from '@db/schema'
-import { ValidationError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
-import { canActAsOrganizationManager } from '@/domain/authorization'
+import { canActAsOrganizationManager, canViewMemberActivitiesInOrganization } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../types'
 
 const ListOrganizationActivitiesParametersSchema = z.object({
@@ -36,10 +36,12 @@ export async function listOrganizationActivities(
     .where(eq(projects.organizationId, executor.organization.id))
   conditions.push(inArray(projectActivities.projectId, organizationProjects))
 
-  if (!canActAsOrganizationManager(executor)) {
-    conditions.push(eq(projectActivities.userId, executor.user.id))
-  } else if (parameters.userId) {
-    conditions.push(eq(projectActivities.userId, parameters.userId))
+  const targetUserId = parameters.userId ?? (canActAsOrganizationManager(executor) ? null : executor.user.id)
+  if (targetUserId !== null) {
+    if (!canViewMemberActivitiesInOrganization(executor, targetUserId)) {
+      throw new ForbiddenError('他のメンバーの稼働は取得できません')
+    }
+    conditions.push(eq(projectActivities.userId, targetUserId))
   }
 
   if (parameters.ongoing) {
