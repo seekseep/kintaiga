@@ -32,14 +32,6 @@ type EnrichedResult =
   | (OkResult & { duplicate: boolean })
   | Extract<BulkParseLineResult, { ok: false }>
 
-function todayLocalDate(): string {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const d = String(now.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
 function ResultRow({ result }: { result: EnrichedResult }) {
   const [expanded, setExpanded] = useState(false)
   const Chevron = expanded ? ChevronDown : ChevronRight
@@ -88,12 +80,7 @@ function ResultRow({ result }: { result: EnrichedResult }) {
       {expanded && (
         <div className="mt-2 space-y-1 pl-5 text-xs text-muted-foreground">
           <div>開始: {isoToLocalDatetimeString(result.startedAt).replace('T', ' ')}</div>
-          <div>
-            終了:{' '}
-            {result.endedAt
-              ? isoToLocalDatetimeString(result.endedAt).replace('T', ' ')
-              : '（未指定）'}
-          </div>
+          <div>終了: {isoToLocalDatetimeString(result.endedAt).replace('T', ' ')}</div>
           <div>内容: {result.note ?? '（なし）'}</div>
           {result.duplicate && (
             <div className="text-amber-600">同じ開始日時の稼働が既に存在するためスキップされます</div>
@@ -112,7 +99,6 @@ export function BulkActivityDialog({
   onOpenChange,
 }: Props) {
   const [text, setText] = useState('')
-  const [baseDate, setBaseDate] = useState(todayLocalDate)
 
   // 進捗ダイアログ
   const [progressOpen, setProgressOpen] = useState(false)
@@ -135,12 +121,12 @@ export function BulkActivityDialog({
 
   const results = useMemo<EnrichedResult[]>(() => {
     if (!text.trim()) return []
-    return parseBulkActivities(text, { baseDate }).map((r) => {
+    return parseBulkActivities(text).map((r) => {
       if (!r.ok) return r
       const duplicate = existingStartedAtSet.has(new Date(r.startedAt).getTime())
       return { ...r, duplicate }
     })
-  }, [text, baseDate, existingStartedAtSet])
+  }, [text, existingStartedAtSet])
 
   const okResults = results.filter((r): r is OkResult & { duplicate: boolean } => r.ok)
   const targetResults = okResults.filter((r) => !r.duplicate)
@@ -150,7 +136,6 @@ export function BulkActivityDialog({
   const handleClose = (value: boolean) => {
     if (!value) {
       setText('')
-      setBaseDate(todayLocalDate())
     }
     onOpenChange(value)
   }
@@ -184,7 +169,6 @@ export function BulkActivityDialog({
 
     setProgressOpen(false)
     setText('')
-    setBaseDate(todayLocalDate())
     if (failure === 0) {
       toast.success(`${success} 件追加しました`)
     } else {
@@ -205,21 +189,12 @@ export function BulkActivityDialog({
               <Input value={projectName} readOnly disabled />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bulk-base-date">基準日（時刻のみの行に使用）</Label>
-              <Input
-                id="bulk-base-date"
-                type="date"
-                value={baseDate}
-                onChange={(e) => setBaseDate(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bulk-text">テキスト</Label>
+              <Label htmlFor="bulk-text">テキスト（日時,日時,内容）</Label>
               <Textarea
                 id="bulk-text"
                 rows={8}
                 value={text}
-                placeholder={'2026/04/01 11:00 - 2026/04/01 18:00\n2026/04/02 10:00 - 2026/04/02 18:00'}
+                placeholder={'2026/04/01 11:00,2026/04/01 18:00,打ち合わせ\n2026/04/02 10:00,2026/04/02 18:00,設計レビュー'}
                 onChange={(e) => setText(e.target.value)}
               />
             </div>
