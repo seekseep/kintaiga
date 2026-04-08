@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { Formik, useFormikContext } from 'formik'
+import { BulkActivityDialog } from './bulk-activity-dialog'
 import { useCreateActivity, useUpdateActivity } from '@/hooks/api/activities'
 import { useProjectConfig } from '@/hooks/api/projects'
 import { toast } from 'sonner'
@@ -70,6 +72,7 @@ function AssignmentWarning({ assignments }: { assignments: ProjectAssignment[] }
 export function ActivityDialog(props: Props) {
   const { projectId, projectName, open, onOpenChange } = props
   const { data: config } = useProjectConfig(projectId)
+  const [bulkOpen, setBulkOpen] = useState(false)
 
   const createMutation = useCreateActivity()
   const updateMutation = useUpdateActivity()
@@ -138,6 +141,7 @@ export function ActivityDialog(props: Props) {
       onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
     >
       {({ handleSubmit: formikSubmit, resetForm, setValues }) => (
+        <>
         <Dialog
           open={open}
           onOpenChange={(value) => {
@@ -161,12 +165,34 @@ export function ActivityDialog(props: Props) {
               <FormTextarea name="note" label="内容" autoFocus />
             </div>
             <DialogFooter>
+              {props.mode === 'start' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    onOpenChange(false)
+                    setBulkOpen(true)
+                  }}
+                >
+                  一括登録
+                </Button>
+              )}
               <Button onClick={() => formikSubmit()} disabled={mutation.isPending}>
                 {mutation.isPending ? labels.pending : labels.button}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        {props.mode === 'start' && (
+          <BulkActivityDialog
+            projectId={projectId}
+            projectName={projectName}
+            userId={props.userId}
+            open={bulkOpen}
+            onOpenChange={setBulkOpen}
+          />
+        )}
+        </>
       )}
     </Formik>
   )
