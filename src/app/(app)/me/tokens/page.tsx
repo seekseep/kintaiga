@@ -123,21 +123,81 @@ export default function TokensPage() {
           </Formik>
 
           {createdToken && (
-            <div className="mt-4 rounded-md border border-yellow-500/30 bg-yellow-500/5 p-4">
-              <p className="mb-2 text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                このトークンは今後表示されません。必ずコピーして安全な場所に保管してください。
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 overflow-x-auto rounded bg-muted px-3 py-2 text-sm">
-                  {createdToken}
-                </code>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleCopy(createdToken)}
-                >
-                  <CopyIcon className="h-4 w-4" />
-                </Button>
+            <div className="mt-4 space-y-4">
+              <div className="rounded-md border border-yellow-500/30 bg-yellow-500/5 p-4">
+                <p className="mb-2 text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                  このトークンは今後表示されません。必ずコピーして安全な場所に保管してください。
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 overflow-x-auto rounded bg-muted px-3 py-2 text-sm">
+                    {createdToken}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleCopy(createdToken)}
+                  >
+                    <CopyIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-md border p-4">
+                <p className="text-sm font-medium">MCP サーバー設定</p>
+
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Claude Code で追加するコマンド</p>
+                  <div className="relative">
+                    <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
+                      <code>{`claude mcp add --transport http kintaiga https://kintaiga.vercel.app/api/mcp \\\n  --header "Authorization: Bearer ${createdToken}"`}</code>
+                    </pre>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-2 top-2 h-7 w-7"
+                      onClick={() => handleCopy(`claude mcp add --transport http kintaiga https://kintaiga.vercel.app/api/mcp --header "Authorization: Bearer ${createdToken}"`)}
+                    >
+                      <CopyIcon className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground">Claude Desktop の設定ファイル（claude_desktop_config.json）</p>
+                  <div className="relative">
+                    <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
+                      <code>{JSON.stringify({
+                        mcpServers: {
+                          kintaiga: {
+                            type: 'http',
+                            url: 'https://kintaiga.vercel.app/api/mcp',
+                            headers: {
+                              Authorization: `Bearer ${createdToken}`,
+                            },
+                          },
+                        },
+                      }, null, 2)}</code>
+                    </pre>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-2 top-2 h-7 w-7"
+                      onClick={() => handleCopy(JSON.stringify({
+                        mcpServers: {
+                          kintaiga: {
+                            type: 'http',
+                            url: 'https://kintaiga.vercel.app/api/mcp',
+                            headers: {
+                              Authorization: `Bearer ${createdToken}`,
+                            },
+                          },
+                        },
+                      }, null, 2))}
+                    >
+                      <CopyIcon className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
