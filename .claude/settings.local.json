@@ -75,7 +75,10 @@
       "Bash(echo \"SELECT id, name FROM projects WHERE id::text LIKE ''''97d77275%'''';\")",
       "Bash(echo \"SELECT o.name as org_name, p.id as project_id, p.name FROM projects p JOIN organizations o ON o.id = p.organization_id WHERE p.id = ''''97d77275-04fe-4c3d-93ad-ea9c62186020'''';\")",
       "Bash(ls -laR /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(auth\\\\\\))",
-      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/organizations/)"
+      "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/organizations/)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/me/tokens/)",
+      "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/me/)",
+      "Bash(cat /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/layout.tsx)"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens",

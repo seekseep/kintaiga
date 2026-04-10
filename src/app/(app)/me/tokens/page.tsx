@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Formik } from 'formik'
 import { toast } from 'sonner'
 import { z } from 'zod/v4'
-import { KeyIcon, CopyIcon, Trash2Icon } from 'lucide-react'
+import { KeyIcon, CopyIcon, Trash2Icon, ServerIcon, ChevronRightIcon } from 'lucide-react'
 import { useMyTokens, useCreateMyToken, useRevokeMyToken } from '@/hooks/api/me'
 import { useMyOrganizations } from '@/hooks/api/organizations'
 import { zodValidate } from '@/lib/form/zod-adapter'
@@ -73,6 +73,18 @@ export default function TokensPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      <Link
+        href="/me/mcp"
+        className="flex items-center gap-3 rounded-md border px-4 py-3 hover:bg-muted/50 transition-colors"
+      >
+        <ServerIcon className="h-5 w-5 text-muted-foreground" />
+        <div className="flex-1">
+          <div>MCPサーバーとして利用する</div>
+          <div className="text-sm text-muted-foreground">Claude などの MCP クライアントからの接続方法</div>
+        </div>
+        <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+      </Link>
 
       <Card>
         <CardHeader>
