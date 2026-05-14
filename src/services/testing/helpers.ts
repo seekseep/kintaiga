@@ -102,12 +102,20 @@ function createChain(resolvedValue: unknown) {
 
 export function createMockDb(overrides?: {
   selectResult?: unknown
+  selectResults?: unknown[]
   insertResult?: unknown
   updateResult?: unknown
   deleteResult?: unknown
 }) {
+  const queue = overrides?.selectResults ? [...overrides.selectResults] : null
   return {
-    select: vi.fn(() => createChain(overrides?.selectResult ?? [])),
+    select: vi.fn(() =>
+      createChain(
+        queue !== null
+          ? (queue.length > 0 ? queue.shift() : [])
+          : (overrides?.selectResult ?? []),
+      ),
+    ),
     insert: vi.fn(() => createChain(overrides?.insertResult ?? [])),
     update: vi.fn(() => createChain(overrides?.updateResult ?? [])),
     delete: vi.fn(() => createChain(overrides?.deleteResult ?? [])),

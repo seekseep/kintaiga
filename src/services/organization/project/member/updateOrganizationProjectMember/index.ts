@@ -1,8 +1,9 @@
 import { z } from 'zod/v4'
-import { eq } from 'drizzle-orm'
+import { and, eq, ne } from 'drizzle-orm'
 import { projectAssignments } from '@db/schema'
-import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/errors'
+import { ValidationError, NotFoundError, ForbiddenError, ConflictError } from '@/lib/errors'
 import { canActAsOrganizationManager } from '@/domain/authorization'
+import { periodsOverlap } from '@/domain/project/member/period'
 import type { DbOrTx, OrganizationExecutor } from '../../../../types'
 
 export const UpdateOrganizationProjectMemberParametersSchema = z.object({
@@ -26,12 +27,40 @@ export async function updateOrganizationProjectMember(
   const parameters = result.data
 
   const { db } = dependencies
+
+  const [current] = await db.select().from(projectAssignments).where(eq(projectAssignments.id, parameters.id))
+  if (!current) throw new NotFoundError()
+
+  const nextStartedAt = parameters.startedAt !== undefined
+    ? new Date(parameters.startedAt)
+    : current.startedAt
+  const nextEndedAt = parameters.endedAt !== undefined
+    ? (parameters.endedAt ? new Date(parameters.endedAt) : null)
+    : current.endedAt
+
+  if (parameters.startedAt !== undefined || parameters.endedAt !== undefined) {
+    const siblings = await db.select().from(projectAssignments).where(and(
+      eq(projectAssignments.projectId, current.projectId),
+      eq(projectAssignments.userId, current.userId),
+      ne(projectAssignments.id, current.id),
+    ))
+    const overlapped = siblings.find((row) =>
+      periodsOverlap(
+        { startedAt: nextStartedAt, endedAt: nextEndedAt },
+        { startedAt: row.startedAt, endedAt: row.endedAt },
+      ),
+    )
+    if (overlapped) {
+      throw new ConflictError('既存の配属期間と重複しています')
+    }
+  }
+
   const values: Record<string, unknown> = {}
   if (parameters.startedAt !== undefined) {
-    values.startedAt = new Date(parameters.startedAt)
+    values.startedAt = nextStartedAt
   }
   if (parameters.endedAt !== undefined) {
-    values.endedAt = parameters.endedAt ? new Date(parameters.endedAt) : null
+    values.endedAt = nextEndedAt
   }
   if (parameters.targetMinutes !== undefined) {
     values.targetMinutes = parameters.targetMinutes

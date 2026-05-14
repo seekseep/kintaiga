@@ -1,7 +1,9 @@
 import { z } from 'zod/v4'
+import { and, eq } from 'drizzle-orm'
 import { projectAssignments } from '@db/schema'
-import { ValidationError, ForbiddenError } from '@/lib/errors'
+import { ValidationError, ForbiddenError, ConflictError } from '@/lib/errors'
 import { canActAsOrganizationManager } from '@/domain/authorization'
+import { periodsOverlap } from '@/domain/project/member/period'
 import type { DbOrTx, OrganizationExecutor } from '../../../../types'
 
 export const AddOrganizationProjectMemberParametersSchema = z.object({
@@ -27,12 +29,24 @@ export async function addOrganizationProjectMember(
   if (!canActAsOrganizationManager(executor)) throw new ForbiddenError()
 
   const { db } = dependencies
+  const startedAt = new Date(parameters.startedAt)
   const endedAt = parameters.endedAt ? new Date(parameters.endedAt) : null
+
+  const existing = await db.select().from(projectAssignments).where(and(
+    eq(projectAssignments.projectId, parameters.projectId),
+    eq(projectAssignments.userId, parameters.userId),
+  ))
+  const overlapped = existing.find((row) =>
+    periodsOverlap({ startedAt, endedAt }, { startedAt: row.startedAt, endedAt: row.endedAt }),
+  )
+  if (overlapped) {
+    throw new ConflictError('既存の配属期間と重複しています')
+  }
 
   const [created] = await db.insert(projectAssignments).values({
     projectId: parameters.projectId,
     userId: parameters.userId,
-    startedAt: new Date(parameters.startedAt),
+    startedAt,
     endedAt,
     targetMinutes: parameters.targetMinutes,
   }).returning()

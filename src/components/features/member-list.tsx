@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, RefreshCw } from 'lucide-react'
 import type { Member } from '@/api/organization/members'
 import type { ProjectMember } from '@/schemas'
+import { combineProjectMembers } from '@/domain/project/member/combine'
 
 type Props = {
   projectId: string
@@ -94,10 +95,11 @@ export function MemberList({
   const [showAddMember, setShowAddMember] = useState(false)
   const [filter, setFilter] = useState<'active' | 'all'>('active')
 
-  const activeMembers = members.filter(m => m.active)
+  const combinedMembers = combineProjectMembers(members)
+  const activeMembers = combinedMembers.filter(m => m.active)
   const filteredMembers = filter === 'active'
     ? activeMembers
-    : members
+    : combinedMembers
 
   return (
     <section className="space-y-3">
