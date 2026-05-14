@@ -15,19 +15,19 @@ const ExportConfigurationSchema = z.object({
 })
 
 const ExportMemberSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   role: OrganizationRoleSchema,
 })
 
 const ExportProjectAssignmentSchema = z.object({
-  memberEmail: z.string().email(),
+  memberEmail: z.email(),
   startedAt: z.string(),
   endedAt: z.string().nullable(),
   targetMinutes: z.number().int().nullable(),
 })
 
 const ExportProjectActivitySchema = z.object({
-  memberEmail: z.string().email(),
+  memberEmail: z.email(),
   startedAt: z.string(),
   endedAt: z.string().nullable(),
   note: z.string().nullable(),
