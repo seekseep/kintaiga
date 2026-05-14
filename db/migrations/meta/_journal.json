@@ -113,6 +113,13 @@
       "when": 1774915600000,
       "tag": "0015_add_users_email_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1774915700000,
+      "tag": "0016_drop_personal_access_tokens",
+      "breakpoints": true
     }
   ]
 }

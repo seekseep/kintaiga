@@ -17,7 +17,6 @@ SELECT s.id::text AS user_id,
        (SELECT COUNT(*) FROM organization_assignments    WHERE user_id = s.id) AS org_assignments,
        (SELECT COUNT(*) FROM project_assignments         WHERE user_id = s.id) AS proj_assignments,
        (SELECT COUNT(*) FROM project_activities          WHERE user_id = s.id) AS activities,
-       (SELECT COUNT(*) FROM personal_access_tokens      WHERE user_id = s.id) AS pats,
        (SELECT COUNT(*) FROM reports                     WHERE user_id = s.id) AS reports
 FROM suspect s
 LEFT JOIN auth.users a ON a.id = s.id
