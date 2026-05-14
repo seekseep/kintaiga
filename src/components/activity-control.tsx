@@ -120,8 +120,12 @@ export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function
           <span className={`text-sm font-semibold tabular-nums ${isOver ? 'text-destructive' : ''}`}>
             {totalHours}
           </span>
-          <span className="text-sm text-muted-foreground">/</span>
-          <span className="text-sm tabular-nums">{targetHours ?? '--'}</span>
+          {targetHours != null && (
+            <>
+              <span className="text-sm text-muted-foreground">/</span>
+              <span className="text-sm tabular-nums">{targetHours}</span>
+            </>
+          )}
           <span className="text-xs text-muted-foreground">時間</span>
         </div>
       </div>
