@@ -9,7 +9,6 @@ import { zodValidate } from '@/lib/form/zod-adapter'
 
 const UpdateNameSchema = UpdateUserParametersSchema.omit({ id: true })
 import { toast } from 'sonner'
-import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'
@@ -26,7 +25,7 @@ export default function EditNamePage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href="/me">マイページ</Link></BreadcrumbLink>
+            <BreadcrumbLink href="/me">マイページ</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

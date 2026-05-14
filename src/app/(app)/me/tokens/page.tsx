@@ -65,7 +65,7 @@ export default function TokensPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href="/me">マイページ</Link></BreadcrumbLink>
+            <BreadcrumbLink href="/me">マイページ</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

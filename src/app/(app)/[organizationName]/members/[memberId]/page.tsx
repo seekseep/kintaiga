@@ -54,7 +54,7 @@ export default function MemberDetailPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href={`/${organizationName}/members`}>メンバー</Link></BreadcrumbLink>
+            <BreadcrumbLink href={`/${organizationName}/members`}>メンバー</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

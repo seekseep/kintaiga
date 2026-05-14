@@ -77,10 +77,6 @@ export function ActivityDialog(props: Props) {
   const createMutation = useCreateActivity()
   const updateMutation = useUpdateActivity()
 
-  const labels = props.mode === 'start'
-    ? { title: '稼働を開始', button: '開始', pending: '開始中...' }
-    : { title: '稼働を終了', button: '終了', pending: '終了中...' }
-
   const mutation = props.mode === 'start' ? createMutation : updateMutation
 
   function getInitialValues(): FormValues {
@@ -151,7 +147,7 @@ export function ActivityDialog(props: Props) {
         >
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{labels.title}</DialogTitle>
+              <DialogTitle>稼働を登録</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div className="space-y-2">
@@ -177,7 +173,7 @@ export function ActivityDialog(props: Props) {
                 </Button>
               )}
               <Button onClick={() => formikSubmit()} disabled={mutation.isPending}>
-                {mutation.isPending ? labels.pending : labels.button}
+                {mutation.isPending ? '登録中...' : '登録'}
               </Button>
             </DialogFooter>
           </DialogContent>

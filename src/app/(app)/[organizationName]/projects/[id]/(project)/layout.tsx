@@ -3,7 +3,6 @@
 import { useParams, usePathname } from 'next/navigation'
 import { useOrganization } from '@/contexts/organization-context'
 import { useProject } from '@/hooks/api/projects'
-import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProjectHeader } from '@/components/features/project-header'
@@ -49,19 +48,19 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href={`/${organizationName}/projects`}>プロジェクト</Link></BreadcrumbLink>
+            <BreadcrumbLink href={`/${organizationName}/projects`}>プロジェクト</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           {isSettings ? (
             <>
               <BreadcrumbItem>
-                <BreadcrumbLink asChild><Link href={basePath}>{project.name}</Link></BreadcrumbLink>
+                <BreadcrumbLink href={basePath}>{project.name}</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               {settingsSubPageLabel ? (
                 <>
                   <BreadcrumbItem>
-                    <BreadcrumbLink asChild><Link href={settingsPath}>設定</Link></BreadcrumbLink>
+                    <BreadcrumbLink href={settingsPath}>設定</BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>

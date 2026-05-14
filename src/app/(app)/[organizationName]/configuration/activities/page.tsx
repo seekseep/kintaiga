@@ -4,7 +4,6 @@ import { Formik } from 'formik'
 import { type Configuration } from '@/api/organization/configuration'
 import { useConfiguration, useUpdateConfiguration } from '@/hooks/api/configurations'
 import { toast } from 'sonner'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { FormSelect } from '@/components/form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -45,7 +44,7 @@ export default function WorkSettingsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild><Link href={`${orgPath}/configuration`}>設定</Link></BreadcrumbLink>
+              <BreadcrumbLink href={`${orgPath}/configuration`}>設定</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

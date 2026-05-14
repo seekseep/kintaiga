@@ -5,7 +5,6 @@ import { Formik } from 'formik'
 import { useOrganization } from '@/contexts/organization-context'
 import { useUpdateOrganization } from '@/hooks/api/organizations'
 import { toast } from 'sonner'
-import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { FormInput } from '@/components/form'
@@ -25,7 +24,7 @@ export default function EditDisplayNamePage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild><Link href={`${orgPath}/configuration`}>設定</Link></BreadcrumbLink>
+              <BreadcrumbLink href={`${orgPath}/configuration`}>設定</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

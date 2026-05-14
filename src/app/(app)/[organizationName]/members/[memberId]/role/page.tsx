@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Formik } from 'formik'
 import { useMember, useUpdateMemberRole } from '@/hooks/api/members'
@@ -41,11 +40,11 @@ export default function EditMemberRolePage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href={`/${organizationName}/members`}>メンバー</Link></BreadcrumbLink>
+            <BreadcrumbLink href={`/${organizationName}/members`}>メンバー</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href={`/${organizationName}/members/${memberId}`}>{member?.name}</Link></BreadcrumbLink>
+            <BreadcrumbLink href={`/${organizationName}/members/${memberId}`}>{member?.name}</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

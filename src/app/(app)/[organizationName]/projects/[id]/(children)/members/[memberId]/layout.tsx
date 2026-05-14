@@ -2,7 +2,6 @@
 
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useProject, useProjectMembers } from '@/hooks/api/projects'
-import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -23,11 +22,11 @@ export default function MemberLayout({ children }: { children: React.ReactNode }
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href={`/${organizationName}/projects`}>プロジェクト</Link></BreadcrumbLink>
+            <BreadcrumbLink href={`/${organizationName}/projects`}>プロジェクト</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href={`/${organizationName}/projects/${projectId}`}>{project?.name}</Link></BreadcrumbLink>
+            <BreadcrumbLink href={`/${organizationName}/projects/${projectId}`}>{project?.name}</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

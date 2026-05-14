@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import { useOrganization } from '@/contexts/organization-context'
 import { useOrganizationPath } from '@/hooks/use-organization-path'
@@ -45,7 +44,7 @@ export default function ExportOrganizationPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild><Link href={`${orgPath}/configuration`}>設定</Link></BreadcrumbLink>
+              <BreadcrumbLink href={`${orgPath}/configuration`}>設定</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

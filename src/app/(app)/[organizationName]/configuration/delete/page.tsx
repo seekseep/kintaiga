@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useOrganization } from '@/contexts/organization-context'
 import { useDeleteOrganization } from '@/hooks/api/organizations'
 import { toast } from 'sonner'
-import Link from 'next/link'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,7 +40,7 @@ export default function DeleteOrganizationPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild><Link href={`${orgPath}/configuration`}>設定</Link></BreadcrumbLink>
+              <BreadcrumbLink href={`${orgPath}/configuration`}>設定</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

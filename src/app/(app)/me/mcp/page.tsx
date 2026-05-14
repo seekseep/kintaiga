@@ -95,11 +95,11 @@ export default function McpPage() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href="/me">マイページ</Link></BreadcrumbLink>
+            <BreadcrumbLink href="/me">マイページ</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink asChild><Link href="/me/tokens">アクセストークン</Link></BreadcrumbLink>
+            <BreadcrumbLink href="/me/tokens">アクセストークン</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
