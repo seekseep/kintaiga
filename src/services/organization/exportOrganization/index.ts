@@ -8,7 +8,7 @@ import {
   projectActivities,
   users,
 } from '@db/schema'
-import { ForbiddenError, NotFoundError } from '@/lib/api-server/errors'
+import { ForbiddenError, NotFoundError } from '@/lib/errors'
 import { canActAsOrganizationManager } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../types'
 import {

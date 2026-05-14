@@ -7,7 +7,7 @@ import {
   deletedProjectActivities,
   deletedProjectAssignments,
 } from '@db/schema'
-import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError } from '@/lib/errors'
 import { canManageOrganizationMembers } from '@/domain/authorization'
 import type { Database, OrganizationExecutor } from '../../../types'
 

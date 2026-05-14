@@ -1,4 +1,14 @@
-import { api } from '@/lib/api'
+'use server'
+
+import { db } from '@/lib/db'
+import { getOrganizationExecutor } from '@/lib/server-action/auth'
+import {
+  addOrganizationProjectMember as addOrganizationProjectMemberService,
+  getOrganizationProjectMember as getOrganizationProjectMemberService,
+  listOrganizationProjectMembers as listOrganizationProjectMembersService,
+  removeOrganizationProjectMember as removeOrganizationProjectMemberService,
+  updateOrganizationProjectMember as updateOrganizationProjectMemberService,
+} from '@/services/organization/project/member'
 import type { PaginatedResponse, ProjectAssignment, ProjectMember } from '@/schemas'
 import type { ListOrganizationProjectMembersInput as ListProjectMembersInput } from '@/services/organization/project/member/listOrganizationProjectMembers'
 import type { AddOrganizationProjectMemberInput as CreateProjectMemberInput } from '@/services/organization/project/member/addOrganizationProjectMember'
@@ -13,63 +23,84 @@ export type ListOrganizationProjectMembersParameters = Partial<Omit<ListProjectM
   active?: boolean
 }
 
+type AssignmentRow = {
+  id: string
+  projectId: string
+  userId: string
+  startedAt: Date | string
+  endedAt: Date | string | null
+  targetMinutes: number | null
+  createdAt: Date | string
+}
+
+function toIso(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value
+}
+
+function toProjectAssignment(row: AssignmentRow): ProjectAssignment {
+  return {
+    id: row.id,
+    projectId: row.projectId,
+    userId: row.userId,
+    startedAt: toIso(row.startedAt),
+    endedAt: row.endedAt === null ? null : toIso(row.endedAt),
+    targetMinutes: row.targetMinutes,
+    createdAt: toIso(row.createdAt),
+  }
+}
+
 export async function listOrganizationProjectMembers(
   organizationName: string,
-  parameters: ListOrganizationProjectMembersParameters
-) {
-  const { projectId, ...rest } = parameters
-  const query: Record<string, string> = {}
-  if (rest.userId) query.userId = rest.userId
-  if (rest.active != null) query.active = String(rest.active)
-  if (rest.limit != null) query.limit = String(rest.limit)
-  if (rest.offset != null) query.offset = String(rest.offset)
-  const { data } = await api.get<PaginatedResponse<ProjectMember>>(
-    `/organizations/${organizationName}/projects/${projectId}/members`,
-    { params: query }
-  )
-  return data
+  parameters: ListOrganizationProjectMembersParameters,
+): Promise<PaginatedResponse<ProjectMember>> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const { active, ...rest } = parameters
+  const input = {
+    ...rest,
+    ...(active != null ? { active: String(active) } : {}),
+  }
+  const result = await listOrganizationProjectMembersService({ db }, executor, input)
+  return {
+    items: result.items,
+    count: result.count,
+    limit: result.limit,
+    offset: result.offset,
+  }
 }
 
 export async function getOrganizationProjectMember(
   organizationName: string,
-  projectId: string,
-  projectMemberId: string
-) {
-  const { data } = await api.get<ProjectAssignment>(
-    `/organizations/${organizationName}/projects/${projectId}/members/${projectMemberId}`
-  )
-  return data
+  _projectId: string,
+  projectMemberId: string,
+): Promise<ProjectAssignment> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const assignment = await getOrganizationProjectMemberService({ db }, executor, { id: projectMemberId })
+  return toProjectAssignment(assignment)
 }
 
 export async function createOrganizationProjectMember(
   organizationName: string,
-  body: CreateProjectMemberInput
-) {
-  const { projectId, ...rest } = body
-  const { data } = await api.post<ProjectAssignment>(
-    `/organizations/${organizationName}/projects/${projectId}/members`,
-    rest
-  )
-  return data
+  body: CreateProjectMemberInput,
+): Promise<ProjectAssignment> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const created = await addOrganizationProjectMemberService({ db }, executor, body)
+  return toProjectAssignment(created)
 }
 
 export async function updateOrganizationProjectMember(
   organizationName: string,
-  projectId: string,
-  { id: projectMemberId, ...body }: UpdateProjectMemberInput
-) {
-  const { data } = await api.patch<ProjectAssignment>(
-    `/organizations/${organizationName}/projects/${projectId}/members/${projectMemberId}`,
-    body
-  )
-  return data
+  _projectId: string,
+  input: UpdateProjectMemberInput,
+): Promise<ProjectAssignment> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const updated = await updateOrganizationProjectMemberService({ db }, executor, input)
+  return toProjectAssignment(updated)
 }
 
 export async function deleteOrganizationProjectMember(
   organizationName: string,
-  { id: projectMemberId, projectId }: DeleteProjectMemberInput & { projectId: string }
-) {
-  await api.delete(
-    `/organizations/${organizationName}/projects/${projectId}/members/${projectMemberId}`
-  )
+  { id: projectMemberId }: DeleteProjectMemberInput & { projectId: string },
+): Promise<void> {
+  const executor = await getOrganizationExecutor(organizationName)
+  await removeOrganizationProjectMemberService({ db }, executor, { id: projectMemberId })
 }

@@ -8,7 +8,7 @@ import {
   projectActivities,
   users,
 } from '@db/schema'
-import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError } from '@/lib/errors'
 import { canActAsOrganizationManager } from '@/domain/authorization'
 import { OrganizationExportPayloadSchema } from '../exportOrganization/schema'
 import type { Database, OrganizationExecutor } from '../../types'

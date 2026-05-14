@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/errors'
 import { updateOrganizationProjectConfiguration } from '.'
 import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../../../testing/helpers'
 import type { DbOrTx } from '../../../../types'

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/errors'
 import { archiveAndDeleteUser } from '.'
 import { createAdminExecutor, createGeneralExecutor } from '../../testing/helpers'
 import type { Database } from '../../types'

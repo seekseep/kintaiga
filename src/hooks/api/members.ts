@@ -4,9 +4,11 @@ import {
   getOrganizationMember,
   updateOrganizationMemberRole,
   deleteOrganizationMember,
+  addOrganizationMember,
 } from '@/api/organization/members'
+import type { AddOrganizationMemberInput } from '@/services/organization/member/addOrganizationMember'
 import type { PaginationParameters } from '@/api/types'
-import { memberKeys } from '@/lib/query-keys'
+import { memberKeys, organizationKeys } from '@/lib/query-keys'
 import { useOrganization } from '@/contexts/organization-context'
 
 export function useMembers(parameters?: PaginationParameters, options?: { enabled?: boolean }) {
@@ -27,11 +29,25 @@ export function useMember(id: string, options?: { enabled?: boolean }) {
   })
 }
 
+export function useAddMember() {
+  const { name: organizationName } = useOrganization()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: AddOrganizationMemberInput) =>
+      addOrganizationMember(organizationName, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: memberKeys.lists(organizationName) })
+      queryClient.invalidateQueries({ queryKey: organizationKeys.members(organizationName) })
+    },
+  })
+}
+
 export function useUpdateMemberRole() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, role }: { id: string; role: 'manager' | 'worker' }) => updateOrganizationMemberRole(organizationName, id, { role }),
+    mutationFn: ({ id, role }: { id: string; role: 'manager' | 'worker' }) =>
+      updateOrganizationMemberRole(organizationName, id, { role }),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: memberKeys.detail(organizationName, id) })
       queryClient.invalidateQueries({ queryKey: memberKeys.lists(organizationName) })

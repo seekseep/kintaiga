@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { projectActivities } from '@db/schema'
-import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/errors'
 import { canControlActivityInOrganization } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../../../../types'
 

@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq, and, or, isNull, gte, count as countFn } from 'drizzle-orm'
 import { projects, projectAssignments } from '@db/schema'
-import { ValidationError } from '@/lib/api-server/errors'
+import { ValidationError } from '@/lib/errors'
 import { canActAsOrganizationManager } from '@/domain/authorization'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import type { MembershipStatus } from '@/schemas'

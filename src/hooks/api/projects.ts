@@ -14,7 +14,6 @@ import {
 import type { UpdateOrganizationProjectInput as UpdateProjectInput } from '@/services/organization/project/updateOrganizationProject'
 import type { UpdateOrganizationProjectConfigurationInput as UpdateProjectConfigInput } from '@/services/organization/project/configuration/updateOrganizationProjectConfiguration'
 import type { DeleteOrganizationProjectInput as DeleteProjectInput } from '@/services/organization/project/deleteOrganizationProject'
-import { ApiError } from '@/lib/api'
 import { projectKeys } from '@/lib/query-keys'
 import { useOrganization } from '@/contexts/organization-context'
 
@@ -40,18 +39,7 @@ export function useProjectConfig(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.config(organizationName, id),
-    queryFn: async () => {
-      try {
-        return await getOrganizationProjectConfig(organizationName, id)
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) return null
-        throw err
-      }
-    },
-    retry: (failureCount, error) => {
-      if (error instanceof ApiError && error.status === 404) return false
-      return failureCount < 1
-    },
+    queryFn: () => getOrganizationProjectConfig(organizationName, id),
     ...options,
   })
 }
@@ -81,7 +69,8 @@ export function useUpdateProjectConfig() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: UpdateProjectConfigInput) => updateOrganizationProjectConfig(organizationName, input),
+    mutationFn: (input: UpdateProjectConfigInput) =>
+      updateOrganizationProjectConfig(organizationName, input),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: projectKeys.config(organizationName, id) })
     },

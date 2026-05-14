@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq, and, or, count as countFn, isNull, gte, lt, type SQL } from 'drizzle-orm'
 import { projectAssignments, users } from '@db/schema'
-import { ValidationError } from '@/lib/api-server/errors'
+import { ValidationError } from '@/lib/errors'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import type { DbOrTx, OrganizationExecutor } from '../../../../types'
 

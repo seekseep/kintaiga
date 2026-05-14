@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq, and, isNull, count as countFn, desc, gte, lte, inArray, type SQL } from 'drizzle-orm'
 import { projectActivities, projects, users } from '@db/schema'
-import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError } from '@/lib/errors'
 import { DEFAULT_LIMIT, DEFAULT_OFFSET } from '@/constants'
 import { canActAsOrganizationManager, canViewMemberActivitiesInOrganization } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../../../../types'

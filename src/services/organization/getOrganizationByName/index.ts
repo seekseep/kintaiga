@@ -1,6 +1,6 @@
 import { organizations } from '@db/schema'
 import { eq } from 'drizzle-orm'
-import { NotFoundError } from '@/lib/api-server/errors'
+import { NotFoundError } from '@/lib/errors'
 import type { DbOrTx } from '../../types'
 
 export async function getOrganizationByName(

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError } from '@/lib/errors'
 import { getOrganizationProjectConfiguration } from '.'
 import { DEFAULT_GLOBAL_CONFIG } from '@/domain/project/configuration'
 import { createOwnerExecutor, createMemberExecutor, createMockDb } from '../../../../testing/helpers'

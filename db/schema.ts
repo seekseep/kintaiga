@@ -137,22 +137,6 @@ export const deletedProjectAssignments = pgTable('deleted_project_assignments', 
   deletedBy: uuid('deleted_by').notNull(),
 })
 
-export const personalAccessTokens = pgTable('personal_access_tokens', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
-  name: varchar('name', { length: 255 }).notNull(),
-  tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
-  prefix: varchar('prefix', { length: 12 }).notNull(),
-  expiresAt: timestamp('expires_at'),
-  lastUsedAt: timestamp('last_used_at'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-}, (table) => [
-  index('pat_token_hash_idx').on(table.tokenHash),
-  index('pat_user_id_idx').on(table.userId),
-  index('pat_organization_id_idx').on(table.organizationId),
-])
-
 export const projectActivityReports = pgTable('project_activity_reports', {
   id: uuid('id').defaultRandom().primaryKey(),
   publicId: varchar('public_id', { length: 21 }).notNull().unique(),

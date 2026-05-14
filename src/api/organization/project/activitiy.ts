@@ -1,71 +1,100 @@
-import { api } from '@/lib/api'
+'use server'
+
+import { db } from '@/lib/db'
+import { getOrganizationExecutor } from '@/lib/server-action/auth'
+import {
+  createOrganizationProjectMemberActivity,
+  deleteOrganizationProjectMemberActivity,
+  getOrganizationProjectMemberActivity,
+  listOrganizationProjectMemberActivities,
+  updateOrganizationProjectMemberActivity,
+} from '@/services/organization/project/member/activity'
 import type { PaginatedResponse, ProjectActivity } from '@/schemas'
 import type { ListOrganizationProjectMemberActivitiesInput as ListActivitiesInput } from '@/services/organization/project/member/activity/listOrganizationProjectMemberActivities'
 import type { CreateOrganizationProjectMemberActivityInput as CreateActivityInput } from '@/services/organization/project/member/activity/createOrganizationProjectMemberActivity'
 import type { UpdateOrganizationProjectMemberActivityInput as UpdateActivityInput } from '@/services/organization/project/member/activity/updateOrganizationProjectMemberActivity'
-import { DeleteOrganizationProjectMemberActivityInput as DeleteActivityInput } from '@/services/organization/project/member/activity/deleteOrganizationProjectMemberActivity'
+import type { DeleteOrganizationProjectMemberActivityInput as DeleteActivityInput } from '@/services/organization/project/member/activity/deleteOrganizationProjectMemberActivity'
 
 export type { Activity, ProjectActivity } from '@/schemas'
 export type { CreateOrganizationProjectMemberActivityInput as CreateActivityInput } from '@/services/organization/project/member/activity/createOrganizationProjectMemberActivity'
 
+type ActivityRow = {
+  id: string
+  userId: string
+  projectId: string
+  startedAt: Date | string
+  endedAt: Date | string | null
+  note: string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  projectName?: string | null
+  userName?: string | null
+}
+
+function toIso(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value
+}
+
+function toProjectActivity(row: ActivityRow): ProjectActivity {
+  return {
+    id: row.id,
+    userId: row.userId,
+    projectId: row.projectId,
+    startedAt: toIso(row.startedAt),
+    endedAt: row.endedAt === null ? null : toIso(row.endedAt),
+    note: row.note,
+    createdAt: toIso(row.createdAt),
+    updatedAt: toIso(row.updatedAt),
+    projectName: row.projectName ?? undefined,
+    userName: row.userName ?? undefined,
+  }
+}
+
 export async function listOrganizationActivities(
   organizationName: string,
-  parameters?: ListActivitiesInput
-) {
-  const query: Record<string, string> = {}
-  if (parameters?.userId) query.userId = parameters.userId
-  if (parameters?.ongoing) query.ongoing = 'true'
-  if (parameters?.projectId) query.projectId = parameters.projectId
-  if (parameters?.startDate) query.startDate = parameters.startDate
-  if (parameters?.endDate) query.endDate = parameters.endDate
-  if (parameters?.limit != null) query.limit = String(parameters.limit)
-  if (parameters?.offset != null) query.offset = String(parameters.offset)
-  const { data } = await api.get<PaginatedResponse<ProjectActivity>>(
-    `/organizations/${organizationName}/activities`,
-    {
-      params: query
-    }
-  )
-  return data
+  parameters?: ListActivitiesInput,
+): Promise<PaginatedResponse<ProjectActivity>> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const result = await listOrganizationProjectMemberActivities({ db }, executor, parameters ?? {})
+  return {
+    items: result.items.map(toProjectActivity),
+    count: result.count,
+    limit: result.limit,
+    offset: result.offset,
+  }
 }
 
 export async function getOrganizationActivity(
   organizationName: string,
-  activityId: string
-) {
-  const { data } = await api.get<ProjectActivity>(
-    `/organizations/${organizationName}/activities/${activityId}`
-  )
-  return data
+  activityId: string,
+): Promise<ProjectActivity> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const activity = await getOrganizationProjectMemberActivity({ db }, executor, { id: activityId })
+  return toProjectActivity(activity)
 }
 
 export async function createOrganizationActivity(
   organizationName: string,
-  body: CreateActivityInput
-) {
-  const { data } = await api.post<ProjectActivity>(
-    `/organizations/${organizationName}/activities`,
-    body
-  )
-  return data
+  body: CreateActivityInput,
+): Promise<ProjectActivity> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const created = await createOrganizationProjectMemberActivity({ db }, executor, body)
+  return toProjectActivity(created)
 }
 
 export async function updateOrganizationActivity(
   organizationName: string,
-  { id: activityId , ...body }: UpdateActivityInput
-) {
-  const { data } = await api.patch<ProjectActivity>(
-    `/organizations/${organizationName}/activities/${activityId}`,
-    body
-  )
-  return data
+  input: UpdateActivityInput,
+): Promise<ProjectActivity> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const updated = await updateOrganizationProjectMemberActivity({ db }, executor, input)
+  return toProjectActivity(updated)
 }
 
 export async function deleteOrganizationActivity(
   organizationName: string,
-  { id: activityId }: DeleteActivityInput
-) {
-  await api.delete(
-    `/organizations/${organizationName}/activities/${activityId}`
-  )
+  input: DeleteActivityInput,
+): Promise<void> {
+  const executor = await getOrganizationExecutor(organizationName)
+  await deleteOrganizationProjectMemberActivity({ db }, executor, input)
 }

@@ -1,4 +1,4 @@
-import type { db } from '@/lib/api-server/db'
+import type { db } from '@/lib/db'
 import type { Role } from '@/schemas/role'
 import type { OrganizationRole } from '@/schemas/organization-role'
 import type { Plan } from '@/schemas/plan'

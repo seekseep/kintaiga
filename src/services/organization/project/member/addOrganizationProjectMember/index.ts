@@ -1,6 +1,6 @@
 import { z } from 'zod/v4'
 import { projectAssignments } from '@db/schema'
-import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError } from '@/lib/errors'
 import { canActAsOrganizationManager } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../../../types'
 

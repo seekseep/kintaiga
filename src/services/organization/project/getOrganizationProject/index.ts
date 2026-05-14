@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq, and } from 'drizzle-orm'
 import { projects } from '@db/schema'
-import { ValidationError, NotFoundError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError } from '@/lib/errors'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 
 const GetOrganizationProjectParametersSchema = z.object({

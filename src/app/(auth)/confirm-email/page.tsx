@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
+import { syncMyEmail } from '@/api/me'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function ConfirmEmailPage() {
@@ -12,7 +12,7 @@ export default function ConfirmEmailPage() {
   useEffect(() => {
     async function syncEmail() {
       try {
-        await api.post('/me/sync-email')
+        await syncMyEmail()
       } catch {
         // 同期失敗しても続行
       }

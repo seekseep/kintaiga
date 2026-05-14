@@ -17,7 +17,6 @@ export const meKeys = {
   all: ['me'] as const,
   profile: () => [...meKeys.all, 'profile'] as const,
   organizations: () => [...meKeys.all, 'organizations'] as const,
-  tokens: () => [...meKeys.all, 'tokens'] as const,
 }
 
 export const organizationKeys = {

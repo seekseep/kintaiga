@@ -8,7 +8,6 @@ import {
   projectAssignments,
   projectActivities,
   projectActivityReports,
-  personalAccessTokens,
 } from './schema'
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -69,17 +68,6 @@ export const projectActivitiesRelations = relations(projectActivities, ({ one })
 export const organizationConfigurationsRelations = relations(organizationConfigurations, ({ one }) => ({
   organization: one(organizations, {
     fields: [organizationConfigurations.organizationId],
-    references: [organizations.id],
-  }),
-}))
-
-export const personalAccessTokensRelations = relations(personalAccessTokens, ({ one }) => ({
-  user: one(users, {
-    fields: [personalAccessTokens.userId],
-    references: [users.id],
-  }),
-  organization: one(organizations, {
-    fields: [personalAccessTokens.organizationId],
     references: [organizations.id],
   }),
 }))

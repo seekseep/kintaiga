@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { ConflictError, ForbiddenError, ValidationError } from '@/lib/api-server/errors'
+import { ConflictError, ForbiddenError, ValidationError } from '@/lib/errors'
 import { createUser } from '.'
 import { createUserExecutor, createMockDb } from '../../testing/helpers'
 import type { DbOrTx } from '../../types'

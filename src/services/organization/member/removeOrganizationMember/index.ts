@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { organizationAssignments } from '@db/schema'
 import { eq, and } from 'drizzle-orm'
-import { ValidationError, ForbiddenError, NotFoundError, BadRequestError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError, NotFoundError, BadRequestError } from '@/lib/errors'
 import { canManageOrganizationMembers } from '@/domain/authorization'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 

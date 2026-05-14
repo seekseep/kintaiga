@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { users } from '@db/schema'
-import { ValidationError, ConflictError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, ConflictError, ForbiddenError } from '@/lib/errors'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { DbOrTx, UserExecutor } from '../../types'
 

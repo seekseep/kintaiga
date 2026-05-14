@@ -3,7 +3,6 @@ import type { Session } from '@supabase/supabase-js'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { getMe } from '@/api/me'
-import { ApiError } from '@/lib/api'
 import type { User } from '@/schemas'
 
 export type { User }
@@ -34,20 +33,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchingRef.current = true
     try {
       const u = await getMe()
-      setUser(u)
-      setNeedsInitialization(false)
-      setError(null)
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 404) {
+      if (u) {
+        setUser(u)
+        setNeedsInitialization(false)
+      } else {
         setUser(null)
         setNeedsInitialization(true)
-        setError(null)
-      } else {
-        console.error('Failed to fetch user', e)
-        setUser(null)
-        setNeedsInitialization(false)
-        setError(e instanceof Error ? e : new Error(String(e)))
       }
+      setError(null)
+    } catch (e) {
+      console.error('Failed to fetch user', e)
+      setUser(null)
+      setNeedsInitialization(false)
+      setError(e instanceof Error ? e : new Error(String(e)))
     } finally {
       fetchingRef.current = false
     }

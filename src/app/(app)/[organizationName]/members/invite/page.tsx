@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/lib/api'
+import { addOrganizationMember } from '@/api/organization/members'
 import { memberKeys } from '@/lib/query-keys'
 import { organizationKeys } from '@/lib/query-keys'
 import { toast } from 'sonner'
@@ -20,10 +20,7 @@ export default function InviteMemberPage() {
   const [email, setEmail] = useState('')
 
   const mutation = useMutation({
-    mutationFn: async () => {
-      const r = await api.post(`/organizations/${organizationName}/members`, { email })
-      return r.data
-    },
+    mutationFn: () => addOrganizationMember(organizationName, { email }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: memberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: organizationKeys.members(organizationName) })

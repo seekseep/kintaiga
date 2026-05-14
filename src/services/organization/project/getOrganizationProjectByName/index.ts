@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { projects } from '@db/schema'
-import { NotFoundError } from '@/lib/api-server/errors'
+import { NotFoundError } from '@/lib/errors'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 
 export async function getOrganizationProjectByName(

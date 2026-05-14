@@ -26,7 +26,8 @@ export function useCreateProjectMember() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateProjectMemberInput) => createOrganizationProjectMember(organizationName, body),
+    mutationFn: (body: CreateProjectMemberInput) =>
+      createOrganizationProjectMember(organizationName, body),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })

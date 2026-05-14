@@ -22,7 +22,8 @@ export function useUpdateConfiguration() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: UpdateConfigurationInput) => updateOrganizationConfiguration(organizationName, body),
+    mutationFn: (body: UpdateConfigurationInput) =>
+      updateOrganizationConfiguration(organizationName, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: configurationKeys.all(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.all(organizationName) })

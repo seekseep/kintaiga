@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ValidationError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, ForbiddenError } from '@/lib/errors'
 import { importOrganization } from './'
 import { createMockDb, createManagerExecutor, createMemberExecutor } from '../../testing/helpers'
 import type { Database } from '../../types'

@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq, and } from 'drizzle-orm'
 import { projects } from '@db/schema'
-import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/errors'
 import { canManageOrganizationProjects } from '@/domain/authorization'
 import { RoundingDirectionSchema } from '@/schemas/rounding-direction'
 import { AggregationUnitSchema } from '@/schemas/aggregation-unit'

@@ -1,7 +1,19 @@
-import { api } from '@/lib/api'
+'use server'
+
+import { db } from '@/lib/db'
+import { getUserExecutor, getOrganizationExecutor } from '@/lib/server-action/auth'
+import { listMyOrganizations as listMyOrganizationsService } from '@/services/me'
+import {
+  checkOrganizationName as checkOrganizationNameService,
+  createOrganization as createOrganizationService,
+  deleteOrganization as deleteOrganizationService,
+  getOrganizationByName,
+  listOrganizationMembers as listOrganizationMembersService,
+  updateOrganization as updateOrganizationService,
+} from '@/services/organization'
+import type { CreateOrganizationInput } from '@/services/organization/createOrganization'
 import type { OrganizationRole } from '@/schemas/organization-role'
 import type { Plan } from '@/schemas/plan'
-import type { CreateOrganizationInput } from '@/services/organization/createOrganization'
 
 export interface Organization {
   id: string
@@ -41,65 +53,84 @@ export interface CheckNameResult {
   reason: string | null
 }
 
-export async function getOrganization(
-  organizationName: string
-) {
-  const { data } = await api.get<OrganizationDetail>(
-    `/organizations/${organizationName}`
-  )
-  return data
+function toIsoDate(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value
 }
 
-export async function listMyOrganizations() {
-  const { data } = await api.get<{ items: OrganizationMembership[] }>(
-    '/me/organizations'
-  )
-  return data
+export async function getOrganization(organizationName: string): Promise<OrganizationDetail> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const organization = await getOrganizationByName({ db }, organizationName)
+  return {
+    organizationId: executor.organization.id,
+    organizationDisplayName: organization.displayName ?? '',
+    organizationRole: executor.organization.role,
+    organizationPlan: executor.organization.plan,
+  }
 }
 
-export async function createOrganization(
-  body: CreateOrganizationInput
-) {
-  const { data } = await api.post<Organization>(
-    '/organizations',
-    body
-  )
-  return data
+export async function listMyOrganizations(): Promise<{ items: OrganizationMembership[] }> {
+  const executor = await getUserExecutor()
+  const result = await listMyOrganizationsService({ db }, executor)
+  const items: OrganizationMembership[] = result.items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    displayName: item.displayName,
+    plan: item.plan,
+    organizationRole: item.organizationRole,
+    createdAt: toIsoDate(item.createdAt),
+  }))
+  return { items }
+}
+
+export async function createOrganization(body: CreateOrganizationInput): Promise<Organization> {
+  const executor = await getUserExecutor()
+  const created = await createOrganizationService({ db }, executor, body)
+  return {
+    id: created.id,
+    name: created.name,
+    displayName: created.displayName ?? '',
+    plan: created.plan,
+    createdAt: toIsoDate(created.createdAt),
+  }
 }
 
 export async function updateOrganization(
   organizationName: string,
-  body: { name?: string; displayName?: string }
-) {
-  const { data } = await api.patch<Organization>(
-    `/organizations/${organizationName}`,
-    body
-  )
-  return data
+  body: { name?: string; displayName?: string },
+): Promise<Organization> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const updated = await updateOrganizationService({ db }, executor, body)
+  return {
+    id: updated.id,
+    name: updated.name,
+    displayName: updated.displayName ?? '',
+    plan: updated.plan,
+    createdAt: toIsoDate(updated.createdAt),
+  }
 }
 
-export async function deleteOrganization(
-  organizationName: string
-) {
-  await api.delete(
-    `/organizations/${organizationName}`
-  )
+export async function deleteOrganization(organizationName: string): Promise<void> {
+  const executor = await getOrganizationExecutor(organizationName)
+  await deleteOrganizationService({ db }, executor)
 }
 
-export async function checkOrganizationName(
-  name: string
-) {
-  const { data } = await api.get<CheckNameResult>(
-    `/organizations/check-name?name=${encodeURIComponent(name)}`
-  )
-  return data
+export async function checkOrganizationName(name: string): Promise<CheckNameResult> {
+  await getUserExecutor()
+  return checkOrganizationNameService({ db }, name)
 }
 
 export async function listOrganizationMembers(
-  organizationName: string
-) {
-  const { data } = await api.get<{ items: OrganizationMember[] }>(
-    `/organizations/${organizationName}/members`
-  )
-  return data
+  organizationName: string,
+): Promise<{ items: OrganizationMember[] }> {
+  const executor = await getOrganizationExecutor(organizationName)
+  const result = await listOrganizationMembersService({ db }, executor)
+  const items: OrganizationMember[] = result.items.map((m) => ({
+    id: m.id,
+    userId: m.userId,
+    organizationRole: m.organizationRole,
+    createdAt: toIsoDate(m.createdAt),
+    userName: m.name,
+    userIconUrl: m.iconUrl,
+  }))
+  return { items }
 }

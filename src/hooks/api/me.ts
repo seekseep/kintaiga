@@ -9,12 +9,6 @@ import {
   type UpdateMeBody,
   type UploadMyIconBody,
 } from '@/api/me'
-import {
-  listMyTokens,
-  createMyToken,
-  revokeMyToken,
-  type CreateMyTokenInput,
-} from '@/api/me/tokens'
 import { meKeys } from '@/lib/query-keys'
 
 export function useMe(options?: { enabled?: boolean }) {
@@ -63,33 +57,6 @@ export function useWithdrawMe() {
     mutationFn: () => withdrawMe(),
     onSuccess: () => {
       queryClient.clear()
-    },
-  })
-}
-
-export function useMyTokens() {
-  return useQuery({
-    queryKey: meKeys.tokens(),
-    queryFn: listMyTokens,
-  })
-}
-
-export function useCreateMyToken() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (body: CreateMyTokenInput) => createMyToken(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: meKeys.tokens() })
-    },
-  })
-}
-
-export function useRevokeMyToken() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) => revokeMyToken(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: meKeys.tokens() })
     },
   })
 }

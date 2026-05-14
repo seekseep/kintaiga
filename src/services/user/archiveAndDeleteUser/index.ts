@@ -1,7 +1,7 @@
 import { z } from 'zod/v4'
 import { eq } from 'drizzle-orm'
 import { users, projectActivities, projectAssignments, deletedUsers, deletedProjectActivities, deletedProjectAssignments } from '@db/schema'
-import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/api-server/errors'
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/errors'
 import { canModifyUser } from '@/domain/authorization'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AuthorizedExecutor, Database } from '../../types'
