@@ -78,7 +78,9 @@
       "Bash(ls /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/organizations/)",
       "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/me/tokens/)",
       "Bash(ls -la /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/me/)",
-      "Bash(cat /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/layout.tsx)"
+      "Bash(cat /Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\\\\\(app\\\\\\)/layout.tsx)",
+      "Bash(find /Users/seekseep/Development/github.com/seekseep/kintaiga -path */node_modules -prune -o -type f -name *migration* -print)",
+      "Bash(cat \"/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/\\(app\\)/[organizationName]/activities/page.tsx\")"
     ],
     "additionalDirectories": [
       "/Users/seekseep/Development/github.com/seekseep/kintaiga/src/app/api/organizations/[organizationName]/tokens",

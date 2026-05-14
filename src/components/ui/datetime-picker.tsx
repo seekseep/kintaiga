@@ -8,6 +8,7 @@ import { CalendarIcon, Minus, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
+import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 type DateTimePickerProps = {
@@ -80,7 +81,30 @@ export function DateTimePicker({
 
   const displayTime = value
     ? `${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`
-    : '--:--'
+    : ''
+
+  const [timeInput, setTimeInput] = React.useState(displayTime)
+
+  React.useEffect(() => {
+    setTimeInput(displayTime)
+  }, [displayTime])
+
+  function commitTimeInput(text: string) {
+    const match = /^(\d{1,2}):(\d{1,2})$/.exec(text.trim())
+    if (!match) {
+      setTimeInput(displayTime)
+      return
+    }
+    const hours = Number(match[1])
+    const minutes = Number(match[2])
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      setTimeInput(displayTime)
+      return
+    }
+    const next = value ? new Date(value) : new Date()
+    next.setHours(hours, minutes, 0, 0)
+    onChange?.(next)
+  }
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -118,7 +142,21 @@ export function DateTimePicker({
             >
               <Minus className="h-3 w-3" />
             </Button>
-            <span className="text-lg font-mono min-w-16 text-center">{displayTime}</span>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={timeInput}
+              placeholder="--:--"
+              onChange={(e) => setTimeInput(e.target.value)}
+              onBlur={(e) => commitTimeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  commitTimeInput(e.currentTarget.value)
+                }
+              }}
+              className="h-8 w-20 text-center text-lg font-mono"
+            />
             <Button
               type="button"
               variant="outline"

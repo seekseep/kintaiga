@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { CopyIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
@@ -27,6 +28,25 @@ function CodeBlock({ code }: { code: string }) {
         <CopyIcon className="h-3.5 w-3.5" />
       </Button>
     </div>
+  )
+}
+
+function ToolCategory({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-medium">{title}</p>
+      <ul className="space-y-1.5">{children}</ul>
+    </div>
+  )
+}
+
+function ToolItem({ name, description, managerOnly }: { name: string; description: string; managerOnly?: boolean }) {
+  return (
+    <li className="flex items-center gap-2 text-sm">
+      <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{name}</code>
+      <span className="text-muted-foreground">{description}</span>
+      {managerOnly && <Badge variant="outline" className="text-[10px] px-1.5 py-0">manager+</Badge>}
+    </li>
   )
 }
 
@@ -172,32 +192,52 @@ export default function McpPage() {
       <Card>
         <CardHeader>
           <CardTitle>提供されるツール</CardTitle>
-          <CardDescription>MCP クライアントから呼び出せる主な操作です。</CardDescription>
+          <CardDescription>MCP クライアントから呼び出せる操作の一覧です。マネージャー以上のみ利用可能なツールがあります。</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <code className="rounded bg-muted px-1.5 py-0.5 text-xs">list_activities</code>
-              <span className="ml-2 text-muted-foreground">アクティビティ（作業記録）の一覧取得</span>
-            </li>
-            <li>
-              <code className="rounded bg-muted px-1.5 py-0.5 text-xs">create_activity</code>
-              <span className="ml-2 text-muted-foreground">アクティビティの作成</span>
-            </li>
-            <li>
-              <code className="rounded bg-muted px-1.5 py-0.5 text-xs">get_activity</code>
-              <span className="ml-2 text-muted-foreground">アクティビティの取得</span>
-            </li>
-            <li>
-              <code className="rounded bg-muted px-1.5 py-0.5 text-xs">update_activity</code>
-              <span className="ml-2 text-muted-foreground">アクティビティの更新</span>
-            </li>
-            <li>
-              <code className="rounded bg-muted px-1.5 py-0.5 text-xs">delete_activity</code>
-              <span className="ml-2 text-muted-foreground">アクティビティの削除</span>
-            </li>
-          </ul>
-          <p className="mt-4 text-xs text-muted-foreground">
+        <CardContent className="space-y-5">
+          <ToolCategory title="自分の情報">
+            <ToolItem name="get_my_info" description="ユーザーと組織の情報・ロールを取得" />
+          </ToolCategory>
+
+          <ToolCategory title="アクティビティ">
+            <ToolItem name="list_activities" description="作業記録の一覧取得" />
+            <ToolItem name="create_activity" description="作業記録の作成" />
+            <ToolItem name="get_activity" description="作業記録の詳細取得" />
+            <ToolItem name="update_activity" description="作業記録の更新" />
+            <ToolItem name="delete_activity" description="作業記録の削除" />
+          </ToolCategory>
+
+          <ToolCategory title="プロジェクト">
+            <ToolItem name="list_projects" description="プロジェクト一覧の取得" />
+            <ToolItem name="get_project" description="プロジェクトの詳細取得" />
+            <ToolItem name="create_project" description="プロジェクトの作成" managerOnly />
+            <ToolItem name="update_project" description="プロジェクトの更新" managerOnly />
+            <ToolItem name="delete_project" description="プロジェクトの削除" managerOnly />
+          </ToolCategory>
+
+          <ToolCategory title="組織メンバー">
+            <ToolItem name="list_members" description="メンバー一覧の取得" />
+            <ToolItem name="get_member" description="メンバーの詳細取得" />
+            <ToolItem name="add_member" description="メンバーの追加" managerOnly />
+            <ToolItem name="remove_member" description="メンバーの削除" managerOnly />
+          </ToolCategory>
+
+          <ToolCategory title="プロジェクトメンバー">
+            <ToolItem name="list_project_members" description="プロジェクトメンバー一覧の取得" />
+            <ToolItem name="get_project_member" description="アサイン情報の取得" />
+            <ToolItem name="add_project_member" description="プロジェクトへのメンバー追加" managerOnly />
+            <ToolItem name="update_project_member" description="アサイン情報の更新" managerOnly />
+            <ToolItem name="remove_project_member" description="プロジェクトからのメンバー削除" managerOnly />
+          </ToolCategory>
+
+          <ToolCategory title="設定">
+            <ToolItem name="get_organization_configuration" description="組織設定の取得" />
+            <ToolItem name="update_organization_configuration" description="組織設定の更新" managerOnly />
+            <ToolItem name="get_project_configuration" description="プロジェクト設定の取得" />
+            <ToolItem name="update_project_configuration" description="プロジェクト設定の更新" managerOnly />
+          </ToolCategory>
+
+          <p className="text-xs text-muted-foreground">
             アクセストークンに紐づくメンバーの権限の範囲内で操作が可能です。
           </p>
         </CardContent>
