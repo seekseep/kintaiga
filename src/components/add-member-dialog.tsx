@@ -60,7 +60,7 @@ export function AddMemberDialog({ projectId, unassignedUsers, open, onOpenChange
         })
       }}
     >
-      {({ handleSubmit, resetForm, values, setFieldValue }) => (
+      {({ handleSubmit, resetForm, values }) => (
         <Dialog
           open={open}
           onOpenChange={(value) => {
