@@ -2,14 +2,12 @@
 
 import { createContext, useContext, type ReactNode } from 'react'
 import type { OrganizationRole } from '@/schemas/organization-role'
-import type { Plan } from '@/schemas/plan'
 
 export interface OrganizationValue {
   id: string
   name: string
   displayName: string
   role: OrganizationRole
-  plan: Plan
 }
 
 const OrganizationContext = createContext<OrganizationValue | null>(null)

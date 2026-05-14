@@ -1,9 +1,8 @@
 import { z } from 'zod/v4'
 import { organizationAssignments, users } from '@db/schema'
 import { eq, and } from 'drizzle-orm'
-import { ValidationError, ForbiddenError, ConflictError, BadRequestError, NotFoundError } from '@/lib/errors'
+import { ValidationError, ForbiddenError, ConflictError, NotFoundError } from '@/lib/errors'
 import { canManageOrganizationMembers } from '@/domain/authorization'
-import { canAddMember } from '@/domain/organization/limits'
 import { OrganizationRoleSchema } from '@/schemas/organization-role'
 import type { DbOrTx, OrganizationExecutor } from '../../../types'
 
@@ -40,13 +39,6 @@ export async function addOrganizationMember(
     ))
     .limit(1)
   if (existing.length > 0) throw new ConflictError('このユーザーは既にメンバーです')
-
-  // メンバー上限チェック
-  const currentMembers = await db.select().from(organizationAssignments)
-    .where(eq(organizationAssignments.organizationId, executor.organization.id))
-  if (!canAddMember(executor.organization.plan, currentMembers.length)) {
-    throw new BadRequestError('フリープランのメンバー上限（3人）に達しています')
-  }
 
   const [created] = await db.insert(organizationAssignments).values({
     organizationId: executor.organization.id,

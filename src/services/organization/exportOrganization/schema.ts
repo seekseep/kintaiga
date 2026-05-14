@@ -1,6 +1,5 @@
 import { z } from 'zod/v4'
 import { OrganizationRoleSchema } from '@/schemas/organization-role'
-import { PlanSchema } from '@/schemas/plan'
 
 export const EXPORT_SCHEMA_VERSION = 1 as const
 
@@ -53,7 +52,6 @@ export const OrganizationExportPayloadSchema = z.object({
   }),
   organization: z.object({
     displayName: z.string(),
-    plan: PlanSchema,
   }),
   configuration: ExportConfigurationSchema,
   members: z.array(ExportMemberSchema),

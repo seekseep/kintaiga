@@ -30,7 +30,6 @@ export default function OrgLayout({ children }: { children: React.ReactNode }) {
     name: organizationName,
     displayName: organization.organizationDisplayName,
     role: organization.organizationRole,
-    plan: organization.organizationPlan,
   }
 
   return <OrganizationProvider value={value}>{children}</OrganizationProvider>

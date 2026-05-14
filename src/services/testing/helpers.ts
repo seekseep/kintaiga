@@ -24,7 +24,7 @@ export function createAdminExecutor(overrides?: {
   return {
     type: 'organization',
     user: { id: 'admin-user-id', role: 'admin', ...overrides?.user },
-    organization: { id: 'organization-1', role: 'owner', plan: 'free', ...overrides?.organization },
+    organization: { id: 'organization-1', role: 'owner', ...overrides?.organization },
   }
 }
 
@@ -35,7 +35,7 @@ export function createGeneralExecutor(overrides?: {
   return {
     type: 'organization',
     user: { id: 'general-user-id', role: 'general', ...overrides?.user },
-    organization: { id: 'organization-1', role: 'worker', plan: 'free', ...overrides?.organization },
+    organization: { id: 'organization-1', role: 'worker', ...overrides?.organization },
   }
 }
 
@@ -46,7 +46,7 @@ export function createOwnerExecutor(overrides?: {
   return {
     type: 'organization',
     user: { id: 'owner-user-id', role: 'general', ...overrides?.user },
-    organization: { id: 'organization-1', role: 'owner', plan: 'free', ...overrides?.organization },
+    organization: { id: 'organization-1', role: 'owner', ...overrides?.organization },
   }
 }
 
@@ -57,7 +57,7 @@ export function createManagerExecutor(overrides?: {
   return {
     type: 'organization',
     user: { id: 'manager-user-id', role: 'general', ...overrides?.user },
-    organization: { id: 'organization-1', role: 'manager', plan: 'free', ...overrides?.organization },
+    organization: { id: 'organization-1', role: 'manager', ...overrides?.organization },
   }
 }
 
@@ -68,7 +68,7 @@ export function createMemberExecutor(overrides?: {
   return {
     type: 'organization',
     user: { id: 'member-user-id', role: 'general', ...overrides?.user },
-    organization: { id: 'organization-1', role: 'worker', plan: 'free', ...overrides?.organization },
+    organization: { id: 'organization-1', role: 'worker', ...overrides?.organization },
   }
 }
 

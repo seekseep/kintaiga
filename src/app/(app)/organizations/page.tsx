@@ -77,9 +77,6 @@ export default function OrganizationsPage() {
                     <CardDescription className="flex items-center gap-1">
                       <RoleIcon className="h-3 w-3" />
                       {roleLabels[organization.organizationRole]}
-                      {organization.plan === 'premium' && (
-                        <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">Premium</span>
-                      )}
                     </CardDescription>
                   </div>
                 </CardHeader>

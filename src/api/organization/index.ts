@@ -13,13 +13,11 @@ import {
 } from '@/services/organization'
 import type { CreateOrganizationInput } from '@/services/organization/createOrganization'
 import type { OrganizationRole } from '@/schemas/organization-role'
-import type { Plan } from '@/schemas/plan'
 
 export interface Organization {
   id: string
   name: string
   displayName: string
-  plan: Plan
   createdAt: string
 }
 
@@ -27,7 +25,6 @@ export interface OrganizationMembership {
   id: string
   name: string
   displayName: string
-  plan: Plan
   organizationRole: OrganizationRole
   createdAt: string
 }
@@ -45,7 +42,6 @@ export interface OrganizationDetail {
   organizationId: string
   organizationDisplayName: string
   organizationRole: OrganizationRole
-  organizationPlan: Plan
 }
 
 export interface CheckNameResult {
@@ -64,7 +60,6 @@ export async function getOrganization(organizationName: string): Promise<Organiz
     organizationId: executor.organization.id,
     organizationDisplayName: organization.displayName ?? '',
     organizationRole: executor.organization.role,
-    organizationPlan: executor.organization.plan,
   }
 }
 
@@ -75,7 +70,6 @@ export async function listMyOrganizations(): Promise<{ items: OrganizationMember
     id: item.id,
     name: item.name,
     displayName: item.displayName,
-    plan: item.plan,
     organizationRole: item.organizationRole,
     createdAt: toIsoDate(item.createdAt),
   }))
@@ -89,7 +83,6 @@ export async function createOrganization(body: CreateOrganizationInput): Promise
     id: created.id,
     name: created.name,
     displayName: created.displayName ?? '',
-    plan: created.plan,
     createdAt: toIsoDate(created.createdAt),
   }
 }
@@ -104,7 +97,6 @@ export async function updateOrganization(
     id: updated.id,
     name: updated.name,
     displayName: updated.displayName ?? '',
-    plan: updated.plan,
     createdAt: toIsoDate(updated.createdAt),
   }
 }

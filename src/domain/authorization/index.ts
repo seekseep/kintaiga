@@ -72,13 +72,6 @@ export function canManageOrganizationProjects(executor: OrganizationExecutor): b
 }
 
 /**
- * レポート作成権限を判定する（owner/manager + premium）
- */
-export function canCreateReport(executor: OrganizationExecutor): boolean {
-  return canActAsOrganizationManager(executor) && executor.organization.plan === 'premium'
-}
-
-/**
  * オーナー移譲権限を判定する（owner のみ）
  */
 export function canTransferOwnership(executor: OrganizationExecutor): boolean {

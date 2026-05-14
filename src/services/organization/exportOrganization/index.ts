@@ -131,7 +131,6 @@ export async function exportOrganization(
     },
     organization: {
       displayName: organization.displayName,
-      plan: organization.plan,
     },
     configuration: {
       roundingInterval: configuration.roundingInterval,

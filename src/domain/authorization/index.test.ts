@@ -9,7 +9,6 @@ import {
   canActAsOrganizationManager,
   canManageOrganizationMembers,
   canManageOrganizationProjects,
-  canCreateReport,
   canTransferOwnership,
   canControlActivityInOrganization,
 } from '.'
@@ -73,7 +72,7 @@ function createExecutor(overrides?: {
   return {
     type: 'organization',
     user: { id: 'user-1', role: 'general', ...overrides?.user },
-    organization: { id: 'organization-1', role: 'worker', plan: 'free', ...overrides?.organization },
+    organization: { id: 'organization-1', role: 'worker', ...overrides?.organization },
   }
 }
 
@@ -138,26 +137,6 @@ describe('canManageOrganizationProjects', () => {
 
   it('member は管理不可', () => {
     expect(canManageOrganizationProjects(createExecutor({ organization: { role: 'worker' } }))).toBe(false)
-  })
-})
-
-describe('canCreateReport', () => {
-  it('premium の owner/manager は作成可能', () => {
-    expect(canCreateReport(createExecutor({ organization: { role: 'owner', plan: 'premium' } }))).toBe(true)
-    expect(canCreateReport(createExecutor({ organization: { role: 'manager', plan: 'premium' } }))).toBe(true)
-  })
-
-  it('free プランでは作成不可', () => {
-    expect(canCreateReport(createExecutor({ organization: { role: 'owner', plan: 'free' } }))).toBe(false)
-    expect(canCreateReport(createExecutor({ organization: { role: 'manager', plan: 'free' } }))).toBe(false)
-  })
-
-  it('premium でも member は作成不可', () => {
-    expect(canCreateReport(createExecutor({ organization: { role: 'worker', plan: 'premium' } }))).toBe(false)
-  })
-
-  it('system admin + premium は作成可能', () => {
-    expect(canCreateReport(createExecutor({ user: { role: 'admin' }, organization: { role: 'worker', plan: 'premium' } }))).toBe(true)
   })
 })
 

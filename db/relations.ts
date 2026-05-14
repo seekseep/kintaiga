@@ -7,14 +7,12 @@ import {
   users,
   projectAssignments,
   projectActivities,
-  projectActivityReports,
 } from './schema'
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   organizationAssignments: many(organizationAssignments),
   projects: many(projects),
   organizationConfigurations: many(organizationConfigurations),
-  projectActivityReports: many(projectActivityReports),
 }))
 
 export const organizationAssignmentsRelations = relations(organizationAssignments, ({ one }) => ({
@@ -72,13 +70,3 @@ export const organizationConfigurationsRelations = relations(organizationConfigu
   }),
 }))
 
-export const projectActivityReportsRelations = relations(projectActivityReports, ({ one }) => ({
-  organization: one(organizations, {
-    fields: [projectActivityReports.organizationId],
-    references: [organizations.id],
-  }),
-  user: one(users, {
-    fields: [projectActivityReports.userId],
-    references: [users.id],
-  }),
-}))

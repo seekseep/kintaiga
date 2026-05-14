@@ -28,13 +28,13 @@ export type ActivityControlHandle = {
 
 export const ActivityControl = forwardRef<ActivityControlHandle, Props>(function ActivityControl({ userId, projectId, projectName }, ref) {
   const { user: currentUser } = useAuth()
-  const { id: organizationId, role: organizationRole, plan } = useOrganization()
+  const { id: organizationId, role: organizationRole } = useOrganization()
   const canControl = currentUser
     ? canControlActivityInOrganization(
         {
           type: 'organization',
           user: { id: currentUser.id, role: currentUser.role },
-          organization: { id: organizationId, role: organizationRole, plan },
+          organization: { id: organizationId, role: organizationRole },
         },
         { userId },
       )

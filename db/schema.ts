@@ -1,22 +1,14 @@
-import { pgTable, uuid, varchar, text, timestamp, index, pgEnum, integer, unique, customType } from 'drizzle-orm/pg-core'
-
-const bytea = customType<{ data: Buffer }>({
-  dataType() {
-    return 'bytea'
-  },
-})
+import { pgTable, uuid, varchar, text, timestamp, index, pgEnum, integer, unique } from 'drizzle-orm/pg-core'
 
 export const roleEnum = pgEnum('role', ['admin', 'general'])
 export const roundingDirectionEnum = pgEnum('rounding_direction', ['ceil', 'floor'])
 export const aggregationUnitEnum = pgEnum('aggregation_unit', ['weekly', 'monthly', 'none'])
 export const organizationRoleEnum = pgEnum('organization_role', ['owner', 'manager', 'worker'])
-export const planEnum = pgEnum('plan', ['free', 'premium'])
 
 export const organizations = pgTable('organizations', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: varchar('name', { length: 63 }).notNull().unique(),
   displayName: varchar('display_name', { length: 255 }).notNull().default(''),
-  plan: planEnum('plan').notNull().default('free'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => [
@@ -137,19 +129,3 @@ export const deletedProjectAssignments = pgTable('deleted_project_assignments', 
   deletedBy: uuid('deleted_by').notNull(),
 })
 
-export const projectActivityReports = pgTable('project_activity_reports', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  publicId: varchar('public_id', { length: 21 }).notNull().unique(),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  name: varchar('name', { length: 255 }).notNull(),
-  startDate: timestamp('start_date').notNull(),
-  endDate: timestamp('end_date').notNull(),
-  content: bytea('content'),
-  mimeType: varchar('mime_type', { length: 255 }),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => [
-  index('project_activity_reports_public_id_idx').on(table.publicId),
-  index('project_activity_reports_organization_id_idx').on(table.organizationId),
-])

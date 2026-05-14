@@ -12,7 +12,6 @@ export async function listMyOrganizations(
     id: organizations.id,
     name: organizations.name,
     displayName: organizations.displayName,
-    plan: organizations.plan,
     organizationRole: organizationAssignments.role,
     createdAt: organizations.createdAt,
   })

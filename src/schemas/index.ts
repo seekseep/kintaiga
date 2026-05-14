@@ -10,9 +10,6 @@ export type { AggregationUnit } from './aggregation-unit'
 export { OrganizationRoleSchema } from './organization-role'
 export type { OrganizationRole } from './organization-role'
 
-export { PlanSchema } from './plan'
-export type { Plan } from './plan'
-
 export { ProjectSchema } from './project'
 export type { Project } from './project'
 

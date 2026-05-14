@@ -25,7 +25,6 @@ export async function getOrganizationExecutor(
   const [result] = await db
     .select({
       id: organizations.id,
-      plan: organizations.plan,
       memberRole: organizationAssignments.role,
     })
     .from(organizations)
@@ -51,7 +50,6 @@ export async function getOrganizationExecutor(
     organization: {
       id: result.id,
       role: result.memberRole ?? 'worker',
-      plan: result.plan,
     },
   }
 }

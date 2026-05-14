@@ -1,7 +1,6 @@
 import type { db } from '@/lib/db'
 import type { Role } from '@/schemas/role'
 import type { OrganizationRole } from '@/schemas/organization-role'
-import type { Plan } from '@/schemas/plan'
 
 export type Database = typeof db
 export type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
@@ -15,7 +14,7 @@ export type UserExecutor = {
 export type OrganizationExecutor = {
   type: 'organization'
   user: { id: string; role: Role }
-  organization: { id: string; role: OrganizationRole; plan: Plan }
+  organization: { id: string; role: OrganizationRole }
 }
 
 export type SystemExecutor = {

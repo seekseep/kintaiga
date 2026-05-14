@@ -12,7 +12,6 @@
     "db:studio": "drizzle-kit studio",
     "user:update-role": "tsx scripts/update-user-role.ts",
     "user:sync-emails": "tsx scripts/sync-user-emails.ts",
-    "organization:upgrade-plan": "tsx scripts/upgrade-org-plan.ts",
     "db:seed": "tsx scripts/seed.ts",
     "sql": "tsx scripts/sql.ts",
     "test": "vitest run",

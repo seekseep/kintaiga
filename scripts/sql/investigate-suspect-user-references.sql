@@ -16,8 +16,7 @@ SELECT s.id::text AS user_id,
        (a.id IS NOT NULL) AS in_auth,
        (SELECT COUNT(*) FROM organization_assignments    WHERE user_id = s.id) AS org_assignments,
        (SELECT COUNT(*) FROM project_assignments         WHERE user_id = s.id) AS proj_assignments,
-       (SELECT COUNT(*) FROM project_activities          WHERE user_id = s.id) AS activities,
-       (SELECT COUNT(*) FROM reports                     WHERE user_id = s.id) AS reports
+       (SELECT COUNT(*) FROM project_activities          WHERE user_id = s.id) AS activities
 FROM suspect s
 LEFT JOIN auth.users a ON a.id = s.id
 ORDER BY s.email NULLS LAST, s.id;
