@@ -90,13 +90,25 @@ export function DateTimePicker({
   }, [displayTime])
 
   function commitTimeInput(text: string) {
-    const match = /^(\d{1,2}):(\d{1,2})$/.exec(text.trim())
-    if (!match) {
+    const trimmed = text.trim()
+    let hours: number
+    let minutes: number
+    const colonMatch = /^(\d{1,2}):(\d{1,2})$/.exec(trimmed)
+    if (colonMatch) {
+      hours = Number(colonMatch[1])
+      minutes = Number(colonMatch[2])
+    } else if (/^\d{1,4}$/.test(trimmed)) {
+      if (trimmed.length <= 2) {
+        hours = Number(trimmed)
+        minutes = 0
+      } else {
+        hours = Number(trimmed.slice(0, trimmed.length - 2))
+        minutes = Number(trimmed.slice(-2))
+      }
+    } else {
       setTimeInput(displayTime)
       return
     }
-    const hours = Number(match[1])
-    const minutes = Number(match[2])
     if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
       setTimeInput(displayTime)
       return

@@ -17,6 +17,7 @@ export type BulkParseLineResult =
     }
 
 const DATETIME_RE = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})\s+(\d{1,2}):(\d{2})$/
+const TIME_RE = /^(\d{1,2}):(\d{2})$/
 
 function parseDatetime(token: string): Date | null {
   const m = token.trim().match(DATETIME_RE)
@@ -40,6 +41,23 @@ function parseDatetime(token: string): Date | null {
   return d
 }
 
+function parseTimeWithBaseDate(token: string, baseDate: Date): Date | null {
+  const m = token.trim().match(TIME_RE)
+  if (!m) return null
+  const hours = Number(m[1])
+  const minutes = Number(m[2])
+  if (hours > 23 || minutes > 59) return null
+  return new Date(
+    baseDate.getFullYear(),
+    baseDate.getMonth(),
+    baseDate.getDate(),
+    hours,
+    minutes,
+    0,
+    0,
+  )
+}
+
 function parseLine(raw: string, lineNumber: number): BulkParseLineResult {
   const parts = raw.split(',').map((p) => p.trim())
   if (parts.length < 2 || parts.length > 3) {
@@ -55,7 +73,8 @@ function parseLine(raw: string, lineNumber: number): BulkParseLineResult {
   if (!startDate) {
     return { ok: false, lineNumber, raw, error: '開始日時を認識できませんでした' }
   }
-  const endDate = parseDatetime(parts[1])
+  const endDate =
+    parseDatetime(parts[1]) ?? parseTimeWithBaseDate(parts[1], startDate)
   if (!endDate) {
     return { ok: false, lineNumber, raw, error: '終了日時を認識できませんでした' }
   }

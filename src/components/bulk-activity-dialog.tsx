@@ -150,22 +150,24 @@ export function BulkActivityDialog({
     let success = 0
     let failure = 0
     const errors: string[] = []
-    for (const r of targetResults) {
-      try {
-        await createMutation.mutateAsync({
-          projectId,
-          userId,
-          startedAt: r.startedAt,
-          endedAt: r.endedAt ?? undefined,
-          note: r.note ?? undefined,
-        })
-        success += 1
-      } catch (e) {
-        failure += 1
-        errors.push(e instanceof Error ? e.message : String(e))
-      }
-      setProgress({ done: success + failure, total: targetResults.length, failed: failure })
-    }
+    await Promise.all(
+      targetResults.map(async (r) => {
+        try {
+          await createMutation.mutateAsync({
+            projectId,
+            userId,
+            startedAt: r.startedAt,
+            endedAt: r.endedAt ?? undefined,
+            note: r.note ?? undefined,
+          })
+          success += 1
+        } catch (e) {
+          failure += 1
+          errors.push(e instanceof Error ? e.message : String(e))
+        }
+        setProgress({ done: success + failure, total: targetResults.length, failed: failure })
+      }),
+    )
 
     setProgressOpen(false)
     setText('')
@@ -194,7 +196,7 @@ export function BulkActivityDialog({
                 id="bulk-text"
                 rows={8}
                 value={text}
-                placeholder={'2026/04/01 11:00,2026/04/01 18:00,打ち合わせ\n2026/04/02 10:00,2026/04/02 18:00,設計レビュー'}
+                placeholder={'2026/04/01 11:00,2026/04/01 18:00,打ち合わせ\n2026/04/02 10:00,18:00,設計レビュー'}
                 onChange={(e) => setText(e.target.value)}
               />
             </div>

@@ -70,6 +70,26 @@ describe('parseBulkActivities', () => {
     expect(results).toHaveLength(1)
   })
 
+  it('終了日時の日付が省略されている場合は開始日を採用する', () => {
+    const results = parseBulkActivities('2026/04/01 11:00,18:00,打ち合わせ')
+    const r = results[0]
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.startedAt).toBe(localISO(2026, 4, 1, 11, 0))
+    expect(r.endedAt).toBe(localISO(2026, 4, 1, 18, 0))
+    expect(r.note).toBe('打ち合わせ')
+  })
+
+  it('終了日時の日付を省略しつつ内容も省略できる', () => {
+    const results = parseBulkActivities('2026/04/01 11:00,18:00')
+    const r = results[0]
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.startedAt).toBe(localISO(2026, 4, 1, 11, 0))
+    expect(r.endedAt).toBe(localISO(2026, 4, 1, 18, 0))
+    expect(r.note).toBeNull()
+  })
+
   it('YYYY-MM-DD 区切りも受け付ける', () => {
     const results = parseBulkActivities('2026-04-01 11:00,2026-04-01 18:00')
     const r = results[0]

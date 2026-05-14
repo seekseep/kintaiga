@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { InlineDateEditor } from '@/components/features/inline-date-editor'
+import { InlineHoursEditor } from '@/components/features/inline-hours-editor'
 
 function DeleteAssignmentButton({ assignmentId, projectId }: { assignmentId: string; projectId: string }) {
   const mutation = useDeleteProjectMember()
@@ -67,7 +68,7 @@ export default function ProjectUserAssignmentsPage() {
   const updateMutation = useUpdateProjectMember()
   const createMutation = useCreateProjectMember()
 
-  async function handleSave(assignmentId: string, field: string, value: string) {
+  async function handleSave(assignmentId: string, field: string, value: string | number | null) {
     await updateMutation.mutateAsync({
       id: assignmentId,
       [field]: value,
@@ -91,10 +92,12 @@ export default function ProjectUserAssignmentsPage() {
         <div className="flex border-b">
           <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-20" /></div>
           <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-20" /></div>
+          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-20" /></div>
           <div className="h-10 px-2 flex items-center"><Skeleton className="h-7 w-7" /></div>
         </div>
         {[1, 2, 3].map(i => (
           <div key={i} className="flex border-b last:border-0">
+            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-24" /></div>
             <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-24" /></div>
             <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-24" /></div>
             <div className="h-10 px-2 flex items-center"><Skeleton className="h-7 w-7 rounded-md" /></div>
@@ -127,31 +130,39 @@ export default function ProjectUserAssignmentsPage() {
             <TableRow>
               <TableHead className="whitespace-nowrap w-0">開始日</TableHead>
               <TableHead className="whitespace-nowrap w-0">終了日</TableHead>
+              <TableHead className="whitespace-nowrap w-0">目標時間</TableHead>
               {canManage && <TableHead className="w-0" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {assignments.map(assignment => (
-              <TableRow key={assignment.id}>
+              <TableRow key={assignment.projectAssignmentId}>
                 <TableCell className="whitespace-nowrap">
                   <InlineDateEditor
                     value={assignment.startedAt}
-                    onSave={(iso) => handleSave(assignment.id, 'startedAt', iso)}
+                    onSave={(iso) => handleSave(assignment.projectAssignmentId, 'startedAt', iso)}
                     readOnly={!canManage}
                   />
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   <InlineDateEditor
                     value={assignment.endedAt}
-                    onSave={(iso) => handleSave(assignment.id, 'endedAt', iso)}
+                    onSave={(iso) => handleSave(assignment.projectAssignmentId, 'endedAt', iso)}
                     allowNull
                     nullLabel="未定"
                     readOnly={!canManage}
                   />
                 </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  <InlineHoursEditor
+                    value={assignment.targetMinutes}
+                    onSave={(minutes) => handleSave(assignment.projectAssignmentId, 'targetMinutes', minutes)}
+                    readOnly={!canManage}
+                  />
+                </TableCell>
                 {canManage && (
                   <TableCell>
-                    <DeleteAssignmentButton assignmentId={assignment.id} projectId={projectId} />
+                    <DeleteAssignmentButton assignmentId={assignment.projectAssignmentId} projectId={projectId} />
                   </TableCell>
                 )}
               </TableRow>

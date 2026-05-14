@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog'
 import { roundDate } from '@/domain/utils/time'
 import { toLocalDatetimeString } from '@/domain/utils/date'
-import type { ProjectAssignment } from '@/schemas'
+import type { ProjectMember } from '@/schemas'
 
 type BaseProps = {
   projectId: string
@@ -31,7 +31,7 @@ type BaseProps = {
 type StartMode = BaseProps & {
   mode: 'start'
   userId?: string
-  assignments?: ProjectAssignment[]
+  assignments?: ProjectMember[]
   baseDate?: Date
 }
 
@@ -49,7 +49,7 @@ type FormValues = {
   note: string
 }
 
-function isWithinAssignments(dateStr: string, assignments: ProjectAssignment[]): boolean {
+function isWithinAssignments(dateStr: string, assignments: ProjectMember[]): boolean {
   if (assignments.length === 0) return true
   const date = new Date(dateStr)
   return assignments.some(a => {
@@ -59,7 +59,7 @@ function isWithinAssignments(dateStr: string, assignments: ProjectAssignment[]):
   })
 }
 
-function AssignmentWarning({ assignments }: { assignments: ProjectAssignment[] }) {
+function AssignmentWarning({ assignments }: { assignments: ProjectMember[] }) {
   const { values } = useFormikContext<FormValues>()
   if (!values.startedAt || assignments.length === 0) return null
   if (isWithinAssignments(values.startedAt, assignments)) return null

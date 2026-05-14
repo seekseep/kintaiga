@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { PaginatedResponse, ProjectAssignment } from '@/schemas'
+import type { PaginatedResponse, ProjectAssignment, ProjectMember } from '@/schemas'
 import type { ListOrganizationProjectMembersInput as ListProjectMembersInput } from '@/services/organization/project/member/listOrganizationProjectMembers'
 import type { AddOrganizationProjectMemberInput as CreateProjectMemberInput } from '@/services/organization/project/member/addOrganizationProjectMember'
 import type { UpdateOrganizationProjectMemberInput as UpdateProjectMemberInput } from '@/services/organization/project/member/updateOrganizationProjectMember'
@@ -23,7 +23,7 @@ export async function listOrganizationProjectMembers(
   if (rest.active != null) query.active = String(rest.active)
   if (rest.limit != null) query.limit = String(rest.limit)
   if (rest.offset != null) query.offset = String(rest.offset)
-  const { data } = await api.get<PaginatedResponse<ProjectAssignment>>(
+  const { data } = await api.get<PaginatedResponse<ProjectMember>>(
     `/organizations/${organizationName}/projects/${projectId}/members`,
     { params: query }
   )
