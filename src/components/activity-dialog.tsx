@@ -97,12 +97,12 @@ export function ActivityDialog(props: Props) {
 
   function handleSubmit(values: FormValues, resetForm: () => void) {
     const onSuccess = () => {
-      toast.success(props.mode === 'start' ? '稼働を開始しました' : '稼働を終了しました')
+      toast.success('稼働を登録しました')
       onOpenChange(false)
       resetForm()
     }
     const onError = () => {
-      toast.error(props.mode === 'start' ? '開始に失敗しました' : '終了に失敗しました')
+      toast.error('登録に失敗しました')
     }
 
     if (props.mode === 'start') {
