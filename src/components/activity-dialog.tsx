@@ -32,6 +32,7 @@ type StartMode = BaseProps & {
   mode: 'start'
   userId?: string
   assignments?: ProjectAssignment[]
+  baseDate?: Date
 }
 
 type EndMode = BaseProps & {
@@ -82,9 +83,19 @@ export function ActivityDialog(props: Props) {
   function getInitialValues(): FormValues {
     const now = new Date()
     if (props.mode === 'start') {
+      const base = props.baseDate
+        ? new Date(
+            props.baseDate.getFullYear(),
+            props.baseDate.getMonth(),
+            props.baseDate.getDate(),
+            now.getHours(),
+            now.getMinutes(),
+            0,
+          )
+        : now
       const startedAt = config
-        ? toLocalDatetimeString(roundDate(now, config.roundingInterval, 'floor'))
-        : toLocalDatetimeString(now)
+        ? toLocalDatetimeString(roundDate(base, config.roundingInterval, 'floor'))
+        : toLocalDatetimeString(base)
       return { startedAt, endedAt: '', note: '' }
     } else {
       const startedAt = toLocalDatetimeString(new Date(props.defaultStartedAt))
@@ -134,6 +145,7 @@ export function ActivityDialog(props: Props) {
   const formikTree = (
     <Formik
       initialValues={getInitialValues()}
+      enableReinitialize
       onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
     >
       {({ handleSubmit: formikSubmit, resetForm, setValues }) => (

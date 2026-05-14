@@ -1,16 +1,25 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
+import { Fragment, useMemo, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
-import { format, addMonths, addWeeks, startOfDay, endOfDay, startOfMonth, startOfWeek } from 'date-fns'
+import {
+  addMonths,
+  addWeeks,
+  eachDayOfInterval,
+  endOfDay,
+  format,
+  isSameDay,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { useProject, useProjectConfig } from '@/hooks/api/projects'
 import { useActivities, useUpdateActivity, useDeleteActivity } from '@/hooks/api/activities'
 import { useProjectMemberAssignments } from '@/hooks/api/project-members'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -31,7 +40,7 @@ import { InlineDateTimeEditor } from '@/components/features/inline-datetime-edit
 import { InlineTextEditor } from '@/components/features/inline-text-editor'
 import { ActivityDialog } from '@/components/activity-dialog'
 import { DatePicker } from '@/components/ui/date-picker'
-import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react'
+import type { ProjectActivity } from '@/api/organization/project/activitiy'
 
 type PeriodUnit = 'weekly' | 'monthly'
 
@@ -39,7 +48,6 @@ function addPeriod(date: Date, unit: PeriodUnit, count: number): Date {
   return unit === 'weekly' ? addWeeks(date, count) : addMonths(date, count)
 }
 
-/** 今日を含むカレンダー区間（月初 or 週初）を返す */
 function getCurrentPeriod(_projectCreatedAt: string, unit: PeriodUnit, period: number): { start: Date; end: Date } {
   const now = new Date()
   const base = unit === 'weekly'
@@ -50,7 +58,6 @@ function getCurrentPeriod(_projectCreatedAt: string, unit: PeriodUnit, period: n
   return { start, end }
 }
 
-/** 期間を前後にずらす */
 function shiftPeriod(current: { start: Date; end: Date }, direction: -1 | 1, unit: PeriodUnit, period: number): { start: Date; end: Date } {
   const start = addPeriod(current.start, unit, direction * period)
   const end = new Date(addPeriod(current.start, unit, (direction + 1) * period).getTime() - 1)
@@ -92,65 +99,29 @@ function DeleteButton({ activityId }: { activityId: string }) {
   )
 }
 
-function BulkDeleteButton({ selectedIds, onComplete }: { selectedIds: string[]; onComplete: () => void }) {
-  const mutation = useDeleteActivity()
-  const [isDeleting, setIsDeleting] = useState(false)
-
-  async function handleBulkDelete() {
-    setIsDeleting(true)
-    let successCount = 0
-    let errorCount = 0
-    for (const id of selectedIds) {
-      try {
-        await mutation.mutateAsync({ id })
-        successCount++
-      } catch {
-        errorCount++
-      }
-    }
-    setIsDeleting(false)
-    if (errorCount === 0) {
-      toast.success(`${successCount}件の稼働を削除しました`)
-    } else {
-      toast.error(`${errorCount}件の削除に失敗しました`)
-    }
-    onComplete()
-  }
-
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" disabled={isDeleting}>
-          <Trash2 className="h-4 w-4 mr-1" />
-          {selectedIds.length}件を削除
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{selectedIds.length}件の稼働を削除しますか？</AlertDialogTitle>
-          <AlertDialogDescription>この操作は元に戻せません。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>キャンセル</AlertDialogCancel>
-          <AlertDialogAction onClick={handleBulkDelete} disabled={isDeleting}>
-            削除
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  )
+type DayGroup = {
+  date: Date
+  activities: ProjectActivity[]
+  totalMinutes: number
 }
 
-function formatAssignmentDate(iso: string | null): string {
-  if (!iso) return '未定'
-  return format(new Date(iso), 'yyyy/MM/dd', { locale: ja })
+function groupActivitiesByDay(days: Date[], activities: ProjectActivity[]): DayGroup[] {
+  return days.map(date => {
+    const dayActivities = activities
+      .filter(a => isSameDay(new Date(a.startedAt), date))
+      .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())
+    const totalMinutes = dayActivities.reduce(
+      (sum, a) => sum + calcElapsedMinutes(a.startedAt, a.endedAt),
+      0,
+    )
+    return { date, activities: dayActivities, totalMinutes }
+  })
 }
 
 export default function ProjectUserActivitiesPage() {
   const { id: projectId, memberId: userId } = useParams<{ id: string; memberId: string }>()
-  const [startOpen, setStartOpen] = useState(false)
 
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [dialogState, setDialogState] = useState<{ open: boolean; baseDate?: Date }>({ open: false })
 
   const { data: config } = useProjectConfig(projectId)
   const { data: project } = useProject(projectId)
@@ -168,7 +139,6 @@ export default function ProjectUserActivitiesPage() {
   const [periodStart, setPeriodStart] = useState<Date | undefined>(undefined)
   const [periodEnd, setPeriodEnd] = useState<Date | undefined>(undefined)
 
-  // defaultPeriod が確定したら初期値をセット
   const effectiveStart = periodStart ?? defaultPeriod?.start
   const effectiveEnd = periodEnd ?? defaultPeriod?.end
 
@@ -188,10 +158,6 @@ export default function ProjectUserActivitiesPage() {
 
   const { data: assignmentData } = useProjectMemberAssignments({ userId, projectId })
   const allAssignments = assignmentData?.items ?? []
-  const activeAssignment = allAssignments.find(a => {
-    if (!a.endedAt) return true
-    return new Date(a.endedAt) >= new Date()
-  }) ?? null
 
   const { data: activitiesData, isLoading, isFetching, refetch } = useActivities(
     {
@@ -206,25 +172,18 @@ export default function ProjectUserActivitiesPage() {
 
   const activities = activitiesData?.items ?? []
 
-  const allSelected = activities.length > 0 && activities.every(a => selectedIds.has(a.id))
-  const someSelected = activities.some(a => selectedIds.has(a.id))
-
-  function toggleAll(checked: boolean) {
-    if (checked) {
-      setSelectedIds(new Set(activities.map(a => a.id)))
-    } else {
-      setSelectedIds(new Set())
+  const days = useMemo(() => {
+    if (effectiveStart && effectiveEnd) {
+      return eachDayOfInterval({ start: startOfDay(effectiveStart), end: endOfDay(effectiveEnd) })
     }
-  }
+    if (activities.length === 0) return []
+    const times = activities.map(a => new Date(a.startedAt).getTime())
+    const min = new Date(Math.min(...times))
+    const max = new Date(Math.max(...times))
+    return eachDayOfInterval({ start: startOfDay(min), end: endOfDay(max) })
+  }, [effectiveStart, effectiveEnd, activities])
 
-  function toggleOne(id: string, checked: boolean) {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (checked) next.add(id)
-      else next.delete(id)
-      return next
-    })
-  }
+  const dayGroups = useMemo(() => groupActivitiesByDay(days, activities), [days, activities])
 
   const totalMinutes = useMemo(
     () => activities.reduce((sum, a) => sum + calcElapsedMinutes(a.startedAt, a.endedAt), 0),
@@ -237,35 +196,30 @@ export default function ProjectUserActivitiesPage() {
     await updateMutation.mutateAsync({ id: activityId, [field]: value })
   }
 
+  function openAddDialog(date: Date) {
+    setDialogState({ open: true, baseDate: date })
+  }
+
   if (isLoading || config === undefined || project === undefined) return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Skeleton className="h-9 w-64" />
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-9 rounded-md" />
-          <Skeleton className="h-9 w-28 rounded-md" />
-        </div>
+        <Skeleton className="h-9 w-9 rounded-md" />
       </div>
-      <div className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
-        <div className="flex border-b">
-          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-4" /></div>
-          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-24" /></div>
-          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-24" /></div>
-          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-20" /></div>
-          <div className="h-10 px-2 flex-1 flex items-center"><Skeleton className="h-4 w-16" /></div>
-          <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-7" /></div>
-        </div>
-        {[1, 2, 3, 4, 5].map(i => (
-          <div key={i} className="flex border-b last:border-0">
-            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-4" /></div>
-            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-28" /></div>
-            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-28" /></div>
-            <div className="h-10 px-2 flex items-center"><Skeleton className="h-4 w-16" /></div>
-            <div className="h-10 px-2 flex-1 flex items-center"><Skeleton className="h-4 w-full" /></div>
-            <div className="h-10 px-2 flex items-center"><Skeleton className="h-7 w-7 rounded-md" /></div>
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
+          <div className="h-10 px-3 flex items-center justify-between bg-muted/40">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-7 w-20 rounded-md" />
           </div>
-        ))}
-      </div>
+          <div className="h-12 px-3 flex items-center gap-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 flex-1" />
+          </div>
+        </div>
+      ))}
     </div>
   )
 
@@ -300,42 +254,20 @@ export default function ProjectUserActivitiesPage() {
           <Button variant="ghost" size="icon" onClick={() => refetch()} disabled={isFetching}>
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setStartOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" />
-            稼働を追加
-          </Button>
         </div>
       </div>
 
-      {activities.length === 0 ? (
+      {dayGroups.length === 0 ? (
         <Card>
           <CardContent className="py-6 text-center text-muted-foreground">
-            稼働がありません
+            表示する日付がありません
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
-          {selectedIds.size > 0 && (
-            <div className="flex items-center gap-2">
-              <BulkDeleteButton
-                selectedIds={Array.from(selectedIds)}
-                onComplete={() => setSelectedIds(new Set())}
-              />
-              <span className="text-sm text-muted-foreground">
-                {selectedIds.size}件選択中
-              </span>
-            </div>
-          )}
+        <div className="rounded-xl ring-1 ring-foreground/10 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-0">
-                  <Checkbox
-                    checked={allSelected || (someSelected && 'indeterminate')}
-                    onCheckedChange={(value) => toggleAll(!!value)}
-                    aria-label="すべて選択"
-                  />
-                </TableHead>
                 <TableHead className="whitespace-nowrap w-0">開始</TableHead>
                 <TableHead className="whitespace-nowrap w-0">終了</TableHead>
                 <TableHead className="whitespace-nowrap w-0">経過時間</TableHead>
@@ -344,46 +276,74 @@ export default function ProjectUserActivitiesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activities.map(activity => (
-                <TableRow key={activity.id} data-state={selectedIds.has(activity.id) && 'selected'}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedIds.has(activity.id)}
-                      onCheckedChange={(value) => toggleOne(activity.id, !!value)}
-                      aria-label="行を選択"
-                    />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <InlineDateTimeEditor
-                      value={activity.startedAt}
-                      onSave={(iso) => handleSave(activity.id, 'startedAt', iso)}
-                      minuteStep={minuteStep}
-                      roundingDirection={roundingDirection}
-                    />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <InlineDateTimeEditor
-                      value={activity.endedAt}
-                      onSave={(iso) => handleSave(activity.id, 'endedAt', iso)}
-                      allowNull
-                      nullLabel="進行中"
-                      minuteStep={minuteStep}
-                      roundingDirection={roundingDirection}
-                    />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <ElapsedTime startedAt={activity.startedAt} endedAt={activity.endedAt} />
-                  </TableCell>
-                  <TableCell>
-                    <InlineTextEditor
-                      value={activity.note}
-                      onSave={(text) => handleSave(activity.id, 'note', text)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <DeleteButton activityId={activity.id} />
-                  </TableCell>
-                </TableRow>
+              {dayGroups.map(group => (
+                <Fragment key={group.date.toISOString()}>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableCell colSpan={4} className="font-medium">
+                      <div className="flex items-center gap-3">
+                        <span>{format(group.date, 'yyyy/MM/dd (E)', { locale: ja })}</span>
+                        {group.totalMinutes > 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatMinutes(group.totalMinutes)}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => openAddDialog(group.date)}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        追加
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  {group.activities.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="py-2 text-center text-xs text-muted-foreground">
+                        稼働なし
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    group.activities.map(activity => (
+                      <TableRow key={activity.id}>
+                        <TableCell className="whitespace-nowrap">
+                          <InlineDateTimeEditor
+                            value={activity.startedAt}
+                            onSave={(iso) => handleSave(activity.id, 'startedAt', iso)}
+                            minuteStep={minuteStep}
+                            roundingDirection={roundingDirection}
+                          />
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <InlineDateTimeEditor
+                            value={activity.endedAt}
+                            onSave={(iso) => handleSave(activity.id, 'endedAt', iso)}
+                            allowNull
+                            nullLabel="進行中"
+                            minuteStep={minuteStep}
+                            roundingDirection={roundingDirection}
+                          />
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          <ElapsedTime startedAt={activity.startedAt} endedAt={activity.endedAt} />
+                        </TableCell>
+                        <TableCell>
+                          <InlineTextEditor
+                            value={activity.note}
+                            onSave={(text) => handleSave(activity.id, 'note', text)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <DeleteButton activityId={activity.id} />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </Fragment>
               ))}
             </TableBody>
           </Table>
@@ -395,9 +355,10 @@ export default function ProjectUserActivitiesPage() {
         projectId={projectId}
         projectName={project?.name ?? ''}
         userId={userId}
-        open={startOpen}
-        onOpenChange={setStartOpen}
+        open={dialogState.open}
+        onOpenChange={(open) => setDialogState(prev => ({ ...prev, open }))}
         assignments={allAssignments}
+        baseDate={dialogState.baseDate}
       />
     </div>
   )
