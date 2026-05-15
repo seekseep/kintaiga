@@ -1,24 +1,22 @@
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
+import { getWebRequest } from '@tanstack/react-start/server'
+import { createServerClient, parseCookieHeader } from '@supabase/ssr'
 
 export async function getServerSupabase() {
-  const cookieStore = await cookies()
+  const request = getWebRequest()
+  const cookieHeader = request?.headers.get('Cookie') ?? ''
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return parseCookieHeader(cookieHeader).map(({ name, value }) => ({
+            name,
+            value: value ?? '',
+          }))
         },
-        setAll(cookiesToSet) {
-          try {
-            for (const { name, value, options } of cookiesToSet) {
-              cookieStore.set(name, value, options)
-            }
-          } catch {
-            // Server Components からの呼び出しでは set できないが、middleware で refresh される
-          }
+        setAll() {
+          // Server Action 内ではレスポンスの set-cookie はできない (TanStack Start middleware で扱う)
         },
       },
     },
