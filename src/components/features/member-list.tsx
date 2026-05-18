@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { Link, useParams } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -31,7 +30,7 @@ function MemberCard({
   projectId: string
   projectName: string
 }) {
-  const params = useParams<{ organizationName: string }>()
+  const params = useParams({ strict: false }) as { organizationName: string }
   const organizationName = params.organizationName
   const activityRef = useRef<ActivityControlHandle>(null)
   const [isFetching, setIsFetching] = useState(false)
@@ -46,7 +45,7 @@ function MemberCard({
     <Card>
       <CardHeader className="py-3">
         <div className="flex items-center justify-between">
-          <Link href={`/${organizationName}/projects/${projectId}/members/${member.userId}/activities`} className="flex items-center gap-3 no-underline">
+          <Link to={`/${organizationName}/projects/${projectId}/members/${member.userId}/activities`} className="flex items-center gap-3 no-underline">
             <Avatar className="h-8 w-8">
               <AvatarImage src={member.iconUrl ?? undefined} />
               <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>

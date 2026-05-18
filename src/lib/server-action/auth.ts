@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '@/lib/errors'
 import type { Role } from '@/schemas/role'
 import type { OrganizationExecutor, UserExecutor } from '@/services/types'
-import { getServerSupabase } from './supabase'
+import { getServerSupabase } from './supabase.server'
 
 export async function getUserExecutor(): Promise<UserExecutor> {
   const supabase = await getServerSupabase()

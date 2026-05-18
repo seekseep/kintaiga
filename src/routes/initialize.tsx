@@ -1,0 +1,80 @@
+import { useEffect } from 'react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Formik } from 'formik'
+import { toast } from 'sonner'
+import { useAuth } from '@/hooks/use-auth'
+import { useRegisterMe } from '@/hooks/api/me'
+import { CreateUserParametersSchema } from '@/services/user/createUser'
+import { zodValidate } from '@/lib/form/zod-adapter'
+import { Button } from '@/components/ui/button'
+import { FormInput } from '@/components/form'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+
+const RegisterFormSchema = CreateUserParametersSchema.omit({ userId: true })
+
+export const Route = createFileRoute('/initialize')({
+  component: InitializePage,
+})
+
+function InitializePage() {
+  const navigate = useNavigate()
+  const { session, isLoading, needsInitialization, refreshUser } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading && !session) {
+      navigate({ to: '/login', replace: true })
+    }
+  }, [isLoading, session, navigate])
+
+  useEffect(() => {
+    if (!isLoading && session && !needsInitialization) {
+      navigate({ to: '/', replace: true })
+    }
+  }, [isLoading, session, needsInitialization, navigate])
+
+  const mutation = useRegisterMe()
+
+  if (isLoading || !session || !needsInitialization) {
+    return (
+      <div className="flex min-h-svh items-center justify-center">
+        <img src="/favicon.png" alt="キンタイガ" className="animate-pulse h-24 w-24" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-svh items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">キンタイガ</CardTitle>
+          <CardDescription>はじめに表示名を設定してください。</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Formik
+            initialValues={{ name: '' }}
+            validate={zodValidate(RegisterFormSchema)}
+            onSubmit={(values) =>
+              mutation.mutate(values, {
+                onSuccess: async () => {
+                  await refreshUser()
+                  toast.success('プロフィールを設定しました')
+                  navigate({ to: '/' })
+                },
+                onError: () => toast.error('設定に失敗しました'),
+              })
+            }
+          >
+            {({ handleSubmit }) => (
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmit() }} className="space-y-4">
+                <FormInput name="name" label="名前" />
+                <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                  {mutation.isPending ? '設定中...' : '設定する'}
+                </Button>
+              </form>
+            )}
+          </Formik>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

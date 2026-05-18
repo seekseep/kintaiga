@@ -9,6 +9,9 @@ lerna-debug.log*
 
 node_modules
 .next
+dist
+.output
+.tanstack
 
 # Editor directories and files
 .vscode/*

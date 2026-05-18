@@ -17,11 +17,14 @@ import type { DeleteOrganizationProjectInput as DeleteProjectInput } from '@/ser
 import { projectKeys } from '@/lib/query-keys'
 import { useOrganization } from '@/contexts/organization-context'
 
-export function useUserProjectStatements(parameters?: GetOrganizationUserProjectStatementsParameters, options?: { enabled?: boolean }) {
+export function useUserProjectStatements(
+  parameters?: GetOrganizationUserProjectStatementsParameters,
+  options?: { enabled?: boolean },
+) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.statement(organizationName, parameters),
-    queryFn: () => listOrganizationUserProjectStatements(organizationName, parameters),
+    queryFn: () => listOrganizationUserProjectStatements({ organizationName, parameters }),
     ...options,
   })
 }
@@ -30,7 +33,7 @@ export function useProject(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.detail(organizationName, id),
-    queryFn: () => getOrganizationProject(organizationName, id),
+    queryFn: () => getOrganizationProject({ organizationName, projectId: id }),
     ...options,
   })
 }
@@ -39,7 +42,7 @@ export function useProjectConfig(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.config(organizationName, id),
-    queryFn: () => getOrganizationProjectConfig(organizationName, id),
+    queryFn: () => getOrganizationProjectConfig({ organizationName, projectId: id }),
     ...options,
   })
 }
@@ -48,7 +51,7 @@ export function useProjectMembers(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.members(organizationName, id),
-    queryFn: () => listOrganizationProjectMembers(organizationName, id),
+    queryFn: () => listOrganizationProjectMembers({ organizationName, projectId: id }),
     ...options,
   })
 }
@@ -57,7 +60,8 @@ export function useCreateProject() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateProjectInput) => createOrganizationProject(organizationName, body),
+    mutationFn: (body: CreateProjectInput) =>
+      createOrganizationProject({ organizationName, body }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.statements(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.lists(organizationName) })
@@ -70,7 +74,7 @@ export function useUpdateProjectConfig() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: UpdateProjectConfigInput) =>
-      updateOrganizationProjectConfig(organizationName, input),
+      updateOrganizationProjectConfig({ organizationName, input }),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: projectKeys.config(organizationName, id) })
     },
@@ -81,7 +85,8 @@ export function useUpdateProject() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: UpdateProjectInput) => updateOrganizationProject(organizationName, input),
+    mutationFn: (input: UpdateProjectInput) =>
+      updateOrganizationProject({ organizationName, input }),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(organizationName, id) })
       queryClient.invalidateQueries({ queryKey: projectKeys.config(organizationName, id) })
@@ -93,7 +98,8 @@ export function useDeleteProject() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: DeleteProjectInput) => deleteOrganizationProject(organizationName, input),
+    mutationFn: (input: DeleteProjectInput) =>
+      deleteOrganizationProject({ organizationName, input }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.all(organizationName) })
     },

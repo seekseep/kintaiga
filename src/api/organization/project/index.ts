@@ -1,8 +1,7 @@
-'use server'
-
 import { db } from '@/lib/db'
 import { getOrganizationExecutor } from '@/lib/server-action/auth'
 import { NotFoundError } from '@/lib/errors'
+import { defineServerFn } from '@/lib/server-fn'
 import {
   createOrganizationProject as createOrganizationProjectService,
   deleteOrganizationProject as deleteOrganizationProjectService,
@@ -53,70 +52,100 @@ function toProject(row: ProjectRow): Project {
   }
 }
 
-export async function listOrganizationUserProjectStatements(
-  organizationName: string,
-  parameters?: GetOrganizationUserProjectStatementsParameters,
-): Promise<PaginatedResponse<UserProjectStatement>> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const result = await listOrganizationProjectStatements({ db }, executor, parameters ?? {})
-  return {
-    items: result.items.map((item) => ({
-      ...toProject(item),
-      membershipStatus: item.membershipStatus,
-    })),
-    count: result.count,
-    limit: result.limit,
-    offset: result.offset,
-  }
-}
+export const listOrganizationUserProjectStatements = defineServerFn(
+  async ({
+    organizationName,
+    parameters,
+  }: {
+    organizationName: string
+    parameters?: GetOrganizationUserProjectStatementsParameters
+  }): Promise<PaginatedResponse<UserProjectStatement>> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const result = await listOrganizationProjectStatements({ db }, executor, parameters ?? {})
+    return {
+      items: result.items.map((item) => ({
+        ...toProject(item),
+        membershipStatus: item.membershipStatus,
+      })),
+      count: result.count,
+      limit: result.limit,
+      offset: result.offset,
+    }
+  },
+)
 
-export async function getOrganizationProject(
-  organizationName: string,
-  projectId: string,
-): Promise<Project> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const project = await getOrganizationProjectService({ db }, executor, { id: projectId })
-  return toProject(project)
-}
+export const getOrganizationProject = defineServerFn(
+  async ({
+    organizationName,
+    projectId,
+  }: {
+    organizationName: string
+    projectId: string
+  }): Promise<Project> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const project = await getOrganizationProjectService({ db }, executor, { id: projectId })
+    return toProject(project)
+  },
+)
 
-export async function createOrganizationProject(
-  organizationName: string,
-  body: CreateProjectInput,
-): Promise<Project> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const created = await createOrganizationProjectService({ db }, executor, body)
-  return toProject(created)
-}
+export const createOrganizationProject = defineServerFn(
+  async ({
+    organizationName,
+    body,
+  }: {
+    organizationName: string
+    body: CreateProjectInput
+  }): Promise<Project> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const created = await createOrganizationProjectService({ db }, executor, body)
+    return toProject(created)
+  },
+)
 
-export async function updateOrganizationProject(
-  organizationName: string,
-  input: UpdateProjectInput,
-): Promise<Project> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const updated = await updateOrganizationProjectService({ db }, executor, input)
-  return toProject(updated)
-}
+export const updateOrganizationProject = defineServerFn(
+  async ({
+    organizationName,
+    input,
+  }: {
+    organizationName: string
+    input: UpdateProjectInput
+  }): Promise<Project> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const updated = await updateOrganizationProjectService({ db }, executor, input)
+    return toProject(updated)
+  },
+)
 
-export async function deleteOrganizationProject(
-  organizationName: string,
-  input: DeleteProjectInput,
-): Promise<void> {
-  const executor = await getOrganizationExecutor(organizationName)
-  await deleteOrganizationProjectService({ db }, executor, input)
-}
+export const deleteOrganizationProject = defineServerFn(
+  async ({
+    organizationName,
+    input,
+  }: {
+    organizationName: string
+    input: DeleteProjectInput
+  }): Promise<void> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    await deleteOrganizationProjectService({ db }, executor, input)
+  },
+)
 
-export async function getOrganizationProjectConfig(
-  organizationName: string,
-  projectId: string,
-): Promise<ProjectConfig | null> {
-  const executor = await getOrganizationExecutor(organizationName)
-  try {
-    return await getOrganizationProjectConfigService({ db }, executor, { id: projectId })
-  } catch (err) {
-    if (err instanceof NotFoundError) return null
-    throw err
-  }
-}
+export const getOrganizationProjectConfig = defineServerFn(
+  async ({
+    organizationName,
+    projectId,
+  }: {
+    organizationName: string
+    projectId: string
+  }): Promise<ProjectConfig | null> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    try {
+      return await getOrganizationProjectConfigService({ db }, executor, { id: projectId })
+    } catch (err) {
+      if (err instanceof NotFoundError) return null
+      throw err
+    }
+  },
+)
 
 export type UpdateProjectConfigResult = {
   roundingInterval: number | null
@@ -125,19 +154,29 @@ export type UpdateProjectConfigResult = {
   aggregationPeriod: number | null
 }
 
-export async function updateOrganizationProjectConfig(
-  organizationName: string,
-  input: UpdateProjectConfigInput,
-): Promise<UpdateProjectConfigResult> {
-  const executor = await getOrganizationExecutor(organizationName)
-  return updateOrganizationProjectConfigService({ db }, executor, input)
-}
+export const updateOrganizationProjectConfig = defineServerFn(
+  async ({
+    organizationName,
+    input,
+  }: {
+    organizationName: string
+    input: UpdateProjectConfigInput
+  }): Promise<UpdateProjectConfigResult> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    return updateOrganizationProjectConfigService({ db }, executor, input)
+  },
+)
 
-export async function listOrganizationProjectMembers(
-  organizationName: string,
-  projectId: string,
-): Promise<{ items: ProjectMember[] }> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const result = await listOrganizationProjectMembersService({ db }, executor, { projectId })
-  return { items: result.items }
-}
+export const listOrganizationProjectMembers = defineServerFn(
+  async ({
+    organizationName,
+    projectId,
+  }: {
+    organizationName: string
+    projectId: string
+  }): Promise<{ items: ProjectMember[] }> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const result = await listOrganizationProjectMembersService({ db }, executor, { projectId })
+    return { items: result.items }
+  },
+)

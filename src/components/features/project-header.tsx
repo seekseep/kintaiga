@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@tanstack/react-router'
 import { Settings } from 'lucide-react'
 
 type Project = {
@@ -26,7 +26,7 @@ export function ProjectHeader({ project, basePath, editable }: Props) {
       </div>
       {editable && (
         <Link
-          href={`${basePath}/settings`}
+          to={`${basePath}/settings`}
           className="ml-4 shrink-0 text-muted-foreground hover:text-foreground transition-colors"
         >
           <Settings className="h-5 w-5" />

@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 
 export function NotFound() {
@@ -9,7 +9,7 @@ export function NotFound() {
       <h1 className="text-4xl font-bold">404</h1>
       <p className="text-muted-foreground">ページが見つかりません</p>
       <Button asChild variant="outline">
-        <Link href="/">ホームに戻る</Link>
+        <Link to="/">ホームに戻る</Link>
       </Button>
     </div>
   )

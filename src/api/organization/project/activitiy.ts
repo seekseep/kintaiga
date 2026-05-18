@@ -1,7 +1,6 @@
-'use server'
-
 import { db } from '@/lib/db'
 import { getOrganizationExecutor } from '@/lib/server-action/auth'
+import { defineServerFn } from '@/lib/server-fn'
 import {
   createOrganizationProjectMemberActivity,
   deleteOrganizationProjectMemberActivity,
@@ -50,51 +49,76 @@ function toProjectActivity(row: ActivityRow): ProjectActivity {
   }
 }
 
-export async function listOrganizationActivities(
-  organizationName: string,
-  parameters?: ListActivitiesInput,
-): Promise<PaginatedResponse<ProjectActivity>> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const result = await listOrganizationProjectMemberActivities({ db }, executor, parameters ?? {})
-  return {
-    items: result.items.map(toProjectActivity),
-    count: result.count,
-    limit: result.limit,
-    offset: result.offset,
-  }
-}
+export const listOrganizationActivities = defineServerFn(
+  async ({
+    organizationName,
+    parameters,
+  }: {
+    organizationName: string
+    parameters?: ListActivitiesInput
+  }): Promise<PaginatedResponse<ProjectActivity>> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const result = await listOrganizationProjectMemberActivities({ db }, executor, parameters ?? {})
+    return {
+      items: result.items.map(toProjectActivity),
+      count: result.count,
+      limit: result.limit,
+      offset: result.offset,
+    }
+  },
+)
 
-export async function getOrganizationActivity(
-  organizationName: string,
-  activityId: string,
-): Promise<ProjectActivity> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const activity = await getOrganizationProjectMemberActivity({ db }, executor, { id: activityId })
-  return toProjectActivity(activity)
-}
+export const getOrganizationActivity = defineServerFn(
+  async ({
+    organizationName,
+    activityId,
+  }: {
+    organizationName: string
+    activityId: string
+  }): Promise<ProjectActivity> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const activity = await getOrganizationProjectMemberActivity({ db }, executor, { id: activityId })
+    return toProjectActivity(activity)
+  },
+)
 
-export async function createOrganizationActivity(
-  organizationName: string,
-  body: CreateActivityInput,
-): Promise<ProjectActivity> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const created = await createOrganizationProjectMemberActivity({ db }, executor, body)
-  return toProjectActivity(created)
-}
+export const createOrganizationActivity = defineServerFn(
+  async ({
+    organizationName,
+    body,
+  }: {
+    organizationName: string
+    body: CreateActivityInput
+  }): Promise<ProjectActivity> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const created = await createOrganizationProjectMemberActivity({ db }, executor, body)
+    return toProjectActivity(created)
+  },
+)
 
-export async function updateOrganizationActivity(
-  organizationName: string,
-  input: UpdateActivityInput,
-): Promise<ProjectActivity> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const updated = await updateOrganizationProjectMemberActivity({ db }, executor, input)
-  return toProjectActivity(updated)
-}
+export const updateOrganizationActivity = defineServerFn(
+  async ({
+    organizationName,
+    input,
+  }: {
+    organizationName: string
+    input: UpdateActivityInput
+  }): Promise<ProjectActivity> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const updated = await updateOrganizationProjectMemberActivity({ db }, executor, input)
+    return toProjectActivity(updated)
+  },
+)
 
-export async function deleteOrganizationActivity(
-  organizationName: string,
-  input: DeleteActivityInput,
-): Promise<void> {
-  const executor = await getOrganizationExecutor(organizationName)
-  await deleteOrganizationProjectMemberActivity({ db }, executor, input)
-}
+export const deleteOrganizationActivity = defineServerFn(
+  async ({
+    organizationName,
+    input,
+  }: {
+    organizationName: string
+    input: DeleteActivityInput
+  }): Promise<void> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    await deleteOrganizationProjectMemberActivity({ db }, executor, input)
+  },
+)

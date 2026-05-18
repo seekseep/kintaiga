@@ -1,7 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, useLocation } from '@tanstack/react-router'
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -21,7 +20,7 @@ type Props = {
 }
 
 export function SidebarNavigation({ menuItems }: Props) {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
 
   return (
     <SidebarMenu>
@@ -32,7 +31,7 @@ export function SidebarNavigation({ menuItems }: Props) {
         return (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton asChild isActive={active}>
-              <Link href={item.href}>
+              <Link to={item.href}>
                 <item.icon />
                 <span>{item.label}</span>
               </Link>

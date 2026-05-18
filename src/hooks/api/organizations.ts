@@ -56,7 +56,7 @@ export function useUpdateOrganization() {
   const { name: organizationName } = useOrganization()
   return useMutation({
     mutationFn: (body: { name?: string; displayName?: string }) =>
-      updateOrganization(organizationName, body),
+      updateOrganization({ organizationName, body }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: organizationKeys.detail(organizationName) })
       queryClient.invalidateQueries({ queryKey: meKeys.organizations() })

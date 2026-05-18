@@ -20,5 +20,5 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "src/routeTree.gen.ts"],
-  "exclude": ["node_modules", "dist", ".vercel", ".output"]
+  "exclude": ["node_modules", "dist", ".vercel", ".output", "src/routes"]
 }

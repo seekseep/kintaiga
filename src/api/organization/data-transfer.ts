@@ -1,7 +1,6 @@
-'use server'
-
 import { db } from '@/lib/db'
 import { getOrganizationExecutor } from '@/lib/server-action/auth'
+import { defineServerFn } from '@/lib/server-fn'
 import {
   exportOrganization as exportOrganizationService,
   importOrganization as importOrganizationService,
@@ -9,17 +8,22 @@ import {
 import type { OrganizationExportPayload } from '@/services/organization/exportOrganization/schema'
 import type { ImportOrganizationResult } from '@/services/organization/importOrganization'
 
-export async function exportOrganizationData(
-  organizationName: string,
-): Promise<OrganizationExportPayload> {
-  const executor = await getOrganizationExecutor(organizationName)
-  return exportOrganizationService({ db }, executor)
-}
+export const exportOrganizationData = defineServerFn(
+  async (organizationName: string): Promise<OrganizationExportPayload> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    return exportOrganizationService({ db }, executor)
+  },
+)
 
-export async function importOrganizationData(
-  organizationName: string,
-  body: { payload: OrganizationExportPayload; overwriteConfiguration?: boolean },
-): Promise<ImportOrganizationResult> {
-  const executor = await getOrganizationExecutor(organizationName)
-  return importOrganizationService({ db }, executor, body)
-}
+export const importOrganizationData = defineServerFn(
+  async ({
+    organizationName,
+    body,
+  }: {
+    organizationName: string
+    body: { payload: OrganizationExportPayload; overwriteConfiguration?: boolean }
+  }): Promise<ImportOrganizationResult> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    return importOrganizationService({ db }, executor, body)
+  },
+)

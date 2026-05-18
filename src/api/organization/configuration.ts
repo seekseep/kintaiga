@@ -1,7 +1,6 @@
-'use server'
-
 import { db } from '@/lib/db'
 import { getOrganizationExecutor } from '@/lib/server-action/auth'
+import { defineServerFn } from '@/lib/server-fn'
 import {
   getOrganizationConfiguration as getOrganizationConfigurationService,
   updateOrganizationConfiguration as updateOrganizationConfigurationService,
@@ -35,17 +34,24 @@ function toConfiguration(row: ConfigurationRow): Configuration {
   }
 }
 
-export async function getOrganizationConfiguration(organizationName: string): Promise<Configuration> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const config = await getOrganizationConfigurationService({ db }, executor)
-  return toConfiguration(config)
-}
+export const getOrganizationConfiguration = defineServerFn(
+  async (organizationName: string): Promise<Configuration> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const config = await getOrganizationConfigurationService({ db }, executor)
+    return toConfiguration(config)
+  },
+)
 
-export async function updateOrganizationConfiguration(
-  organizationName: string,
-  body: UpdateConfigurationInput,
-): Promise<Configuration> {
-  const executor = await getOrganizationExecutor(organizationName)
-  const updated = await updateOrganizationConfigurationService({ db }, executor, body)
-  return toConfiguration(updated)
-}
+export const updateOrganizationConfiguration = defineServerFn(
+  async ({
+    organizationName,
+    body,
+  }: {
+    organizationName: string
+    body: UpdateConfigurationInput
+  }): Promise<Configuration> => {
+    const executor = await getOrganizationExecutor(organizationName)
+    const updated = await updateOrganizationConfigurationService({ db }, executor, body)
+    return toConfiguration(updated)
+  },
+)

@@ -12,11 +12,14 @@ import type { RemoveOrganizationProjectMemberInput as DeleteProjectMemberInput }
 import { projectMemberKeys, projectKeys } from '@/lib/query-keys'
 import { useOrganization } from '@/contexts/organization-context'
 
-export function useProjectMemberAssignments(parameters: ListOrganizationProjectMembersParameters, options?: { enabled?: boolean }) {
+export function useProjectMemberAssignments(
+  parameters: ListOrganizationProjectMembersParameters,
+  options?: { enabled?: boolean },
+) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectMemberKeys.list(organizationName, parameters),
-    queryFn: () => listOrganizationProjectMembers(organizationName, parameters),
+    queryFn: () => listOrganizationProjectMembers({ organizationName, parameters }),
     staleTime: 60 * 1000,
     ...options,
   })
@@ -27,7 +30,7 @@ export function useCreateProjectMember() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: CreateProjectMemberInput) =>
-      createOrganizationProjectMember(organizationName, body),
+      createOrganizationProjectMember({ organizationName, body }),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })
@@ -40,8 +43,8 @@ export function useUpdateProjectMember() {
   const { name: organizationName } = useOrganization()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ projectId, ...input }: UpdateProjectMemberInput & { projectId: string }) =>
-      updateOrganizationProjectMember(organizationName, projectId, input),
+    mutationFn: ({ projectId: _, ...input }: UpdateProjectMemberInput & { projectId: string }) =>
+      updateOrganizationProjectMember({ organizationName, input }),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })
@@ -54,7 +57,7 @@ export function useDeleteProjectMember() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ projectId, ...input }: DeleteProjectMemberInput & { projectId: string }) =>
-      deleteOrganizationProjectMember(organizationName, { ...input, projectId }),
+      deleteOrganizationProjectMember({ organizationName, input: { ...input, projectId } }),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })

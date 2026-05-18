@@ -1,0 +1,84 @@
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useAuth } from '@/hooks/use-auth'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from '@/components/ui/breadcrumb'
+import { UserIcon, ImageIcon, MailIcon, LockIcon, LogOutIcon, Trash2Icon, ChevronRightIcon } from 'lucide-react'
+
+export const Route = createFileRoute('/_app/me/')({
+  component: ProfilePage,
+})
+
+function ProfilePage() {
+  const { user, session, signOut } = useAuth()
+
+  if (!user) return null
+
+  const email = user.email ?? session?.user.email ?? null
+
+  return (
+    <div className="mx-auto max-w-lg space-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbPage>マイページ</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div className="flex items-center gap-4">
+        <Avatar className="h-16 w-16">
+          <AvatarImage src={user.iconUrl ?? undefined} />
+          <AvatarFallback className="text-lg">{user.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div>
+          <p className="text-lg font-medium">{user.name}</p>
+          {email && <p className="text-sm text-muted-foreground">{email}</p>}
+          <Badge variant="secondary">{user.role === 'admin' ? '管理者' : '一般'}</Badge>
+        </div>
+      </div>
+      <div className="divide-y rounded-md border">
+        <Link to="/me/name" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <UserIcon className="h-5 w-5 text-muted-foreground" />
+          <div className="flex-1">
+            <div>名前</div>
+            <div className="text-sm text-muted-foreground">{user.name}</div>
+          </div>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+        <Link to="/me/icon" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <ImageIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="flex-1">アイコンを変更</span>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+        <Link to="/me/email" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <MailIcon className="h-5 w-5 text-muted-foreground" />
+          <div className="flex-1">
+            <div>メールアドレス</div>
+            {email && <div className="text-sm text-muted-foreground">{email}</div>}
+          </div>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+        <Link to="/me/password" className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <LockIcon className="h-5 w-5 text-muted-foreground" />
+          <span className="flex-1">パスワードを変更</span>
+          <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
+        </Link>
+      </div>
+      <div className="divide-y rounded-md border border-destructive/30">
+        <button
+          onClick={signOut}
+          className="flex w-full items-center gap-3 px-4 py-3 hover:bg-destructive/5 transition-colors text-destructive"
+        >
+          <LogOutIcon className="h-5 w-5" />
+          <span className="flex-1 text-left">ログアウト</span>
+          <ChevronRightIcon className="h-5 w-5" />
+        </button>
+        <Link to="/me/delete" className="flex items-center gap-3 px-4 py-3 hover:bg-destructive/5 transition-colors text-destructive">
+          <Trash2Icon className="h-5 w-5" />
+          <span className="flex-1">アカウントを削除</span>
+          <ChevronRightIcon className="h-5 w-5" />
+        </Link>
+      </div>
+    </div>
+  )
+}

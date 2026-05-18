@@ -1,9 +1,8 @@
-'use server'
-
 import { db } from '@/lib/db'
 import { supabase as adminSupabase } from '@/lib/supabase-admin'
 import { getUserExecutor } from '@/lib/server-action/auth'
 import { NotFoundError } from '@/lib/errors'
+import { defineServerFn, defineServerFnNoArgs } from '@/lib/server-fn'
 import {
   archiveAndDeleteUser,
   createUser,
@@ -44,7 +43,7 @@ function toMember(row: UserRow): Member {
   }
 }
 
-export async function getMe(): Promise<Member | null> {
+export const getMe = defineServerFnNoArgs(async (): Promise<Member | null> => {
   const executor = await getUserExecutor()
   try {
     const user = await getUser({ db }, executor, { id: executor.user.id })
@@ -53,9 +52,9 @@ export async function getMe(): Promise<Member | null> {
     if (err instanceof NotFoundError) return null
     throw err
   }
-}
+})
 
-export async function registerMe(body: RegisterMeBody): Promise<Member> {
+export const registerMe = defineServerFn(async (body: RegisterMeBody): Promise<Member> => {
   const executor = await getUserExecutor()
   const user = await createUser(
     { db, supabase: adminSupabase },
@@ -63,15 +62,15 @@ export async function registerMe(body: RegisterMeBody): Promise<Member> {
     { ...body, userId: executor.user.id },
   )
   return toMember(user)
-}
+})
 
-export async function updateMe(body: UpdateMeBody): Promise<Member> {
+export const updateMe = defineServerFn(async (body: UpdateMeBody): Promise<Member> => {
   const executor = await getUserExecutor()
   const user = await updateUser({ db }, executor, { ...body, id: executor.user.id })
   return toMember(user)
-}
+})
 
-export async function uploadMyIcon(body: UploadMyIconBody): Promise<Member> {
+export const uploadMyIcon = defineServerFn(async (body: UploadMyIconBody): Promise<Member> => {
   const executor = await getUserExecutor()
   const user = await updateUserIcon(
     { db, supabase: adminSupabase },
@@ -79,18 +78,18 @@ export async function uploadMyIcon(body: UploadMyIconBody): Promise<Member> {
     { ...body, userId: executor.user.id },
   )
   return toMember(user)
-}
+})
 
-export async function withdrawMe(): Promise<void> {
+export const withdrawMe = defineServerFnNoArgs(async (): Promise<void> => {
   const executor = await getUserExecutor()
   await archiveAndDeleteUser(
     { db, supabase: adminSupabase },
     executor,
     { targetId: executor.user.id, anonymizeName: '削除されたユーザー' },
   )
-}
+})
 
-export async function syncMyEmail(): Promise<{ email: string | null }> {
+export const syncMyEmail = defineServerFnNoArgs(async (): Promise<{ email: string | null }> => {
   const executor = await getUserExecutor()
   const updated = await syncUserEmail(
     { db, supabase: adminSupabase },
@@ -98,4 +97,4 @@ export async function syncMyEmail(): Promise<{ email: string | null }> {
     { userId: executor.user.id },
   )
   return { email: updated.email }
-}
+})

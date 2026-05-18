@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useLocation, useNavigate } from '@tanstack/react-router'
 
 export type ParameterDefinition<T> = {
   key: string
@@ -11,27 +11,33 @@ export type ParameterDefinition<T> = {
 }
 
 export function useQueryStringState<T>(
-  def: ParameterDefinition<T>
+  def: ParameterDefinition<T>,
 ): [T, (value: T) => void] {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const navigate = useNavigate()
+  const { pathname, searchStr } = useLocation({
+    select: (loc) => ({ pathname: loc.pathname, searchStr: loc.searchStr ?? '' }),
+  })
 
+  const searchParams = new URLSearchParams(searchStr)
   const value = def.deserialize(searchParams.get(def.key))
 
   const setValue = useCallback(
     (newValue: T) => {
-      const searchParameters = new URLSearchParams(window.location.search)
+      const params = new URLSearchParams(window.location.search)
       const serialized = def.serialize(newValue)
       if (serialized === undefined) {
-        searchParameters.delete(def.key)
+        params.delete(def.key)
       } else {
-        searchParameters.set(def.key, serialized)
+        params.set(def.key, serialized)
       }
-      const qs = searchParameters.toString()
-      router.replace(pathname + (qs ? `?${qs}` : ''), { scroll: false })
+      const qs = params.toString()
+      navigate({
+        to: pathname + (qs ? `?${qs}` : ''),
+        replace: true,
+        resetScroll: false,
+      })
     },
-    [def, router, pathname]
+    [def, navigate, pathname],
   )
 
   return [value, setValue]
