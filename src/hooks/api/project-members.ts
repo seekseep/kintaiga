@@ -19,7 +19,7 @@ export function useProjectMemberAssignments(
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectMemberKeys.list(organizationName, parameters),
-    queryFn: () => listOrganizationProjectMembers({ organizationName, parameters }),
+    queryFn: () => listOrganizationProjectMembers({ data: { organizationName, parameters } }),
     staleTime: 60 * 1000,
     ...options,
   })
@@ -30,7 +30,7 @@ export function useCreateProjectMember() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: CreateProjectMemberInput) =>
-      createOrganizationProjectMember({ organizationName, body }),
+      createOrganizationProjectMember({ data: { organizationName, body } }),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })
@@ -44,7 +44,7 @@ export function useUpdateProjectMember() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ projectId: _, ...input }: UpdateProjectMemberInput & { projectId: string }) =>
-      updateOrganizationProjectMember({ organizationName, input }),
+      updateOrganizationProjectMember({ data: { organizationName, input } }),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })
@@ -57,7 +57,9 @@ export function useDeleteProjectMember() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ projectId, ...input }: DeleteProjectMemberInput & { projectId: string }) =>
-      deleteOrganizationProjectMember({ organizationName, input: { ...input, projectId } }),
+      deleteOrganizationProjectMember({
+        data: { organizationName, input: { ...input, projectId } },
+      }),
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: projectMemberKeys.lists(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.assignments(organizationName, projectId) })

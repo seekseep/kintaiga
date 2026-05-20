@@ -1,6 +1,6 @@
+import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/lib/db'
 import { getOrganizationExecutor } from '@/lib/server-action/auth'
-import { defineServerFn } from '@/lib/server-fn'
 import {
   exportOrganization as exportOrganizationService,
   importOrganization as importOrganizationService,
@@ -8,22 +8,21 @@ import {
 import type { OrganizationExportPayload } from '@/services/organization/exportOrganization/schema'
 import type { ImportOrganizationResult } from '@/services/organization/importOrganization'
 
-export const exportOrganizationData = defineServerFn(
-  async (organizationName: string): Promise<OrganizationExportPayload> => {
+export const exportOrganizationData = createServerFn({ method: 'GET' })
+  .inputValidator((organizationName: string) => organizationName)
+  .handler(async ({ data: organizationName }): Promise<OrganizationExportPayload> => {
     const executor = await getOrganizationExecutor(organizationName)
     return exportOrganizationService({ db }, executor)
-  },
-)
+  })
 
-export const importOrganizationData = defineServerFn(
-  async ({
-    organizationName,
-    body,
-  }: {
-    organizationName: string
-    body: { payload: OrganizationExportPayload; overwriteConfiguration?: boolean }
-  }): Promise<ImportOrganizationResult> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    return importOrganizationService({ db }, executor, body)
-  },
-)
+export const importOrganizationData = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: {
+      organizationName: string
+      body: { payload: OrganizationExportPayload; overwriteConfiguration?: boolean }
+    }) => data,
+  )
+  .handler(async ({ data }): Promise<ImportOrganizationResult> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    return importOrganizationService({ db }, executor, data.body)
+  })

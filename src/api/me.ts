@@ -1,8 +1,8 @@
+import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/lib/db'
 import { supabase as adminSupabase } from '@/lib/supabase-admin'
 import { getUserExecutor } from '@/lib/server-action/auth'
 import { NotFoundError } from '@/lib/errors'
-import { defineServerFn, defineServerFnNoArgs } from '@/lib/server-fn'
 import {
   archiveAndDeleteUser,
   createUser,
@@ -43,7 +43,7 @@ function toMember(row: UserRow): Member {
   }
 }
 
-export const getMe = defineServerFnNoArgs(async (): Promise<Member | null> => {
+export const getMe = createServerFn({ method: 'GET' }).handler(async (): Promise<Member | null> => {
   const executor = await getUserExecutor()
   try {
     const user = await getUser({ db }, executor, { id: executor.user.id })
@@ -54,33 +54,39 @@ export const getMe = defineServerFnNoArgs(async (): Promise<Member | null> => {
   }
 })
 
-export const registerMe = defineServerFn(async (body: RegisterMeBody): Promise<Member> => {
-  const executor = await getUserExecutor()
-  const user = await createUser(
-    { db, supabase: adminSupabase },
-    executor,
-    { ...body, userId: executor.user.id },
-  )
-  return toMember(user)
-})
+export const registerMe = createServerFn({ method: 'POST' })
+  .inputValidator((data: RegisterMeBody) => data)
+  .handler(async ({ data }): Promise<Member> => {
+    const executor = await getUserExecutor()
+    const user = await createUser(
+      { db, supabase: adminSupabase },
+      executor,
+      { ...data, userId: executor.user.id },
+    )
+    return toMember(user)
+  })
 
-export const updateMe = defineServerFn(async (body: UpdateMeBody): Promise<Member> => {
-  const executor = await getUserExecutor()
-  const user = await updateUser({ db }, executor, { ...body, id: executor.user.id })
-  return toMember(user)
-})
+export const updateMe = createServerFn({ method: 'POST' })
+  .inputValidator((data: UpdateMeBody) => data)
+  .handler(async ({ data }): Promise<Member> => {
+    const executor = await getUserExecutor()
+    const user = await updateUser({ db }, executor, { ...data, id: executor.user.id })
+    return toMember(user)
+  })
 
-export const uploadMyIcon = defineServerFn(async (body: UploadMyIconBody): Promise<Member> => {
-  const executor = await getUserExecutor()
-  const user = await updateUserIcon(
-    { db, supabase: adminSupabase },
-    executor,
-    { ...body, userId: executor.user.id },
-  )
-  return toMember(user)
-})
+export const uploadMyIcon = createServerFn({ method: 'POST' })
+  .inputValidator((data: UploadMyIconBody) => data)
+  .handler(async ({ data }): Promise<Member> => {
+    const executor = await getUserExecutor()
+    const user = await updateUserIcon(
+      { db, supabase: adminSupabase },
+      executor,
+      { ...data, userId: executor.user.id },
+    )
+    return toMember(user)
+  })
 
-export const withdrawMe = defineServerFnNoArgs(async (): Promise<void> => {
+export const withdrawMe = createServerFn({ method: 'POST' }).handler(async (): Promise<void> => {
   const executor = await getUserExecutor()
   await archiveAndDeleteUser(
     { db, supabase: adminSupabase },
@@ -89,12 +95,14 @@ export const withdrawMe = defineServerFnNoArgs(async (): Promise<void> => {
   )
 })
 
-export const syncMyEmail = defineServerFnNoArgs(async (): Promise<{ email: string | null }> => {
-  const executor = await getUserExecutor()
-  const updated = await syncUserEmail(
-    { db, supabase: adminSupabase },
-    executor,
-    { userId: executor.user.id },
-  )
-  return { email: updated.email }
-})
+export const syncMyEmail = createServerFn({ method: 'POST' }).handler(
+  async (): Promise<{ email: string | null }> => {
+    const executor = await getUserExecutor()
+    const updated = await syncUserEmail(
+      { db, supabase: adminSupabase },
+      executor,
+      { userId: executor.user.id },
+    )
+    return { email: updated.email }
+  },
+)

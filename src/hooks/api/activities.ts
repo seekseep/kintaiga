@@ -17,7 +17,9 @@ export function useActivities(filters?: ActivityFilters, options?: { enabled?: b
   return useQuery({
     queryKey: activityKeys.list(organizationName, filters),
     queryFn: () =>
-      listOrganizationActivities({ organizationName, parameters: { ...filters, limit: 200 } }),
+      listOrganizationActivities({
+        data: { organizationName, parameters: { ...filters, limit: 200 } },
+      }),
     staleTime: 30 * 1000,
     gcTime: 15 * 60 * 1000,
     ...options,
@@ -32,7 +34,7 @@ export function useActivity(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: activityKeys.detail(organizationName, id),
-    queryFn: () => getOrganizationActivity({ organizationName, activityId: id }),
+    queryFn: () => getOrganizationActivity({ data: { organizationName, activityId: id } }),
     staleTime: 30 * 1000,
     gcTime: 15 * 60 * 1000,
     ...options,
@@ -44,7 +46,7 @@ export function useCreateActivity() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: CreateActivityInput) =>
-      createOrganizationActivity({ organizationName, body }),
+      createOrganizationActivity({ data: { organizationName, body } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.lists(organizationName) })
     },
@@ -56,7 +58,7 @@ export function useUpdateActivity() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: UpdateActivityInput) =>
-      updateOrganizationActivity({ organizationName, input }),
+      updateOrganizationActivity({ data: { organizationName, input } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.lists(organizationName) })
     },
@@ -68,7 +70,7 @@ export function useDeleteActivity() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: DeleteActivityInput) =>
-      deleteOrganizationActivity({ organizationName, input }),
+      deleteOrganizationActivity({ data: { organizationName, input } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.lists(organizationName) })
     },

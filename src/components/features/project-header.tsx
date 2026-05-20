@@ -11,11 +11,11 @@ type Project = {
 type Props = {
   project: Project
   projectId: string
-  basePath: string
+  organizationName: string
   editable: boolean
 }
 
-export function ProjectHeader({ project, basePath, editable }: Props) {
+export function ProjectHeader({ project, projectId, organizationName, editable }: Props) {
   return (
     <div className="flex items-start justify-between">
       <div className="space-y-1 min-w-0 flex-1">
@@ -26,7 +26,8 @@ export function ProjectHeader({ project, basePath, editable }: Props) {
       </div>
       {editable && (
         <Link
-          to={`${basePath}/settings`}
+          to="/$organizationName/projects/$id/settings"
+          params={{ organizationName, id: projectId }}
           className="ml-4 shrink-0 text-muted-foreground hover:text-foreground transition-colors"
         >
           <Settings className="h-5 w-5" />

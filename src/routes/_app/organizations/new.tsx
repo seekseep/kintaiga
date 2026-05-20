@@ -51,7 +51,7 @@ function NewOrganizationPage() {
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const result = await checkOrganizationName(name)
+        const result = await checkOrganizationName({ data: name })
         setNameAvailable(result.available)
         setNameCheckReason(result.reason)
       } catch {

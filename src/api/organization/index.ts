@@ -1,6 +1,6 @@
+import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/lib/db'
 import { getUserExecutor, getOrganizationExecutor } from '@/lib/server-action/auth'
-import { defineServerFn, defineServerFnNoArgs } from '@/lib/server-fn'
 import { listMyOrganizations as listMyOrganizationsService } from '@/services/me'
 import {
   checkOrganizationName as checkOrganizationNameService,
@@ -52,8 +52,9 @@ function toIsoDate(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : value
 }
 
-export const getOrganization = defineServerFn(
-  async (organizationName: string): Promise<OrganizationDetail> => {
+export const getOrganization = createServerFn({ method: 'GET' })
+  .inputValidator((organizationName: string) => organizationName)
+  .handler(async ({ data: organizationName }): Promise<OrganizationDetail> => {
     const executor = await getOrganizationExecutor(organizationName)
     const organization = await getOrganizationByName({ db }, organizationName)
     return {
@@ -61,10 +62,9 @@ export const getOrganization = defineServerFn(
       organizationDisplayName: organization.displayName ?? '',
       organizationRole: executor.organization.role,
     }
-  },
-)
+  })
 
-export const listMyOrganizations = defineServerFnNoArgs(
+export const listMyOrganizations = createServerFn({ method: 'GET' }).handler(
   async (): Promise<{ items: OrganizationMembership[] }> => {
     const executor = await getUserExecutor()
     const result = await listMyOrganizationsService({ db }, executor)
@@ -79,54 +79,51 @@ export const listMyOrganizations = defineServerFnNoArgs(
   },
 )
 
-export const createOrganization = defineServerFn(
-  async (body: CreateOrganizationInput): Promise<Organization> => {
+export const createOrganization = createServerFn({ method: 'POST' })
+  .inputValidator((data: CreateOrganizationInput) => data)
+  .handler(async ({ data }): Promise<Organization> => {
     const executor = await getUserExecutor()
-    const created = await createOrganizationService({ db }, executor, body)
+    const created = await createOrganizationService({ db }, executor, data)
     return {
       id: created.id,
       name: created.name,
       displayName: created.displayName ?? '',
       createdAt: toIsoDate(created.createdAt),
     }
-  },
-)
+  })
 
-export const updateOrganization = defineServerFn(
-  async ({
-    organizationName,
-    body,
-  }: {
-    organizationName: string
-    body: { name?: string; displayName?: string }
-  }): Promise<Organization> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const updated = await updateOrganizationService({ db }, executor, body)
+export const updateOrganization = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: { organizationName: string; body: { name?: string; displayName?: string } }) => data,
+  )
+  .handler(async ({ data }): Promise<Organization> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const updated = await updateOrganizationService({ db }, executor, data.body)
     return {
       id: updated.id,
       name: updated.name,
       displayName: updated.displayName ?? '',
       createdAt: toIsoDate(updated.createdAt),
     }
-  },
-)
+  })
 
-export const deleteOrganization = defineServerFn(
-  async (organizationName: string): Promise<void> => {
+export const deleteOrganization = createServerFn({ method: 'POST' })
+  .inputValidator((organizationName: string) => organizationName)
+  .handler(async ({ data: organizationName }): Promise<void> => {
     const executor = await getOrganizationExecutor(organizationName)
     await deleteOrganizationService({ db }, executor)
-  },
-)
+  })
 
-export const checkOrganizationName = defineServerFn(
-  async (name: string): Promise<CheckNameResult> => {
+export const checkOrganizationName = createServerFn({ method: 'GET' })
+  .inputValidator((name: string) => name)
+  .handler(async ({ data: name }): Promise<CheckNameResult> => {
     await getUserExecutor()
     return checkOrganizationNameService({ db }, name)
-  },
-)
+  })
 
-export const listOrganizationMembers = defineServerFn(
-  async (organizationName: string): Promise<{ items: OrganizationMember[] }> => {
+export const listOrganizationMembers = createServerFn({ method: 'GET' })
+  .inputValidator((organizationName: string) => organizationName)
+  .handler(async ({ data: organizationName }): Promise<{ items: OrganizationMember[] }> => {
     const executor = await getOrganizationExecutor(organizationName)
     const result = await listOrganizationMembersService({ db }, executor)
     const items: OrganizationMember[] = result.items.map((m) => ({
@@ -138,5 +135,4 @@ export const listOrganizationMembers = defineServerFn(
       userIconUrl: m.iconUrl,
     }))
     return { items }
-  },
-)
+  })

@@ -39,7 +39,7 @@ function UserListPage() {
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
           <Button asChild>
-            <Link to={`/${organizationName}/members/invite`}>
+            <Link to="/$organizationName/members/invite" params={{ organizationName }}>
               <Plus className="mr-2 h-4 w-4" />
               メンバーを招待
             </Link>
@@ -76,7 +76,11 @@ function UserListPage() {
             {members.map((u) => (
               <TableRow key={u.id} className="cursor-pointer">
                 <TableCell>
-                  <Link to={`/${organizationName}/members/${u.id}`} className="flex items-center gap-3">
+                  <Link
+                    to="/$organizationName/members/$memberId"
+                    params={{ organizationName, memberId: u.id }}
+                    className="flex items-center gap-3"
+                  >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={u.iconUrl ?? undefined} />
                       <AvatarFallback>{u.name.charAt(0)}</AvatarFallback>

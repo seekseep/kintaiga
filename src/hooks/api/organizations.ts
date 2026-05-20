@@ -15,14 +15,14 @@ import { meKeys, organizationKeys } from '@/lib/query-keys'
 export function useOrganizationDetail(organizationName: string) {
   return useQuery({
     queryKey: organizationKeys.detail(organizationName),
-    queryFn: () => getOrganization(organizationName),
+    queryFn: () => getOrganization({ data: organizationName }),
   })
 }
 
 export function useMyOrganizations(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: meKeys.organizations(),
-    queryFn: listMyOrganizations,
+    queryFn: () => listMyOrganizations(),
     staleTime: 0,
     refetchOnMount: 'always',
     ...options,
@@ -34,7 +34,7 @@ export function useCreateOrganization(
 ) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: CreateOrganizationInput) => createOrganization(body),
+    mutationFn: (body: CreateOrganizationInput) => createOrganization({ data: body }),
     ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: meKeys.organizations() })
@@ -46,7 +46,7 @@ export function useCreateOrganization(
 export function useOrganizationMembers(organizationName: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: organizationKeys.members(organizationName),
-    queryFn: () => listOrganizationMembers(organizationName),
+    queryFn: () => listOrganizationMembers({ data: organizationName }),
     ...options,
   })
 }
@@ -56,7 +56,7 @@ export function useUpdateOrganization() {
   const { name: organizationName } = useOrganization()
   return useMutation({
     mutationFn: (body: { name?: string; displayName?: string }) =>
-      updateOrganization({ organizationName, body }),
+      updateOrganization({ data: { organizationName, body } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: organizationKeys.detail(organizationName) })
       queryClient.invalidateQueries({ queryKey: meKeys.organizations() })
@@ -68,7 +68,7 @@ export function useDeleteOrganization() {
   const queryClient = useQueryClient()
   const { name: organizationName } = useOrganization()
   return useMutation({
-    mutationFn: () => deleteOrganization(organizationName),
+    mutationFn: () => deleteOrganization({ data: organizationName }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: meKeys.organizations() })
     },

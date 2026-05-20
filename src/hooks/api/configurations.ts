@@ -11,7 +11,7 @@ export function useConfiguration(options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: configurationKeys.detail(organizationName),
-    queryFn: () => getOrganizationConfiguration(organizationName),
+    queryFn: () => getOrganizationConfiguration({ data: organizationName }),
     staleTime: 10 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     ...options,
@@ -23,7 +23,7 @@ export function useUpdateConfiguration() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: UpdateConfigurationInput) =>
-      updateOrganizationConfiguration({ organizationName, body }),
+      updateOrganizationConfiguration({ data: { organizationName, body } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: configurationKeys.all(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.all(organizationName) })

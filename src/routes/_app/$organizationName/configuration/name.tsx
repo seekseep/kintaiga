@@ -41,7 +41,7 @@ function EditOrganizationNamePage() {
     timerRef.current = setTimeout(async () => {
       setIsChecking(true)
       try {
-        const result = await checkOrganizationName(name)
+        const result = await checkOrganizationName({ data: name })
         setCheckResult(result)
       } catch {
         setCheckResult(null)

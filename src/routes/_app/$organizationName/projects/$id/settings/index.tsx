@@ -12,8 +12,6 @@ function ProjectSettingsPage() {
   const { id, organizationName } = Route.useParams()
   const { data: project, isLoading } = useProject(id)
 
-  const basePath = `/${organizationName}/projects/${id}/settings`
-
   if (isLoading)
     return (
       <div className="mx-auto max-w-lg space-y-4">
@@ -35,7 +33,11 @@ function ProjectSettingsPage() {
     <OrganizationRoleGuard allowedRoles={['owner', 'manager']}>
       <div className="mx-auto max-w-lg space-y-4">
         <div className="divide-y rounded-md border">
-          <Link to={`${basePath}/name`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <Link
+            to="/$organizationName/projects/$id/settings/name"
+            params={{ organizationName, id }}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
+          >
             <TypeIcon className="h-5 w-5 text-muted-foreground" />
             <div className="flex-1">
               <p>プロジェクト名</p>
@@ -43,7 +45,11 @@ function ProjectSettingsPage() {
             </div>
             <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
           </Link>
-          <Link to={`${basePath}/description`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <Link
+            to="/$organizationName/projects/$id/settings/description"
+            params={{ organizationName, id }}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
+          >
             <AlignLeftIcon className="h-5 w-5 text-muted-foreground" />
             <div className="flex-1">
               <p>説明</p>
@@ -51,14 +57,22 @@ function ProjectSettingsPage() {
             </div>
             <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
           </Link>
-          <Link to={`${basePath}/activities`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+          <Link
+            to="/$organizationName/projects/$id/settings/activities"
+            params={{ organizationName, id }}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
+          >
             <ClockIcon className="h-5 w-5 text-muted-foreground" />
             <span className="flex-1">稼働の設定</span>
             <ChevronRightIcon className="h-5 w-5 text-muted-foreground" />
           </Link>
         </div>
         <div className="divide-y rounded-md border border-destructive/30">
-          <Link to={`${basePath}/delete`} className="flex items-center gap-3 px-4 py-3 hover:bg-destructive/5 transition-colors text-destructive">
+          <Link
+            to="/$organizationName/projects/$id/settings/delete"
+            params={{ organizationName, id }}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-destructive/5 transition-colors text-destructive"
+          >
             <Trash2Icon className="h-5 w-5" />
             <span className="flex-1">プロジェクトの削除</span>
             <ChevronRightIcon className="h-5 w-5" />

@@ -70,7 +70,8 @@ function MemberDetailPage() {
 
       <div className="divide-y rounded-md border">
         <Link
-          to={`/${organizationName}/members/${memberId}/role`}
+          to="/$organizationName/members/$memberId/role"
+          params={{ organizationName, memberId }}
           className="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
         >
           <div>

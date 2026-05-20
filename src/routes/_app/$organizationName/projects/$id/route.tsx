@@ -85,7 +85,7 @@ function ProjectLayout() {
       </Breadcrumb>
 
       {!isSettings && (
-        <ProjectHeader project={project} projectId={id} basePath={basePath} editable={isAdmin} />
+        <ProjectHeader project={project} projectId={id} organizationName={organizationName} editable={isAdmin} />
       )}
 
       <Outlet />

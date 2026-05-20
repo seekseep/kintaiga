@@ -1,6 +1,6 @@
+import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/lib/db'
 import { getOrganizationExecutor } from '@/lib/server-action/auth'
-import { defineServerFn } from '@/lib/server-fn'
 import {
   getOrganizationConfiguration as getOrganizationConfigurationService,
   updateOrganizationConfiguration as updateOrganizationConfigurationService,
@@ -34,24 +34,20 @@ function toConfiguration(row: ConfigurationRow): Configuration {
   }
 }
 
-export const getOrganizationConfiguration = defineServerFn(
-  async (organizationName: string): Promise<Configuration> => {
+export const getOrganizationConfiguration = createServerFn({ method: 'GET' })
+  .inputValidator((organizationName: string) => organizationName)
+  .handler(async ({ data: organizationName }): Promise<Configuration> => {
     const executor = await getOrganizationExecutor(organizationName)
     const config = await getOrganizationConfigurationService({ db }, executor)
     return toConfiguration(config)
-  },
-)
+  })
 
-export const updateOrganizationConfiguration = defineServerFn(
-  async ({
-    organizationName,
-    body,
-  }: {
-    organizationName: string
-    body: UpdateConfigurationInput
-  }): Promise<Configuration> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const updated = await updateOrganizationConfigurationService({ db }, executor, body)
+export const updateOrganizationConfiguration = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: { organizationName: string; body: UpdateConfigurationInput }) => data,
+  )
+  .handler(async ({ data }): Promise<Configuration> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const updated = await updateOrganizationConfigurationService({ db }, executor, data.body)
     return toConfiguration(updated)
-  },
-)
+  })

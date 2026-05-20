@@ -45,7 +45,11 @@ function MemberCard({
     <Card>
       <CardHeader className="py-3">
         <div className="flex items-center justify-between">
-          <Link to={`/${organizationName}/projects/${projectId}/members/${member.userId}/activities`} className="flex items-center gap-3 no-underline">
+          <Link
+            to="/$organizationName/projects/$id/members/$memberId/activities"
+            params={{ organizationName, id: projectId, memberId: member.userId }}
+            className="flex items-center gap-3 no-underline"
+          >
             <Avatar className="h-8 w-8">
               <AvatarImage src={member.iconUrl ?? undefined} />
               <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>

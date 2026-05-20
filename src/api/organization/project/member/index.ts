@@ -1,6 +1,6 @@
+import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/lib/db'
 import { getOrganizationExecutor } from '@/lib/server-action/auth'
-import { defineServerFn } from '@/lib/server-fn'
 import {
   addOrganizationProjectMember as addOrganizationProjectMemberService,
   getOrganizationProjectMember as getOrganizationProjectMemberService,
@@ -48,16 +48,16 @@ function toProjectAssignment(row: AssignmentRow): ProjectAssignment {
   }
 }
 
-export const listOrganizationProjectMembers = defineServerFn(
-  async ({
-    organizationName,
-    parameters,
-  }: {
-    organizationName: string
-    parameters: ListOrganizationProjectMembersParameters
-  }): Promise<PaginatedResponse<ProjectMember>> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const { active, ...rest } = parameters
+export const listOrganizationProjectMembers = createServerFn({ method: 'GET' })
+  .inputValidator(
+    (data: {
+      organizationName: string
+      parameters: ListOrganizationProjectMembersParameters
+    }) => data,
+  )
+  .handler(async ({ data }): Promise<PaginatedResponse<ProjectMember>> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const { active, ...rest } = data.parameters
     const input = {
       ...rest,
       ...(active != null ? { active: String(active) } : {}),
@@ -69,60 +69,50 @@ export const listOrganizationProjectMembers = defineServerFn(
       limit: result.limit,
       offset: result.offset,
     }
-  },
-)
+  })
 
-export const getOrganizationProjectMember = defineServerFn(
-  async ({
-    organizationName,
-    projectMemberId,
-  }: {
-    organizationName: string
-    projectMemberId: string
-  }): Promise<ProjectAssignment> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const assignment = await getOrganizationProjectMemberService({ db }, executor, { id: projectMemberId })
+export const getOrganizationProjectMember = createServerFn({ method: 'GET' })
+  .inputValidator(
+    (data: { organizationName: string; projectId: string; projectMemberId: string }) => data,
+  )
+  .handler(async ({ data }): Promise<ProjectAssignment> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const assignment = await getOrganizationProjectMemberService(
+      { db },
+      executor,
+      { id: data.projectMemberId },
+    )
     return toProjectAssignment(assignment)
-  },
-)
+  })
 
-export const createOrganizationProjectMember = defineServerFn(
-  async ({
-    organizationName,
-    body,
-  }: {
-    organizationName: string
-    body: CreateProjectMemberInput
-  }): Promise<ProjectAssignment> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const created = await addOrganizationProjectMemberService({ db }, executor, body)
+export const createOrganizationProjectMember = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: { organizationName: string; body: CreateProjectMemberInput }) => data,
+  )
+  .handler(async ({ data }): Promise<ProjectAssignment> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const created = await addOrganizationProjectMemberService({ db }, executor, data.body)
     return toProjectAssignment(created)
-  },
-)
+  })
 
-export const updateOrganizationProjectMember = defineServerFn(
-  async ({
-    organizationName,
-    input,
-  }: {
-    organizationName: string
-    input: UpdateProjectMemberInput
-  }): Promise<ProjectAssignment> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const updated = await updateOrganizationProjectMemberService({ db }, executor, input)
+export const updateOrganizationProjectMember = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: { organizationName: string; input: UpdateProjectMemberInput }) => data,
+  )
+  .handler(async ({ data }): Promise<ProjectAssignment> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const updated = await updateOrganizationProjectMemberService({ db }, executor, data.input)
     return toProjectAssignment(updated)
-  },
-)
+  })
 
-export const deleteOrganizationProjectMember = defineServerFn(
-  async ({
-    organizationName,
-    input,
-  }: {
-    organizationName: string
-    input: DeleteProjectMemberInput & { projectId: string }
-  }): Promise<void> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    await removeOrganizationProjectMemberService({ db }, executor, { id: input.id })
-  },
-)
+export const deleteOrganizationProjectMember = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: {
+      organizationName: string
+      input: DeleteProjectMemberInput & { projectId: string }
+    }) => data,
+  )
+  .handler(async ({ data }): Promise<void> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    await removeOrganizationProjectMemberService({ db }, executor, { id: data.input.id })
+  })

@@ -70,7 +70,11 @@ function OrganizationsPage() {
         {organizationItems.map((organization) => {
           const RoleIcon = roleIcons[organization.organizationRole]
           return (
-            <Link key={organization.id} to={`/${organization.name}/projects`}>
+            <Link
+              key={organization.id}
+              to="/$organizationName/projects"
+              params={{ organizationName: organization.name }}
+            >
               <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
                 <CardHeader className="flex flex-row items-center gap-4">
                   <Building2 className="h-8 w-8 text-muted-foreground" />

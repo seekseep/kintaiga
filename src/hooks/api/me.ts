@@ -14,7 +14,7 @@ import { meKeys } from '@/lib/query-keys'
 export function useMe(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: meKeys.profile(),
-    queryFn: getMe,
+    queryFn: () => getMe(),
     staleTime: 5 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     ...options,
@@ -24,7 +24,7 @@ export function useMe(options?: { enabled?: boolean }) {
 export function useRegisterMe() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: RegisterMeBody) => registerMe(body),
+    mutationFn: (body: RegisterMeBody) => registerMe({ data: body }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: meKeys.all })
     },
@@ -34,7 +34,7 @@ export function useRegisterMe() {
 export function useUpdateMe() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: UpdateMeBody) => updateMe(body),
+    mutationFn: (body: UpdateMeBody) => updateMe({ data: body }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: meKeys.all })
     },
@@ -44,7 +44,7 @@ export function useUpdateMe() {
 export function useUploadMyIcon() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: UploadMyIconBody) => uploadMyIcon(body),
+    mutationFn: (body: UploadMyIconBody) => uploadMyIcon({ data: body }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: meKeys.all })
     },

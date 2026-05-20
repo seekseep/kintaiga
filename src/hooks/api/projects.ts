@@ -24,7 +24,8 @@ export function useUserProjectStatements(
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.statement(organizationName, parameters),
-    queryFn: () => listOrganizationUserProjectStatements({ organizationName, parameters }),
+    queryFn: () =>
+      listOrganizationUserProjectStatements({ data: { organizationName, parameters } }),
     ...options,
   })
 }
@@ -33,7 +34,7 @@ export function useProject(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.detail(organizationName, id),
-    queryFn: () => getOrganizationProject({ organizationName, projectId: id }),
+    queryFn: () => getOrganizationProject({ data: { organizationName, projectId: id } }),
     ...options,
   })
 }
@@ -42,7 +43,7 @@ export function useProjectConfig(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.config(organizationName, id),
-    queryFn: () => getOrganizationProjectConfig({ organizationName, projectId: id }),
+    queryFn: () => getOrganizationProjectConfig({ data: { organizationName, projectId: id } }),
     ...options,
   })
 }
@@ -51,7 +52,7 @@ export function useProjectMembers(id: string, options?: { enabled?: boolean }) {
   const { name: organizationName } = useOrganization()
   return useQuery({
     queryKey: projectKeys.members(organizationName, id),
-    queryFn: () => listOrganizationProjectMembers({ organizationName, projectId: id }),
+    queryFn: () => listOrganizationProjectMembers({ data: { organizationName, projectId: id } }),
     ...options,
   })
 }
@@ -61,7 +62,7 @@ export function useCreateProject() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: CreateProjectInput) =>
-      createOrganizationProject({ organizationName, body }),
+      createOrganizationProject({ data: { organizationName, body } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.statements(organizationName) })
       queryClient.invalidateQueries({ queryKey: projectKeys.lists(organizationName) })
@@ -74,7 +75,7 @@ export function useUpdateProjectConfig() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: UpdateProjectConfigInput) =>
-      updateOrganizationProjectConfig({ organizationName, input }),
+      updateOrganizationProjectConfig({ data: { organizationName, input } }),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: projectKeys.config(organizationName, id) })
     },
@@ -86,7 +87,7 @@ export function useUpdateProject() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: UpdateProjectInput) =>
-      updateOrganizationProject({ organizationName, input }),
+      updateOrganizationProject({ data: { organizationName, input } }),
     onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(organizationName, id) })
       queryClient.invalidateQueries({ queryKey: projectKeys.config(organizationName, id) })
@@ -99,7 +100,7 @@ export function useDeleteProject() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: DeleteProjectInput) =>
-      deleteOrganizationProject({ organizationName, input }),
+      deleteOrganizationProject({ data: { organizationName, input } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.all(organizationName) })
     },

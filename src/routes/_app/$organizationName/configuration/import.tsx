@@ -50,8 +50,7 @@ function ImportOrganizationPage() {
     setIsImporting(true)
     try {
       const res = await importOrganizationData({
-        organizationName,
-        body: { payload, overwriteConfiguration },
+        data: { organizationName, body: { payload, overwriteConfiguration } },
       })
       setResult(res)
       toast.success('インポートが完了しました')

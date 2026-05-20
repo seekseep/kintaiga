@@ -47,7 +47,7 @@ function ProjectsPage() {
         <h1 className="font-bold text-lg">プロジェクト</h1>
         {isManagerOrAbove && (
           <Button asChild>
-            <Link to={`/${organizationName}/projects/new`}>
+            <Link to="/$organizationName/projects/new" params={{ organizationName }}>
               <Plus className="mr-2 h-4 w-4" />
               新規プロジェクト
             </Link>

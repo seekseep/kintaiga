@@ -1,6 +1,6 @@
+import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/lib/db'
 import { getOrganizationExecutor } from '@/lib/server-action/auth'
-import { defineServerFn } from '@/lib/server-fn'
 import {
   addOrganizationMember as addOrganizationMemberService,
   archiveOrganizationMember,
@@ -42,83 +42,61 @@ function toMember(row: MemberRow): Member {
   }
 }
 
-export const listOrganizationMembers = defineServerFn(
-  async ({
-    organizationName,
-    parameters,
-  }: {
-    organizationName: string
-    parameters?: ListOrganizationMembersInput
-  }): Promise<PaginatedResponse<Member>> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const result = await listOrganizationMembersService({ db }, executor, parameters)
+export const listOrganizationMembers = createServerFn({ method: 'GET' })
+  .inputValidator(
+    (data: { organizationName: string; parameters?: ListOrganizationMembersInput }) => data,
+  )
+  .handler(async ({ data }): Promise<PaginatedResponse<Member>> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const result = await listOrganizationMembersService({ db }, executor, data.parameters)
     return {
       items: result.items.map(toMember),
       count: result.count,
       limit: result.limit,
       offset: result.offset,
     }
-  },
-)
+  })
 
-export const getOrganizationMember = defineServerFn(
-  async ({
-    organizationName,
-    memberId,
-  }: {
-    organizationName: string
-    memberId: string
-  }): Promise<Member> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const member = await getOrganizationMemberService({ db }, executor, { memberId })
+export const getOrganizationMember = createServerFn({ method: 'GET' })
+  .inputValidator((data: { organizationName: string; memberId: string }) => data)
+  .handler(async ({ data }): Promise<Member> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const member = await getOrganizationMemberService({ db }, executor, { memberId: data.memberId })
     return toMember(member)
-  },
-)
+  })
 
-export const addOrganizationMember = defineServerFn(
-  async ({
-    organizationName,
-    body,
-  }: {
-    organizationName: string
-    body: AddOrganizationMemberInput
-  }): Promise<Member> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const assignment = await addOrganizationMemberService({ db }, executor, body)
+export const addOrganizationMember = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: { organizationName: string; body: AddOrganizationMemberInput }) => data,
+  )
+  .handler(async ({ data }): Promise<Member> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const assignment = await addOrganizationMemberService({ db }, executor, data.body)
     const member = await getOrganizationMemberService({ db }, executor, { memberId: assignment.id })
     return toMember(member)
-  },
-)
+  })
 
-export const updateOrganizationMemberRole = defineServerFn(
-  async ({
-    organizationName,
-    memberId,
-    body,
-  }: {
-    organizationName: string
-    memberId: string
-    body: { role: 'manager' | 'worker' }
-  }): Promise<Member> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const { userId } = await resolveUserIdFromMemberId(db, executor.organization.id, memberId)
-    await updateOrganizationMemberRoleService({ db }, executor, { userId, role: body.role })
-    const member = await getOrganizationMemberService({ db }, executor, { memberId })
+export const updateOrganizationMemberRole = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: {
+      organizationName: string
+      memberId: string
+      body: { role: 'manager' | 'worker' }
+    }) => data,
+  )
+  .handler(async ({ data }): Promise<Member> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const { userId } = await resolveUserIdFromMemberId(db, executor.organization.id, data.memberId)
+    await updateOrganizationMemberRoleService({ db }, executor, { userId, role: data.body.role })
+    const member = await getOrganizationMemberService({ db }, executor, { memberId: data.memberId })
     return toMember(member)
-  },
-)
+  })
 
-export const deleteOrganizationMember = defineServerFn(
-  async ({
-    organizationName,
-    memberId,
-  }: {
-    organizationName: string
-    memberId: string
-  }): Promise<void> => {
-    const executor = await getOrganizationExecutor(organizationName)
-    const { userId } = await resolveUserIdFromMemberId(db, executor.organization.id, memberId)
+export const deleteOrganizationMember = createServerFn({ method: 'POST' })
+  .inputValidator((data: { organizationName: string; memberId: string }) => data)
+  .handler(async ({ data }): Promise<void> => {
+    const executor = await getOrganizationExecutor(data.organizationName)
+    const { userId } = await resolveUserIdFromMemberId(db, executor.organization.id, data.memberId)
     await removeOrganizationMember({ db }, executor, { userId })
     await archiveOrganizationMember({ db }, executor, { userId })
-  },
-)
+  })

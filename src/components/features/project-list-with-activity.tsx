@@ -29,7 +29,11 @@ function ProjectCard({ statement, currentUserId }: { statement: UserProjectState
     <Card>
       <CardContent className="pt-4 pb-3 space-y-2">
         <div className="flex items-center justify-between">
-          <Link to={`/${organizationName}/projects/${statement.id}`} className="hover:underline">
+          <Link
+            to="/$organizationName/projects/$id"
+            params={{ organizationName, id: statement.id }}
+            className="hover:underline"
+          >
             <CardTitle className="text-base">{statement.name}</CardTitle>
           </Link>
           {statement.membershipStatus === 'joined' && (

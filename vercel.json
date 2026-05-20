@@ -1,3 +1,17 @@
 {
-  "framework": "nextjs"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist/client",
+  "installCommand": "pnpm install",
+  "rewrites": [
+    {
+      "source": "/_serverFn/(.*)",
+      "destination": "/api/server"
+    },
+    {
+      "source": "/((?!assets/|favicon\\.png|.*\\.[a-z0-9]+$).*)",
+      "destination": "/api/server"
+    }
+  ]
 }
